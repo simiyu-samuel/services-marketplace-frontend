@@ -68,3 +68,22 @@ export interface Review {
   created_at: string;
   customer: Pick<User, 'name' | 'profile_image_url'>;
 }
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+  };
+}

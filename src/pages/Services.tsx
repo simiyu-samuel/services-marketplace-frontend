@@ -4,9 +4,10 @@ import api from "@/lib/api";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceFilters from "@/components/services/ServiceFilters";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
-import { Service } from "@/types";
+import { PaginatedResponse, Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SearchX } from "lucide-react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 export interface Filters {
   search: string;
@@ -26,10 +27,11 @@ const initialFilters: Filters = {
   sortBy: 'recommended',
 };
 
-const fetchServices = async (filters: Filters) => {
+const fetchServices = async (filters: Filters, page: number) => {
   const priceFilterChanged = filters.priceRange[0] > 0 || filters.priceRange[1] < 20000;
 
   const params = {
+    page,
     'filter[name]': filters.search || undefined,
     'filter[location]': filters.location || undefined,
     'filter[category_name]': filters.categories.join(',') || undefined,
@@ -38,24 +40,31 @@ const fetchServices = async (filters: Filters) => {
   };
   
   const { data } = await api.get('/services', { params });
-  return data.data; // Assuming paginated response
+  return data as PaginatedResponse<Service>;
 };
 
 const Services = () => {
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [page, setPage] = useState(1);
   
-  const { data: services, isLoading, isError } = useQuery<Service[]>({
-    queryKey: ['services', filters],
-    queryFn: () => fetchServices(filters),
+  const { data: response, isLoading, isError } = useQuery<PaginatedResponse<Service>>({
+    queryKey: ['services', filters, page],
+    queryFn: () => fetchServices(filters, page),
+    keepPreviousData: true,
   });
 
   const handleFilterChange = (key: keyof Filters, value: any) => {
+    setPage(1); // Reset to first page on filter change
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const handleClearFilters = () => {
+    setPage(1);
     setFilters(initialFilters);
   };
+
+  const services = response?.data || [];
+  const meta = response?.meta;
 
   // Client-side sorting as it's not in the API guide
   const sortedServices = services ? [...services].sort((a, b) => {
@@ -106,7 +115,33 @@ const Services = () => {
               </div>
             )}
           </div>
-          {/* Pagination will go here */}
+          {meta && meta.last_page > 1 && (
+            <div className="mt-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
+                      className={meta.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink>
+                      Page {meta.current_page} of {meta.last_page}
+                    </PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext 
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setPage(p => Math.min(meta.last_page, p + 1)); }}
+                      className={meta.current_page === meta.last_page ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </main>
       </div>
     </div>
