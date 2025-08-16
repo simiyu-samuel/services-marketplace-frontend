@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     const toastId = showLoading("Logging out...");
     try {
+      await fetchCsrfToken();
       await api.post('/logout');
     } catch (error) {
       console.error("Logout failed, clearing session locally.", error);
