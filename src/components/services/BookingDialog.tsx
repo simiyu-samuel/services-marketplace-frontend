@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   appointment_date: z.date({ required_error: "A date is required." }),
@@ -25,11 +25,11 @@ interface BookingDialogProps {
   serviceId: number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
 }
 
-export const BookingDialog = ({ serviceId, isOpen, onOpenChange, onSuccess }: BookingDialogProps) => {
+export const BookingDialog = ({ serviceId, isOpen, onOpenChange }: BookingDialogProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,8 +46,9 @@ export const BookingDialog = ({ serviceId, isOpen, onOpenChange, onSuccess }: Bo
       };
       await api.post('/appointments', payload);
       showSuccess("Appointment requested successfully!");
-      onSuccess();
+      onOpenChange(false);
       form.reset();
+      navigate('/dashboard/bookings');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Failed to book appointment. Please try again.";
       showError(errorMessage);

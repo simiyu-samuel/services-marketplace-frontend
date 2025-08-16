@@ -77,7 +77,6 @@ const ServiceDetails = () => {
         serviceId={service.id}
         isOpen={isBookingOpen}
         onOpenChange={setIsBookingOpen}
-        onSuccess={() => setIsBookingOpen(false)}
       />
       <div className="container py-8">
         <div className="grid md:grid-cols-3 gap-8">
