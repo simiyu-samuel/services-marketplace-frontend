@@ -86,7 +86,7 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
               <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="subcategory" render={({ field }) => (
-              <FormItem><FormLabel>Subcategory (Optional)</FormLabel><FormControl><Input placeholder="e.g., Nails, Skin Care" {...field} /></FormControl><FormMessage /></FormMessage>
+              <FormItem><FormLabel>Subcategory (Optional)</FormLabel><FormControl><Input placeholder="e.g., Nails, Skin Care" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="price" render={({ field }) => (
               <FormItem><FormLabel>Price (Ksh)</FormLabel><FormControl><Input type="number" placeholder="1500" {...field} /></FormControl><FormMessage /></FormItem>
