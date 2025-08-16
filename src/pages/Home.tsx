@@ -111,7 +111,7 @@ const Home = () => {
                                   </div>
                                   <h3 className="font-bold text-xl">{category.title}</h3>
                               </div>
-                              <ul className="space-y-2 list-disc list-inside text-muted-foreground">
+                              <ul className="space-y-2 text-muted-foreground">
                                   {category.items.map(item => (
                                       <li key={item}>{item}</li>
                                   ))}
