@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -23,6 +23,10 @@ const fetchMyServices = async (sellerId: number) => {
 
 const deleteService = async (id: number) => {
   await api.delete(`/services/${id}`);
+};
+
+const updateServiceStatus = async ({ id, is_active }: { id: number, is_active: boolean }) => {
+  await api.put(`/services/${id}`, { is_active });
 };
 
 const MyServices = () => {
@@ -48,6 +52,18 @@ const MyServices = () => {
     },
     onError: () => {
       showError("Failed to delete service.");
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: updateServiceStatus,
+    onSuccess: () => {
+      showSuccess("Service status updated.");
+      queryClient.invalidateQueries({ queryKey: ['my-services'] });
+    },
+    onError: () => {
+      showError("Failed to update status.");
+      // Optimistic update reversal would happen here if implemented
     },
   });
 
@@ -106,7 +122,14 @@ const MyServices = () => {
                     <TableCell className="font-medium">{service.title}</TableCell>
                     <TableCell>{service.category}</TableCell>
                     <TableCell>Ksh {parseFloat(service.price).toLocaleString()}</TableCell>
-                    <TableCell><Badge variant={service.is_active ? "default" : "outline"}>{service.is_active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={service.is_active}
+                        onCheckedChange={(checked) => statusMutation.mutate({ id: service.id, is_active: checked })}
+                        disabled={statusMutation.isPending}
+                        aria-label="Toggle service status"
+                      />
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Toggle menu</span></Button></DropdownMenuTrigger>

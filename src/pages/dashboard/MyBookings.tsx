@@ -112,10 +112,13 @@ const MyBookings = () => {
                         <DropdownMenuItem className="text-destructive" onClick={() => handleStatusUpdate(booking.id, 'cancelled')}>Cancel</DropdownMenuItem>
                       </>
                     )}
+                     {user?.user_type === 'seller' && booking.status === 'confirmed' && (
+                      <DropdownMenuItem onClick={() => handleStatusUpdate(booking.id, 'completed')}>Mark as Completed</DropdownMenuItem>
+                    )}
                     {user?.user_type === 'customer' && (booking.status === 'pending' || booking.status === 'confirmed') && (
                       <DropdownMenuItem className="text-destructive" onClick={() => handleStatusUpdate(booking.id, 'cancelled')}>Cancel Booking</DropdownMenuItem>
                     )}
-                    {!(user?.user_type === 'seller' && booking.status === 'pending') && !(user?.user_type === 'customer' && (booking.status === 'pending' || booking.status === 'confirmed')) && (
+                    {!(user?.user_type === 'seller' && (booking.status === 'pending' || booking.status === 'confirmed')) && !(user?.user_type === 'customer' && (booking.status === 'pending' || booking.status === 'confirmed')) && (
                       <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
