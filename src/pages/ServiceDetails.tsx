@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -7,10 +8,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Clock, MapPin, Star, MessageSquare } from "lucide-react";
+import { Clock, MapPin, Star, MessageSquare, CalendarPlus } from "lucide-react";
 import NotFound from "./NotFound";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
+import { BookingDialog } from "@/components/services/BookingDialog";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
@@ -24,6 +26,7 @@ const fetchServices = async () => {
 
 const ServiceDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   const { data: service, isLoading, isError } = useQuery<Service>({
     queryKey: ['service', id],
@@ -69,117 +72,131 @@ const ServiceDetails = () => {
   const reviewCount = service.review_count ?? 0;
 
   return (
-    <div className="container py-8">
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="md:col-span-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">{service.title}</h1>
-          <div className="flex items-center gap-4 text-muted-foreground mb-4">
-            <div className="flex items-center">
-              <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
-              <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
-              <span className="ml-1">({reviewCount} reviews)</span>
+    <>
+      <BookingDialog
+        serviceId={service.id}
+        isOpen={isBookingOpen}
+        onOpenChange={setIsBookingOpen}
+        onSuccess={() => setIsBookingOpen(false)}
+      />
+      <div className="container py-8">
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="md:col-span-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">{service.title}</h1>
+            <div className="flex items-center gap-4 text-muted-foreground mb-4">
+              <div className="flex items-center">
+                <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
+                <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
+                <span className="ml-1">({reviewCount} reviews)</span>
+              </div>
+              <div className="flex items-center">
+                <MapPin className="h-5 w-5 mr-1" />
+                <span>{service.location}</span>
+              </div>
             </div>
-            <div className="flex items-center">
-              <MapPin className="h-5 w-5 mr-1" />
-              <span>{service.location}</span>
+
+            <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
+              <CarouselContent>
+                {service.media_files && service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (
+                  <CarouselItem key={index}>
+                    <div className="aspect-w-16 aspect-h-9 bg-muted">
+                      {mediaUrl.endsWith('.mp4') ? (
+                        <video src={mediaUrl} className="object-cover w-full h-full" controls />
+                      ) : (
+                        <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
+                      )}
+                    </div>
+                  </CarouselItem>
+                )) : (
+                  <CarouselItem>
+                    <div className="aspect-w-16 aspect-h-9 bg-muted">
+                      <img src="/placeholder.svg" alt="Placeholder" className="object-cover w-full h-full" />
+                    </div>
+                  </CarouselItem>
+                )}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-4" />
+              <CarouselNext className="absolute right-4" />
+            </Carousel>
+
+            <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
+            <div className="prose dark:prose-invert max-w-none">
+              <p>{service.description}</p>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4 border-b pb-2">Reviews</h2>
+              <p className="text-muted-foreground">Reviews feature coming soon.</p>
             </div>
           </div>
 
-          <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
-            <CarouselContent>
-              {service.media_files && service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (
-                <CarouselItem key={index}>
-                  <div className="aspect-w-16 aspect-h-9 bg-muted">
-                    {mediaUrl.endsWith('.mp4') ? (
-                      <video src={mediaUrl} className="object-cover w-full h-full" controls />
-                    ) : (
-                      <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
-                    )}
+          {/* Sidebar */}
+          <div className="md:col-span-1">
+            <div className="sticky top-20 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl font-bold text-primary">
+                    Ksh {parseFloat(service.price).toLocaleString()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="h-5 w-5 mr-2" />
+                    <span>Duration: {service.duration} minutes</span>
                   </div>
-                </CarouselItem>
-              )) : (
-                <CarouselItem>
-                  <div className="aspect-w-16 aspect-h-9 bg-muted">
-                    <img src="/placeholder.svg" alt="Placeholder" className="object-cover w-full h-full" />
+                  {service.is_mobile && <Badge>Mobile Service Available</Badge>}
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
+                      <CalendarPlus className="h-5 w-5" />
+                      Book Appointment
+                    </Button>
+                    <Button size="lg" variant="outline" className="w-full gap-2" asChild>
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                        <MessageSquare className="h-5 w-5" />
+                        Contact via WhatsApp
+                      </a>
+                    </Button>
                   </div>
-                </CarouselItem>
-              )}
-            </CarouselContent>
-            <CarouselPrevious className="absolute left-4" />
-            <CarouselNext className="absolute right-4" />
-          </Carousel>
+                </CardContent>
+              </Card>
 
-          <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
-          <div className="prose dark:prose-invert max-w-none">
-            <p>{service.description}</p>
+              <Card>
+                <CardHeader>
+                  <CardTitle>About the Seller</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                  <Link to={`/sellers/${service.user.id}`}>
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={service.user.profile_image || undefined} />
+                      <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div>
+                    <Link to={`/sellers/${service.user.id}`} className="font-bold text-lg hover:underline">{service.user.name}</Link>
+                    <Button variant="link" className="p-0 h-auto" asChild>
+                      <Link to={`/sellers/${service.user.id}`}>View Profile</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
+        </div>
 
-          {/* Reviews Section */}
+        {otherServices.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4 border-b pb-2">Reviews</h2>
-            <p className="text-muted-foreground">Reviews feature coming soon.</p>
+            <h2 className="text-2xl font-bold mb-6">More from {service.user.name}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {otherServices.map(otherService => (
+                <ServiceCard key={otherService.id} service={otherService} />
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="md:col-span-1">
-          <div className="sticky top-20 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-2xl font-bold text-primary">
-                  Ksh {parseFloat(service.price).toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center text-muted-foreground">
-                  <Clock className="h-5 w-5 mr-2" />
-                  <span>Duration: {service.duration} minutes</span>
-                </div>
-                {service.is_mobile && <Badge>Mobile Service Available</Badge>}
-                <Button size="lg" className="w-full gap-2" asChild>
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                    <MessageSquare className="h-5 w-5" />
-                    Book via WhatsApp
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>About the Seller</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-4">
-                <Link to={`/sellers/${service.user.id}`}>
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={service.user.profile_image || undefined} />
-                    <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div>
-                  <Link to={`/sellers/${service.user.id}`} className="font-bold text-lg hover:underline">{service.user.name}</Link>
-                  <Button variant="link" className="p-0 h-auto" asChild>
-                    <Link to={`/sellers/${service.user.id}`}>View Profile</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
-
-      {otherServices.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">More from {service.user.name}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherServices.map(otherService => (
-              <ServiceCard key={otherService.id} service={otherService} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

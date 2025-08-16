@@ -27,8 +27,8 @@ const MyBookings = () => {
 
   const userBookings = response?.data || [];
 
-  const upcomingBookings = userBookings?.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending')) || [];
-  const pastBookings = userBookings?.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled') || [];
+  const upcomingBookings = userBookings?.filter(b => new Date(b.appointment_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending')) || [];
+  const pastBookings = userBookings?.filter(b => new Date(b.appointment_date) < new Date() || b.status === 'completed' || b.status === 'cancelled') || [];
 
   const getStatusVariant = (status: 'confirmed' | 'pending' | 'completed' | 'cancelled') => {
     switch (status) {
@@ -66,7 +66,7 @@ const MyBookings = () => {
           {bookings.map(booking => (
             <TableRow key={booking.id}>
               <TableCell className="font-medium">{booking.service.title}</TableCell>
-              <TableCell>{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
+              <TableCell>{new Date(booking.appointment_date).toLocaleDateString()}</TableCell>
               <TableCell>{user?.user_type === 'seller' ? booking.customer.name : booking.seller.name}</TableCell>
               <TableCell className="text-right">
                 <Badge variant={getStatusVariant(booking.status)} className="capitalize">{booking.status}</Badge>

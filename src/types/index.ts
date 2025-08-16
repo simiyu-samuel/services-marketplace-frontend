@@ -58,11 +58,16 @@ export interface BlogPost {
 
 export interface Booking {
   id: number;
-  service: Pick<Service, 'id' | 'title' | 'price'>;
-  customer: Pick<User, 'id' | 'name'>;
-  seller: Pick<User, 'id' | 'name'>;
-  booking_date: string;
+  service_id: number;
+  customer_id: number;
+  seller_id: number;
+  appointment_date: string;
   status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  total_amount: string;
+  notes?: string | null;
+  service: Service;
+  customer: User;
+  seller: User;
 }
 
 export interface Review {
