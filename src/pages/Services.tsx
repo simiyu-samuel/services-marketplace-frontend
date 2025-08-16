@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import ServiceCard from "@/components/services/ServiceCard";
@@ -10,28 +10,30 @@ import { SearchX } from "lucide-react";
 
 export interface Filters {
   search: string;
+  location: string;
   categories: string[];
-  maxPrice: number;
+  priceRange: [number, number];
   isMobile: boolean;
   sortBy: string;
 }
 
 const initialFilters: Filters = {
   search: '',
+  location: '',
   categories: [],
-  maxPrice: 20000,
+  priceRange: [0, 20000],
   isMobile: false,
   sortBy: 'recommended',
 };
 
 const fetchServices = async (filters: Filters) => {
-  // The API guide doesn't specify how categories are sent, assuming comma-separated string
   const params = {
     search: filters.search || undefined,
+    location: filters.location || undefined,
     category: filters.categories.join(',') || undefined,
-    max_price: filters.maxPrice < 20000 ? filters.maxPrice : undefined,
+    min_price: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+    max_price: filters.priceRange[1] < 20000 ? filters.priceRange[1] : undefined,
     is_mobile: filters.isMobile ? 1 : undefined,
-    // sortBy is not in the API guide, so client-side sorting will be used for now
   };
   const { data } = await api.get('/services', { params });
   return data.data; // Assuming paginated response

@@ -38,6 +38,15 @@ const ServiceFilters = ({ filters, onFilterChange }: ServiceFiltersProps) => {
           />
         </div>
         <div className="space-y-2">
+          <Label htmlFor="location">Location</Label>
+          <Input 
+            id="location" 
+            placeholder="e.g., Nairobi, Mombasa" 
+            value={filters.location}
+            onChange={(e) => onFilterChange('location', e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
           <Label>Category</Label>
           <div className="space-y-2">
             {categories.map(category => (
@@ -53,16 +62,16 @@ const ServiceFilters = ({ filters, onFilterChange }: ServiceFiltersProps) => {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Price Range (Max: Ksh {filters.maxPrice.toLocaleString()})</Label>
+          <Label>Price Range</Label>
           <Slider 
-            value={[filters.maxPrice]} 
+            value={filters.priceRange} 
             max={20000} 
             step={500} 
-            onValueChange={(value) => onFilterChange('maxPrice', value[0])}
+            onValueChange={(value) => onFilterChange('priceRange', value as [number, number])}
           />
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Ksh 0</span>
-            <span>Ksh 20,000+</span>
+            <span>Ksh {filters.priceRange[0].toLocaleString()}</span>
+            <span>Ksh {filters.priceRange[1].toLocaleString()}{filters.priceRange[1] === 20000 ? '+' : ''}</span>
           </div>
         </div>
         <div className="flex items-center justify-between">
