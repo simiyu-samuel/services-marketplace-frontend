@@ -1,32 +1,51 @@
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
 import BlogPostForm, { BlogPostFormValues } from "@/components/admin/BlogPostForm";
 import { showSuccess, showError } from "@/utils/toast";
-import { useState } from "react";
+
+const createBlogPost = async (data: FormData) => {
+  const { data: response } = await api.post('/admin/blogs', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.blog;
+};
 
 const CreateBlogPost = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createBlogPost,
+    onSuccess: () => {
+      showSuccess("Blog post created successfully!");
+      queryClient.invalidateQueries({ queryKey: ['admin-blog-posts'] });
+      navigate("/admin/blog");
+    },
+    onError: (error: any) => {
+      showError(error.response?.data?.message || "Failed to create blog post.");
+    },
+  });
 
   const handleFormSubmit = (values: BlogPostFormValues) => {
-    setIsLoading(true);
-    // In a real app, you'd have a mutation here to call the API
-    console.log("Creating blog post:", values);
-    setTimeout(() => {
-      try {
-        showSuccess("Blog post created successfully!");
-        navigate("/admin/blog");
-      } catch (error) {
-        showError("Failed to create blog post.");
-      } finally {
-        setIsLoading(false);
+    const formData = new FormData();
+    
+    (Object.keys(values) as Array<keyof BlogPostFormValues>).forEach(key => {
+      const value = values[key];
+      if (key === 'featured_image' && value instanceof FileList && value.length > 0) {
+        formData.append('featured_image', value[0]);
+      } else if (key !== 'featured_image' && value !== undefined) {
+        formData.append(key, String(value));
       }
-    }, 1000);
+    });
+
+    mutation.mutate(formData);
   };
 
   return (
     <BlogPostForm 
       onSubmit={handleFormSubmit} 
-      isLoading={isLoading}
+      isLoading={mutation.isPending}
       submitButtonText="Create Post"
     />
   );

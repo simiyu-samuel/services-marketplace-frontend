@@ -8,23 +8,45 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
-import { useQuery } from "@tanstack/react-query";
-import { mockBlogPosts } from "@/data/mock";
-import { BlogPost } from "@/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BlogPost, PaginatedResponse } from "@/types";
+import api from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
-// Simulate an API call
-const fetchBlogPosts = async (): Promise<BlogPost[]> => {
-  return new Promise(resolve => setTimeout(() => resolve(mockBlogPosts), 500));
+const fetchBlogPosts = async (page: number): Promise<PaginatedResponse<BlogPost>> => {
+  const { data } = await api.get('/admin/blogs', { params: { page } });
+  return data;
+};
+
+const deleteBlogPost = async (id: number) => {
+  await api.delete(`/admin/blogs/${id}`);
 };
 
 const AdminBlog = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
-  const { data: posts, isLoading } = useQuery({
-    queryKey: ['admin-blog-posts'],
-    queryFn: fetchBlogPosts,
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['admin-blog-posts', page],
+    queryFn: () => fetchBlogPosts(page),
+    keepPreviousData: true,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteBlogPost,
+    onSuccess: () => {
+      showSuccess("Blog post deleted successfully.");
+      queryClient.invalidateQueries({ queryKey: ['admin-blog-posts'] });
+      setIsDeleteDialogOpen(false);
+      setSelectedPost(null);
+    },
+    onError: () => {
+      showError("Failed to delete post.");
+    }
   });
 
   const handleDeleteClick = (post: BlogPost) => {
@@ -34,13 +56,7 @@ const AdminBlog = () => {
 
   const confirmDelete = () => {
     if (selectedPost) {
-      // In a real app, this would be a mutation
-      console.log("Deleting post:", selectedPost.title);
-      showSuccess("Blog post deleted successfully.");
-      setIsDeleteDialogOpen(false);
-      setSelectedPost(null);
-    } else {
-      showError("Failed to delete post.");
+      deleteMutation.mutate(selectedPost.id);
     }
   };
 
@@ -71,10 +87,12 @@ const AdminBlog = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center">Loading posts...</TableCell></TableRow>
+              {isLoading && !response ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                ))
               ) : (
-                posts?.map(post => (
+                response?.data.map(post => (
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
                     <TableCell>{post.category}</TableCell>
@@ -84,7 +102,7 @@ const AdminBlog = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/blog/edit/${post.slug}`)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/blog/edit/${post.id}`)}>Edit</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>View</DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(post)}>Delete</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -95,6 +113,17 @@ const AdminBlog = () => {
               )}
             </TableBody>
           </Table>
+          {response && response.last_page > 1 && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }} className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''} /></PaginationItem>
+                  <PaginationItem><PaginationLink>Page {response.current_page} of {response.last_page}</PaginationLink></PaginationItem>
+                  <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }} className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''} /></PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -105,7 +134,9 @@ const AdminBlog = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
