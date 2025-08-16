@@ -106,6 +106,12 @@ export interface Contact {
     updated_at: string;
 }
 
+export interface SellerPackage {
+  id: number;
+  name: 'basic' | 'standard' | 'premium';
+  price: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   current_page: number;
