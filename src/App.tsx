@@ -8,9 +8,11 @@ import { AuthProvider } from "./contexts/AuthContext";
 // Layouts
 import MainLayout from "./components/layout/MainLayout";
 import AdminLayout from "./components/layout/AdminLayout";
+import DashboardLayout from "./components/layout/DashboardLayout";
 
 // Auth
 import AdminRoute from "./components/auth/AdminRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Public Pages
 import Home from "./pages/Home";
@@ -26,8 +28,14 @@ import RegisterSeller from "./pages/RegisterSeller";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+
+// Dashboard Pages
+import Dashboard from "./pages/Dashboard";
+import MyBookings from "./pages/dashboard/MyBookings";
+import MyServices from "./pages/dashboard/MyServices";
+import Profile from "./pages/dashboard/Profile";
+import Settings from "./pages/dashboard/Settings";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -61,8 +69,20 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
+            </Route>
+
+            {/* User Dashboard Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<MainLayout />}>
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="bookings" element={<MyBookings />} />
+                  <Route path="services" element={<MyServices />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
+              </Route>
             </Route>
 
             {/* Admin Routes */}
