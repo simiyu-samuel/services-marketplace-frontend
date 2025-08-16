@@ -32,7 +32,7 @@ export interface Service {
   location: string;
   is_mobile: boolean;
   media: MediaFile[];
-  seller: Pick<User, 'id' | 'name' | 'profile_image_url'>;
+  seller: Pick<User, 'id' | 'name' | 'profile_image_url' | 'phone_number'>;
   rating: number;
   review_count: number;
   description: string;

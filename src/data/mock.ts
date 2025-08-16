@@ -16,6 +16,7 @@ export const mockServices: Service[] = [
       id: 101,
       name: "Glamour Nails",
       profile_image_url: "/placeholder.svg",
+      phone_number: "254712345678",
     },
     media: [
       { id: 1, url: "/placeholder.svg", type: "image" },
@@ -37,6 +38,7 @@ export const mockServices: Service[] = [
       id: 102,
       name: "Serenity Spa",
       profile_image_url: "/placeholder.svg",
+      phone_number: "254722345678",
     },
     media: [
         { id: 3, url: "/placeholder.svg", type: "image" },
@@ -57,6 +59,7 @@ export const mockServices: Service[] = [
       id: 101, // Changed to Glamour Nails for seller example
       name: "Glamour Nails",
       profile_image_url: "/placeholder.svg",
+      phone_number: "254712345678",
     },
     media: [
         { id: 4, url: "/placeholder.svg", type: "image" },
@@ -79,6 +82,7 @@ export const mockServices: Service[] = [
       id: 104,
       name: "Knotless Queens",
       profile_image_url: "/placeholder.svg",
+      phone_number: "254733345678",
     },
     media: [
         { id: 7, url: "/placeholder.svg", type: "image" },
