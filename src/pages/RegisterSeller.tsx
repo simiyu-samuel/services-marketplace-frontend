@@ -25,7 +25,7 @@ const formSchema = z.object({
 });
 
 const packageDetails = {
-  basic: { name: "Basic", price: 0 },
+  basic: { name: "Basic", price: 500 },
   standard: { name: "Standard", price: 1000 },
   premium: { name: "Premium", price: 2500 },
 };
@@ -37,7 +37,7 @@ const RegisterSeller = () => {
   const [paymentInfo, setPaymentInfo] = useState<{
     open: boolean;
     amount: number;
-    packageType: 'standard' | 'premium';
+    packageType: 'basic' | 'standard' | 'premium';
     email: string;
   } | null>(null);
 
@@ -53,18 +53,13 @@ const RegisterSeller = () => {
       
       const { seller_package, email } = values;
 
-      if (seller_package === 'basic') {
-        showSuccess("Registration successful!");
-        navigate("/verify-email", { state: { email } });
-      } else {
-        showSuccess("Account created! Please complete the payment to proceed.");
-        setPaymentInfo({
-          open: true,
-          amount: packageDetails[seller_package].price,
-          packageType: seller_package,
-          email: email,
-        });
-      }
+      showSuccess("Account created! Please complete the payment to proceed.");
+      setPaymentInfo({
+        open: true,
+        amount: packageDetails[seller_package].price,
+        packageType: seller_package,
+        email: email,
+      });
     } catch (error: any) {
       if (error.response?.status === 422) {
         const apiErrors = error.response.data.errors;
@@ -120,7 +115,7 @@ const RegisterSeller = () => {
                   <FormItem className="space-y-3"><FormLabel>Choose your starting package</FormLabel>
                     <FormControl>
                       <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic (Free)</FormLabel></FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic (Ksh 500)</FormLabel></FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal">Standard (Ksh 1,000)</FormLabel></FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="premium" /></FormControl><FormLabel className="font-normal">Premium (Ksh 2,500)</FormLabel></FormItem>
                       </RadioGroup>
