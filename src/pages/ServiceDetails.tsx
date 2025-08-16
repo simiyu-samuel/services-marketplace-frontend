@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { mockServices } from "@/data/mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,103 +6,114 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Star, User, MessageSquare } from "lucide-react";
+import { Clock, MapPin, Star, MessageSquare } from "lucide-react";
 import NotFound from "./NotFound";
+import BookingDialog from "@/components/services/BookingDialog";
 
 const ServiceDetails = () => {
   const { id } = useParams();
   const service = mockServices.find(s => s.id === Number(id));
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
   if (!service) {
     return <NotFound />;
   }
 
   return (
-    <div className="container py-8">
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="md:col-span-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">{service.title}</h1>
-          <div className="flex items-center gap-4 text-muted-foreground mb-4">
-            <div className="flex items-center">
-              <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
-              <span className="font-bold text-foreground">{service.rating}</span>
-              <span className="ml-1">({service.review_count} reviews)</span>
+    <>
+      <div className="container py-8">
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="md:col-span-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">{service.title}</h1>
+            <div className="flex items-center gap-4 text-muted-foreground mb-4">
+              <div className="flex items-center">
+                <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
+                <span className="font-bold text-foreground">{service.rating}</span>
+                <span className="ml-1">({service.review_count} reviews)</span>
+              </div>
+              <div className="flex items-center">
+                <MapPin className="h-5 w-5 mr-1" />
+                <span>{service.location}</span>
+              </div>
             </div>
-            <div className="flex items-center">
-              <MapPin className="h-5 w-5 mr-1" />
-              <span>{service.location}</span>
+
+            <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
+              <CarouselContent>
+                {service.media.map((m) => (
+                  <CarouselItem key={m.id}>
+                    <div className="aspect-w-16 aspect-h-9 bg-muted">
+                      <img src={m.url} alt={service.title} className="object-cover w-full h-full" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-4" />
+              <CarouselNext className="absolute right-4" />
+            </Carousel>
+
+            <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
+            <div className="prose dark:prose-invert max-w-none">
+              <p>{service.description}</p>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4 border-b pb-2">Reviews</h2>
+              <p className="text-muted-foreground">Reviews section will be implemented here.</p>
             </div>
           </div>
 
-          <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
-            <CarouselContent>
-              {service.media.map((m) => (
-                <CarouselItem key={m.id}>
-                  <div className="aspect-w-16 aspect-h-9 bg-muted">
-                    <img src={m.url} alt={service.title} className="object-cover w-full h-full" />
+          {/* Sidebar */}
+          <div className="md:col-span-1">
+            <div className="sticky top-20 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl font-bold text-primary">
+                    Ksh {service.price.toLocaleString()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="h-5 w-5 mr-2" />
+                    <span>Duration: {service.duration} minutes</span>
                   </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="absolute left-4" />
-            <CarouselNext className="absolute right-4" />
-          </Carousel>
+                  {service.is_mobile && <Badge>Mobile Service Available</Badge>}
+                  <Button size="lg" className="w-full" onClick={() => setIsBookingDialogOpen(true)}>
+                    Book Appointment
+                  </Button>
+                  <Button size="lg" variant="outline" className="w-full gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Contact via WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
 
-          <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
-          <div className="prose dark:prose-invert max-w-none">
-            <p>{service.description}</p>
-          </div>
-
-          {/* Reviews Section */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4 border-b pb-2">Reviews</h2>
-            <p className="text-muted-foreground">Reviews section will be implemented here.</p>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="md:col-span-1">
-          <div className="sticky top-20 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-2xl font-bold text-primary">
-                  Ksh {service.price.toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center text-muted-foreground">
-                  <Clock className="h-5 w-5 mr-2" />
-                  <span>Duration: {service.duration} minutes</span>
-                </div>
-                {service.is_mobile && <Badge>Mobile Service Available</Badge>}
-                <Button size="lg" className="w-full">Book Appointment</Button>
-                <Button size="lg" variant="outline" className="w-full gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Contact via WhatsApp
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>About the Seller</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={service.seller.profile_image_url} />
-                  <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-bold text-lg">{service.seller.name}</h3>
-                  <Button variant="link" className="p-0 h-auto">View Profile</Button>
-                </div>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>About the Seller</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={service.seller.profile_image_url} />
+                    <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-bold text-lg">{service.seller.name}</h3>
+                    <Button variant="link" className="p-0 h-auto">View Profile</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <BookingDialog 
+        service={service} 
+        isOpen={isBookingDialogOpen} 
+        onOpenChange={setIsBookingDialogOpen} 
+      />
+    </>
   );
 };
 
