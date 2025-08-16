@@ -3,11 +3,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { mockBookings } from "@/data/mock";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MyBookings = () => {
-  const upcomingBookings = mockBookings.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending'));
-  const pastBookings = mockBookings.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled');
+  const { user } = useAuth();
+
+  const userBookings = mockBookings.filter(booking => {
+    if (user?.user_type === 'customer') {
+      return booking.customer.id === user.id;
+    }
+    if (user?.user_type === 'seller') {
+      return booking.seller.id === user.id;
+    }
+    return false;
+  });
+
+  const upcomingBookings = userBookings.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending'));
+  const pastBookings = userBookings.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled');
 
   const getStatusVariant = (status: 'confirmed' | 'pending' | 'completed' | 'cancelled') => {
     switch (status) {
@@ -16,6 +28,36 @@ const MyBookings = () => {
       case 'pending': return 'outline';
       case 'cancelled': return 'destructive';
     }
+  };
+
+  const renderTable = (bookings: typeof mockBookings, emptyMessage: string) => {
+    if (bookings.length === 0) {
+      return <p className="text-center text-muted-foreground py-8">{emptyMessage}</p>;
+    }
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Service</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>{user?.user_type === 'seller' ? 'Customer' : 'Provider'}</TableHead>
+            <TableHead className="text-right">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {bookings.map(booking => (
+            <TableRow key={booking.id}>
+              <TableCell className="font-medium">{booking.service.title}</TableCell>
+              <TableCell>{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
+              <TableCell>{user?.user_type === 'seller' ? booking.customer.name : booking.seller.name}</TableCell>
+              <TableCell className="text-right">
+                <Badge variant={getStatusVariant(booking.status)} className="capitalize">{booking.status}</Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
   };
 
   return (
@@ -31,52 +73,10 @@ const MyBookings = () => {
             <TabsTrigger value="past">Past</TabsTrigger>
           </TabsList>
           <TabsContent value="upcoming">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {upcomingBookings.map(booking => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.service.title}</TableCell>
-                    <TableCell>{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
-                    <TableCell>{booking.seller.name}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant={getStatusVariant(booking.status)} className="capitalize">{booking.status}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {renderTable(upcomingBookings, "You have no upcoming bookings.")}
           </TabsContent>
           <TabsContent value="past">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pastBookings.map(booking => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.service.title}</TableCell>
-                    <TableCell>{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
-                    <TableCell>{booking.seller.name}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant={getStatusVariant(booking.status)} className="capitalize">{booking.status}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {renderTable(pastBookings, "You have no past bookings.")}
           </TabsContent>
         </Tabs>
       </CardContent>
