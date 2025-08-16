@@ -22,7 +22,8 @@ import { showError } from "@/utils/toast";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
-  return data.data;
+  // The API returns the service object directly, not wrapped in a 'data' key.
+  return data;
 };
 
 const fetchServices = async () => {
