@@ -96,7 +96,7 @@ const AdminBlog = () => {
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
                     <TableCell>{post.category}</TableCell>
-                    <TableCell>{post.author.name}</TableCell>
+                    <TableCell>{post.author?.name || 'N/A'}</TableCell>
                     <TableCell><Badge variant={post.status === 'published' ? 'default' : 'outline'} className="capitalize">{post.status || 'draft'}</Badge></TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

@@ -51,7 +51,7 @@ export interface BlogPost {
   content: string;
   featured_image_url: string;
   category: string;
-  author: {
+  author?: {
     name: string;
     profile_image?: string | null;
     bio?: string;
