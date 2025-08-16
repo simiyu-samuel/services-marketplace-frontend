@@ -11,10 +11,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { showError, showSuccess } from "@/utils/toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import PaymentDialog from "@/components/payments/PaymentDialog";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
-import { SellerPackage } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -28,9 +24,10 @@ const formSchema = z.object({
   path: ["password_confirmation"],
 });
 
-const fetchPackages = async (): Promise<SellerPackage[]> => {
-  const { data } = await api.get('/packages');
-  return data.data;
+const packageDetails = {
+  basic: { name: "Basic", price: 1000.00 },
+  standard: { name: "Standard", price: 1500.00 },
+  premium: { name: "Premium", price: 2500.00 },
 };
 
 const RegisterSeller = () => {
@@ -44,11 +41,6 @@ const RegisterSeller = () => {
     email: string;
   } | null>(null);
 
-  const { data: packages, isLoading: isLoadingPackages } = useQuery<SellerPackage[]>({
-    queryKey: ['packages'],
-    queryFn: fetchPackages,
-  });
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", email: "", phone_number: "", password: "", password_confirmation: "" },
@@ -57,21 +49,17 @@ const RegisterSeller = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const selectedPackage = packages?.find(p => p.name === values.seller_package);
-      if (!selectedPackage) {
-        showError("Invalid package selected. Please refresh and try again.");
-        setIsLoading(false);
-        return;
-      }
-
       await register({ ...values, user_type: 'seller' });
       
+      const { seller_package, email } = values;
+      const selectedPackage = packageDetails[seller_package];
+
       showSuccess("Account created! Please complete the payment to proceed.");
       setPaymentInfo({
         open: true,
-        amount: parseFloat(selectedPackage.price),
-        packageType: selectedPackage.name,
-        email: values.email,
+        amount: selectedPackage.price,
+        packageType: seller_package,
+        email: email,
       });
     } catch (error: any) {
       if (error.response?.status === 422) {
@@ -127,26 +115,15 @@ const RegisterSeller = () => {
                 <FormField control={form.control} name="seller_package" render={({ field }) => (
                   <FormItem className="space-y-3"><FormLabel>Choose your starting package</FormLabel>
                     <FormControl>
-                      {isLoadingPackages ? (
-                        <div className="space-y-2">
-                          <Skeleton className="h-5 w-1/2" />
-                          <Skeleton className="h-5 w-1/2" />
-                          <Skeleton className="h-5 w-1/2" />
-                        </div>
-                      ) : (
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                          {packages?.map(pkg => (
-                            <FormItem key={pkg.id} className="flex items-center space-x-3 space-y-0">
-                              <FormControl><RadioGroupItem value={pkg.name} /></FormControl>
-                              <FormLabel className="font-normal capitalize">{pkg.name} (Ksh {parseFloat(pkg.price).toLocaleString()})</FormLabel>
-                            </FormItem>
-                          ))}
-                        </RadioGroup>
-                      )}
+                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic (Ksh {packageDetails.basic.price.toLocaleString()})</FormLabel></FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal">Standard (Ksh {packageDetails.standard.price.toLocaleString()})</FormLabel></FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="premium" /></FormControl><FormLabel className="font-normal">Premium (Ksh {packageDetails.premium.price.toLocaleString()})</FormLabel></FormItem>
+                      </RadioGroup>
                     </FormControl><FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full" disabled={isLoading || isLoadingPackages}>
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating Account..." : "Create Account & Proceed"}
                 </Button>
               </form>

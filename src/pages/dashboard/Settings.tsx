@@ -11,10 +11,6 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import PaymentDialog from "@/components/payments/PaymentDialog";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
-import { SellerPackage } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const passwordSchema = z.object({
   current_password: z.string().min(1, { message: "Current password is required." }),
@@ -25,19 +21,15 @@ const passwordSchema = z.object({
   path: ["confirm_password"],
 });
 
-const fetchPackages = async (): Promise<SellerPackage[]> => {
-  const { data } = await api.get('/packages');
-  return data.data;
+const packageDetails = {
+  basic: { name: "Basic", price: 1000.00 },
+  standard: { name: "Standard", price: 1500.00 },
+  premium: { name: "Premium", price: 2500.00 },
 };
 
 const Settings = () => {
   const { user } = useAuth();
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-
-  const { data: packages, isLoading: isLoadingPackages } = useQuery<SellerPackage[]>({
-    queryKey: ['packages'],
-    queryFn: fetchPackages,
-  });
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
@@ -51,14 +43,14 @@ const Settings = () => {
   }
 
   const currentPackageName = user?.seller_package || 'basic';
-  const currentPackage = packages?.find(p => p.name === currentPackageName);
+  const currentPackage = packageDetails[currentPackageName];
   
   const packageOrder: Array<'basic' | 'standard' | 'premium'> = ['basic', 'standard', 'premium'];
   const currentPackageIndex = packageOrder.indexOf(currentPackageName);
   const nextPackageName = currentPackageIndex < 2 ? packageOrder[currentPackageIndex + 1] : null;
-  const nextPackage = packages?.find(p => p.name === nextPackageName);
+  const nextPackage = nextPackageName ? packageDetails[nextPackageName] : null;
 
-  const upgradePrice = nextPackage ? parseFloat(nextPackage.price) : 0;
+  const upgradePrice = nextPackage ? nextPackage.price : 0;
 
   return (
     <>
@@ -70,21 +62,13 @@ const Settings = () => {
               <CardDescription>Manage your seller package.</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingPackages ? (
-                <Skeleton className="h-6 w-1/2" />
-              ) : (
-                <p>You are currently on the <span className="font-bold text-primary capitalize">{currentPackage?.name}</span> package.</p>
-              )}
+              <p>You are currently on the <span className="font-bold text-primary capitalize">{currentPackage?.name}</span> package.</p>
             </CardContent>
-            {currentPackageName !== 'premium' && (
+            {currentPackageName !== 'premium' && nextPackage && (
               <CardFooter>
-                {isLoadingPackages ? (
-                  <Skeleton className="h-10 w-48" />
-                ) : nextPackage ? (
-                  <Button onClick={() => setIsPaymentDialogOpen(true)}>
-                    Upgrade to {nextPackage.name} (Ksh {upgradePrice.toLocaleString()})
-                  </Button>
-                ) : null}
+                <Button onClick={() => setIsPaymentDialogOpen(true)}>
+                  Upgrade to {nextPackage.name} (Ksh {upgradePrice.toLocaleString()})
+                </Button>
               </CardFooter>
             )}
           </Card>
@@ -155,7 +139,7 @@ const Settings = () => {
           onOpenChange={setIsPaymentDialogOpen}
           amount={upgradePrice}
           paymentType="package_upgrade"
-          packageType={nextPackage.name}
+          packageType={nextPackage.name as 'standard' | 'premium'}
           onPaymentSuccess={() => setIsPaymentDialogOpen(false)}
         />
       )}
