@@ -19,7 +19,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login');
   }
 
   const handleDashboardClick = () => {

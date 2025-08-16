@@ -37,8 +37,8 @@ const RegisterSeller = () => {
     setIsLoading(true);
     try {
       await register({ ...values, user_type: 'seller' });
-      showSuccess("Registration successful! Please check your email to verify your account.");
-      navigate("/dashboard"); // Or to a verify-email page as per API guide
+      showSuccess("Registration successful!");
+      navigate("/verify-email", { state: { email: values.email } });
     } catch (error: any) {
       if (error.response?.status === 422) {
         const apiErrors = error.response.data.errors;

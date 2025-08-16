@@ -48,9 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (data: any): Promise<AuthResponse> => {
     await fetchCsrfToken();
     const response = await api.post('/register', data);
-    const { access_token, user } = response.data;
-    localStorage.setItem('authToken', access_token);
-    setUser(user);
+    // Don't set user or token on register, wait for email verification
     return response.data;
   };
 
@@ -65,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('authToken');
       setUser(null);
       dismissToast(toastId);
+      // Redirect is handled in the Header component to have access to navigate
     }
   };
 
