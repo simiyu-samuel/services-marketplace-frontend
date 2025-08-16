@@ -3,14 +3,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { mockServices } from "@/data/mock";
 import { useAuth } from "@/contexts/AuthContext";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { showError } from "@/utils/toast";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { Service } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Assuming an authenticated seller request to /services returns only their services
+const fetchMyServices = async () => {
+  const { data } = await api.get('/services');
+  return data.data; // Assuming paginated response
+};
 
 const MyServices = () => {
   const { user } = useAuth();
-  const sellerServices = mockServices.filter(s => s.seller.id === user?.id);
+  const { data: sellerServices, isLoading } = useQuery<Service[]>({
+    queryKey: ['my-services'],
+    queryFn: fetchMyServices,
+    enabled: user?.user_type === 'seller',
+  });
 
   if (user?.user_type !== 'seller') {
     return (
@@ -38,7 +51,12 @@ const MyServices = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        {sellerServices.length > 0 ? (
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : sellerServices && sellerServices.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>

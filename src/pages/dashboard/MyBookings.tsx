@@ -2,24 +2,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { mockBookings } from "@/data/mock";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { Booking } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const fetchBookings = async () => {
+  const { data } = await api.get('/appointments');
+  return data.data; // Assuming paginated response
+};
 
 const MyBookings = () => {
   const { user } = useAuth();
-
-  const userBookings = mockBookings.filter(booking => {
-    if (user?.user_type === 'customer') {
-      return booking.customer.id === user.id;
-    }
-    if (user?.user_type === 'seller') {
-      return booking.seller.id === user.id;
-    }
-    return false;
+  const { data: userBookings, isLoading } = useQuery<Booking[]>({
+    queryKey: ['bookings'],
+    queryFn: fetchBookings,
+    enabled: !!user,
   });
 
-  const upcomingBookings = userBookings.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending'));
-  const pastBookings = userBookings.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled');
+  const upcomingBookings = userBookings?.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending')) || [];
+  const pastBookings = userBookings?.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled') || [];
 
   const getStatusVariant = (status: 'confirmed' | 'pending' | 'completed' | 'cancelled') => {
     switch (status) {
@@ -30,7 +33,16 @@ const MyBookings = () => {
     }
   };
 
-  const renderTable = (bookings: typeof mockBookings, emptyMessage: string) => {
+  const renderTable = (bookings: Booking[], emptyMessage: string) => {
+    if (isLoading) {
+      return (
+        <div className="space-y-2 mt-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      );
+    }
     if (bookings.length === 0) {
       return <p className="text-center text-muted-foreground py-8">{emptyMessage}</p>;
     }

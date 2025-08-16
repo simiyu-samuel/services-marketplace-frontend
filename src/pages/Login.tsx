@@ -38,8 +38,18 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
-      showError(errorMessage);
+      if (error.response?.status === 422) {
+        const apiErrors = error.response.data.errors;
+        Object.keys(apiErrors).forEach((field) => {
+          form.setError(field as keyof z.infer<typeof formSchema>, {
+            type: "server",
+            message: apiErrors[field][0],
+          });
+        });
+      } else {
+        const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
+        showError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -16,7 +16,7 @@ const profileSchema = z.object({
 });
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUserProfile } = useAuth();
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -37,15 +37,20 @@ const Profile = () => {
 
   async function onSubmit(values: z.infer<typeof profileSchema>) {
     try {
-      // Mock API call
-      console.log("Updating profile with:", values);
-      // await api.put('/user/profile', values);
-
-      // Update user in context to reflect changes immediately
-      updateUser(values);
+      await updateUserProfile(values);
       showSuccess("Profile updated successfully!");
-    } catch (error) {
-      showError("Failed to update profile. Please try again.");
+    } catch (error: any) {
+       if (error.response?.status === 422) {
+        const apiErrors = error.response.data.errors;
+        Object.keys(apiErrors).forEach((field) => {
+          form.setError(field as keyof z.infer<typeof profileSchema>, {
+            type: "server",
+            message: apiErrors[field][0],
+          });
+        });
+      } else {
+        showError("Failed to update profile. Please try again.");
+      }
     }
   }
 

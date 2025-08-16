@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // The backend API is proxied under /api
+  baseURL: 'http://localhost:8000/api', // Using the local backend URL from the guide
   headers: {
     'Accept': 'application/json',
   },
-  withCredentials: true, // Important for Laravel Sanctum
+  withCredentials: true, // Important for Laravel Sanctum to handle cookies
 });
 
 // Interceptor to add the auth token from localStorage to every request
@@ -17,13 +17,10 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// We also need to fetch a CSRF cookie from Sanctum
+// We need to fetch a CSRF cookie from Sanctum before making state-changing requests
 export const fetchCsrfToken = () => {
-    // This endpoint is often /sanctum/csrf-cookie in Laravel
-    // We'll assume it's configured to be accessible
-    return axios.get('/sanctum/csrf-cookie', {
-        baseURL: '/', // Use the root domain for this specific call
-    });
+    // This endpoint is the standard for Sanctum SPA authentication
+    return axios.get('http://localhost:8000/sanctum/csrf-cookie');
 };
 
 export default api;

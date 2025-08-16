@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceFilters from "@/components/services/ServiceFilters";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
-import { mockServices } from "@/data/mock";
 import { Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SearchX } from "lucide-react";
@@ -23,10 +24,26 @@ const initialFilters: Filters = {
   sortBy: 'recommended',
 };
 
+const fetchServices = async (filters: Filters) => {
+  // The API guide doesn't specify how categories are sent, assuming comma-separated string
+  const params = {
+    search: filters.search || undefined,
+    category: filters.categories.join(',') || undefined,
+    max_price: filters.maxPrice < 20000 ? filters.maxPrice : undefined,
+    is_mobile: filters.isMobile ? 1 : undefined,
+    // sortBy is not in the API guide, so client-side sorting will be used for now
+  };
+  const { data } = await api.get('/services', { params });
+  return data.data; // Assuming paginated response
+};
+
 const Services = () => {
   const [filters, setFilters] = useState<Filters>(initialFilters);
-  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const { data: services, isLoading, isError } = useQuery<Service[]>({
+    queryKey: ['services', filters],
+    queryFn: () => fetchServices(filters),
+  });
 
   const handleFilterChange = (key: keyof Filters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -36,53 +53,19 @@ const Services = () => {
     setFilters(initialFilters);
   };
 
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      let services = [...mockServices];
-
-      // Apply search filter
-      if (filters.search) {
-        services = services.filter(s => 
-          s.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-          s.description.toLowerCase().includes(filters.search.toLowerCase())
-        );
-      }
-
-      // Apply category filter
-      if (filters.categories.length > 0) {
-        services = services.filter(s => filters.categories.includes(s.category));
-      }
-
-      // Apply price filter
-      services = services.filter(s => s.price <= filters.maxPrice);
-
-      // Apply mobile service filter
-      if (filters.isMobile) {
-        services = services.filter(s => s.is_mobile);
-      }
-
-      // Apply sorting
-      switch (filters.sortBy) {
-        case 'rating':
-          services.sort((a, b) => b.rating - a.rating);
-          break;
-        case 'price-asc':
-          services.sort((a, b) => a.price - b.price);
-          break;
-        case 'price-desc':
-          services.sort((a, b) => b.price - a.price);
-          break;
-        default: // recommended (default order)
-          break;
-      }
-
-      setFilteredServices(services);
-      setIsLoading(false);
-    }, 300); // Simulate network delay for a better UX
-
-    return () => clearTimeout(timer);
-  }, [filters]);
+  // Client-side sorting as it's not in the API guide
+  const sortedServices = services ? [...services].sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'rating':
+        return b.rating - a.rating;
+      case 'price-asc':
+        return a.price - b.price;
+      case 'price-desc':
+        return b.price - a.price;
+      default:
+        return 0;
+    }
+  }) : [];
 
   return (
     <div className="container py-8">
@@ -102,8 +85,12 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, index) => <ServiceCardSkeleton key={index} />)
-            ) : filteredServices.length > 0 ? (
-              filteredServices.map(service => (
+            ) : isError ? (
+              <div className="col-span-full text-center py-16 text-destructive">
+                <p>Failed to load services. Please try again later.</p>
+              </div>
+            ) : sortedServices.length > 0 ? (
+              sortedServices.map(service => (
                 <ServiceCard key={service.id} service={service} />
               ))
             ) : (

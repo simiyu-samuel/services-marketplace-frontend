@@ -36,10 +36,20 @@ const RegisterCustomer = () => {
     try {
       await register({ ...values, user_type: 'customer' });
       showSuccess("Registration successful! Please check your email to verify your account.");
-      navigate("/dashboard");
+      navigate("/dashboard"); // Or to a verify-email page as per API guide
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
-      showError(errorMessage);
+      if (error.response?.status === 422) {
+        const apiErrors = error.response.data.errors;
+        Object.keys(apiErrors).forEach((field) => {
+          form.setError(field as keyof z.infer<typeof formSchema>, {
+            type: "server",
+            message: apiErrors[field][0],
+          });
+        });
+      } else {
+        const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
+        showError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
