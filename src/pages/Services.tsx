@@ -28,16 +28,27 @@ const initialFilters: Filters = {
 };
 
 const fetchServices = async (filters: Filters, page: number) => {
-  const priceFilterChanged = filters.priceRange[0] > 0 || filters.priceRange[1] < 20000;
-
-  const params = {
+  const params: any = {
     page,
-    'filter[name]': filters.search || undefined,
-    'filter[location]': filters.location || undefined,
-    'filter[category_name]': filters.categories.join(',') || undefined,
-    'filter[price_between]': priceFilterChanged ? `${filters.priceRange[0]},${filters.priceRange[1]}` : undefined,
-    'filter[is_mobile]': filters.isMobile ? 1 : undefined,
+    search: filters.search,
+    location: filters.location,
+    category: filters.categories.join(','),
+    is_mobile: filters.isMobile ? 1 : undefined,
   };
+
+  if (filters.priceRange[0] > 0) {
+    params.min_price = filters.priceRange[0];
+  }
+  if (filters.priceRange[1] < 20000) {
+    params.max_price = filters.priceRange[1];
+  }
+
+  // Clean up empty/falsy params to keep the URL clean
+  Object.keys(params).forEach(key => {
+    if (!params[key]) {
+      delete params[key];
+    }
+  });
   
   const { data } = await api.get('/services', { params });
   return data as PaginatedResponse<Service>;

@@ -4,8 +4,10 @@ import api from "@/lib/api";
 import ServiceForm, { ServiceFormValues } from "@/components/services/ServiceForm";
 import { showSuccess, showError } from "@/utils/toast";
 
-const createService = async (data: ServiceFormValues) => {
-  const { data: response } = await api.post('/services', data);
+const createService = async (data: FormData) => {
+  const { data: response } = await api.post('/services', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 };
 
@@ -27,7 +29,20 @@ const CreateService = () => {
   });
 
   const handleFormSubmit = (values: ServiceFormValues) => {
-    mutation.mutate(values);
+    const formData = new FormData();
+    
+    (Object.keys(values) as Array<keyof ServiceFormValues>).forEach(key => {
+        const value = values[key];
+        if (key === 'media_files' && value instanceof FileList) {
+            for (let i = 0; i < value.length; i++) {
+                formData.append('media_files[]', value[i]);
+            }
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+        }
+    });
+
+    mutation.mutate(formData);
   };
 
   return (

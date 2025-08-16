@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Service } from "@/types";
+import { useState } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
@@ -19,6 +20,7 @@ const formSchema = z.object({
   duration: z.coerce.number().int().min(5, "Duration must be at least 5 minutes").max(1440, "Duration cannot exceed 24 hours"),
   location: z.string().min(1, "Location is required").max(255),
   is_mobile: z.boolean().default(false),
+  media_files: z.instanceof(FileList).optional(),
 });
 
 export type ServiceFormValues = z.infer<typeof formSchema>;
@@ -33,6 +35,8 @@ interface ServiceFormProps {
 }
 
 const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Save Service" }: ServiceFormProps) => {
+  const [previews, setPreviews] = useState<string[]>([]);
+  
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,6 +50,17 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
       is_mobile: initialData?.is_mobile || false,
     },
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (files: FileList | null) => void) => {
+    const files = e.target.files;
+    fieldChange(files);
+    if (files) {
+        const newPreviews = Array.from(files).map(file => URL.createObjectURL(file));
+        setPreviews(newPreviews);
+    } else {
+        setPreviews([]);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -77,6 +92,24 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
             <FormField control={form.control} name="location" render={({ field }) => (
               <FormItem className="md:col-span-2"><FormLabel>Location</FormLabel><FormControl><Input placeholder="e.g., Westlands, Nairobi" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+            {!initialData && (
+              <FormField control={form.control} name="media_files" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Service Media (Images/Videos)</FormLabel>
+                  <FormControl>
+                    <Input type="file" multiple accept="image/*,video/*" onChange={(e) => handleFileChange(e, field.onChange)} />
+                  </FormControl>
+                  <FormMessage />
+                  {previews.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-2">
+                      {previews.map((src, index) => (
+                        <img key={index} src={src} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                      ))}
+                    </div>
+                  )}
+                </FormItem>
+              )} />
+            )}
             <FormField control={form.control} name="is_mobile" render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2"><div className="space-y-0.5"><FormLabel>Mobile Service</FormLabel><p className="text-sm text-muted-foreground">Do you offer this service at the client's location?</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
             )} />

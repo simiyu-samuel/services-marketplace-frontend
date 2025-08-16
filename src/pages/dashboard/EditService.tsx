@@ -5,6 +5,7 @@ import ServiceForm, { ServiceFormValues } from "@/components/services/ServiceFor
 import { showSuccess, showError } from "@/utils/toast";
 import { Service } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import ServiceMediaManager from "@/components/services/ServiceMediaManager";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
@@ -61,12 +62,15 @@ const EditService = () => {
   }
 
   return (
-    <ServiceForm 
-      onSubmit={handleFormSubmit} 
-      isLoading={mutation.isPending}
-      initialData={service}
-      submitButtonText="Update Service"
-    />
+    <div className="space-y-6">
+      <ServiceForm 
+        onSubmit={handleFormSubmit} 
+        isLoading={mutation.isPending}
+        initialData={service}
+        submitButtonText="Update Service"
+      />
+      <ServiceMediaManager service={service} />
+    </div>
   );
 };
 
