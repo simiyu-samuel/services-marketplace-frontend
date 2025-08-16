@@ -1,19 +1,64 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
-import { Menu, LogOut, LayoutDashboard, User as UserIcon, X } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, User as UserIcon, X, Sparkles, Scissors, Shirt } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/services", label: "Services" },
   { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
 ];
+
+const categories = [
+  {
+    title: "Beauty Services",
+    icon: Sparkles,
+    subcategories: ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
+  },
+  {
+    title: "Hair Services",
+    icon: Scissors,
+    subcategories: ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
+  },
+  {
+    title: "Fashion Services",
+    icon: Shirt,
+    subcategories: ["African Wear", "Maasai Wear", "Crotchet/Wear"],
+  },
+];
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -48,14 +93,36 @@ const Header = () => {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-primary ${
-                  isActive ? "text-primary bg-muted" : "text-muted-foreground"
-                }`
+                cn(navigationMenuTriggerStyle(), "bg-transparent",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )
               }
             >
               {link.label}
             </NavLink>
           ))}
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="grid w-[600px] grid-cols-3 gap-3 p-4">
+                    {categories.map((category) => (
+                      <div key={category.title} className="flex flex-col space-y-2">
+                        <div className="flex items-center gap-2 px-3">
+                          <category.icon className="h-5 w-5 text-primary" />
+                          <h3 className="font-semibold text-sm">{category.title}</h3>
+                        </div>
+                        {category.subcategories.map((item) => (
+                          <ListItem key={item} href="/services" title={item} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
         </nav>
 
         <div className="flex-1" />
@@ -129,7 +196,7 @@ const Header = () => {
                 </div>
                 <Separator className="my-4" />
                 <nav className="flex-grow grid gap-4 text-lg font-medium">
-                  {navLinks.map((link) => (
+                  {[...navLinks, { to: "/services", label: "Services" }].map((link) => (
                     <NavLink
                       key={link.to}
                       to={link.to}
