@@ -1,19 +1,49 @@
 import { useParams } from "react-router-dom";
-import { mockServices, mockReviews } from "@/data/mock";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { Service } from "@/types";
+import { mockReviews } from "@/data/mock"; // Reviews still from mock as per API guide
 import NotFound from "./NotFound";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceCard from "@/components/services/ServiceCard";
 import ReviewCard from "@/components/sellers/ReviewCard";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, MessageSquare } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
+
+const fetchAllServices = async () => {
+  const { data } = await api.get('/services');
+  return data.data as Service[];
+};
 
 const SellerProfile = () => {
   const { id } = useParams();
   const sellerId = Number(id);
 
-  const sellerServices = mockServices.filter(s => s.seller.id === sellerId);
-  const sellerReviews = mockReviews.filter(r => r.sellerId === sellerId);
+  const { data: allServices, isLoading } = useQuery<Service[]>({
+    queryKey: ['services'],
+    queryFn: fetchAllServices,
+  });
+
+  const sellerServices = allServices?.filter(s => s.seller.id === sellerId) || [];
   const seller = sellerServices.length > 0 ? sellerServices[0].seller : null;
+  
+  // Reviews are still mocked as there's no public endpoint for them in the guide
+  const sellerReviews = mockReviews.filter(r => r.sellerId === sellerId);
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ServiceCardSkeleton />
+            <ServiceCardSkeleton />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!seller) {
     return <NotFound />;

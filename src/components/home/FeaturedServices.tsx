@@ -1,11 +1,22 @@
-import { mockServices } from "@/data/mock";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { Service } from "@/types";
 import ServiceCard from "@/components/services/ServiceCard";
+import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const fetchFeaturedServices = async () => {
+  const { data } = await api.get('/services', { params: { limit: 3 } });
+  return data.data;
+};
+
 const FeaturedServices = () => {
-  const featured = mockServices.slice(0, 3);
+  const { data: featured, isLoading } = useQuery<Service[]>({
+    queryKey: ['featured-services'],
+    queryFn: fetchFeaturedServices,
+  });
 
   return (
     <section className="py-16">
@@ -17,9 +28,13 @@ const FeaturedServices = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featured.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+          ) : (
+            featured?.map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))
+          )}
         </div>
         <div className="text-center mt-12">
           <Button size="lg" asChild>
