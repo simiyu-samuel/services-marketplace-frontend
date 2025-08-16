@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,21 +6,27 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Booking } from "@/types";
+import { Booking, PaginatedResponse } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
-const fetchBookings = async () => {
-  const { data } = await api.get('/appointments');
-  return data.data; // Assuming paginated response
+const fetchBookings = async (page: number) => {
+  const { data } = await api.get('/appointments', { params: { page } });
+  return data as PaginatedResponse<Booking>;
 };
 
 const MyBookings = () => {
   const { user } = useAuth();
-  const { data: userBookings, isLoading } = useQuery<Booking[]>({
-    queryKey: ['bookings'],
-    queryFn: fetchBookings,
+  const [page, setPage] = useState(1);
+  const { data: response, isLoading } = useQuery<PaginatedResponse<Booking>>({
+    queryKey: ['bookings', page],
+    queryFn: () => fetchBookings(page),
     enabled: !!user,
+    keepPreviousData: true,
   });
+
+  const userBookings = response?.data || [];
+  const meta = response?.meta;
 
   const upcomingBookings = userBookings?.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending')) || [];
   const pastBookings = userBookings?.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled') || [];
@@ -34,7 +41,7 @@ const MyBookings = () => {
   };
 
   const renderTable = (bookings: Booking[], emptyMessage: string) => {
-    if (isLoading) {
+    if (isLoading && !response) { // Show skeleton only on initial load
       return (
         <div className="space-y-2 mt-4">
           <Skeleton className="h-10 w-full" />
@@ -91,6 +98,33 @@ const MyBookings = () => {
             {renderTable(pastBookings, "You have no past bookings.")}
           </TabsContent>
         </Tabs>
+        {meta && meta.last_page > 1 && (
+          <div className="mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
+                    className={meta.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink>
+                    Page {meta.current_page} of {meta.last_page}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setPage(p => Math.min(meta.last_page, p + 1)); }}
+                    className={meta.current_page === meta.last_page ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Service } from "@/types";
+import { PaginatedResponse, Service } from "@/types";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,8 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const fetchFeaturedServices = async () => {
-  const { data } = await api.get('/services', { params: { limit: 3 } });
-  return data.data;
+  const { data } = await api.get('/services', { params: { per_page: 3 } });
+  return (data as PaginatedResponse<Service>).data;
 };
 
 const FeaturedServices = () => {

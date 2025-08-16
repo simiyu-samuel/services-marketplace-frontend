@@ -8,21 +8,22 @@ import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { showError } from "@/utils/toast";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Service } from "@/types";
+import { PaginatedResponse, Service } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Assuming an authenticated seller request to /services returns only their services
-const fetchMyServices = async () => {
-  const { data } = await api.get('/services');
-  return data.data; // Assuming paginated response
+const fetchMyServices = async (sellerId: number) => {
+  const { data } = await api.get('/services', { 
+    params: { 'filter[seller_id]': sellerId } 
+  });
+  return (data as PaginatedResponse<Service>).data;
 };
 
 const MyServices = () => {
   const { user } = useAuth();
   const { data: sellerServices, isLoading } = useQuery<Service[]>({
-    queryKey: ['my-services'],
-    queryFn: fetchMyServices,
-    enabled: user?.user_type === 'seller',
+    queryKey: ['my-services', user?.id],
+    queryFn: () => fetchMyServices(user!.id),
+    enabled: user?.user_type === 'seller' && !!user?.id,
   });
 
   if (user?.user_type !== 'seller') {

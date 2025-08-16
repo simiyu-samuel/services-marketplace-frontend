@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Service } from "@/types";
+import { PaginatedResponse, Service } from "@/types";
 import { mockReviews } from "@/data/mock"; // Reviews still from mock as per API guide
 import NotFound from "./NotFound";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,22 +12,24 @@ import { Star, MapPin, MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 
-const fetchAllServices = async () => {
-  const { data } = await api.get('/services');
-  return data.data as Service[];
+const fetchSellerServices = async (sellerId: number) => {
+  const { data } = await api.get('/services', { 
+    params: { 'filter[seller_id]': sellerId } 
+  });
+  return (data as PaginatedResponse<Service>).data;
 };
 
 const SellerProfile = () => {
   const { id } = useParams();
   const sellerId = Number(id);
 
-  const { data: allServices, isLoading } = useQuery<Service[]>({
-    queryKey: ['services'],
-    queryFn: fetchAllServices,
+  const { data: sellerServices, isLoading } = useQuery<Service[]>({
+    queryKey: ['services', sellerId],
+    queryFn: () => fetchSellerServices(sellerId),
+    enabled: !!sellerId,
   });
 
-  const sellerServices = allServices?.filter(s => s.seller.id === sellerId) || [];
-  const seller = sellerServices.length > 0 ? sellerServices[0].seller : null;
+  const seller = sellerServices && sellerServices.length > 0 ? sellerServices[0].seller : null;
   
   // Reviews are still mocked as there's no public endpoint for them in the guide
   const sellerReviews = mockReviews.filter(r => r.sellerId === sellerId);
@@ -79,7 +81,7 @@ const SellerProfile = () => {
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 mr-1" />
-                  <span>{sellerServices[0].location}</span>
+                  <span>{sellerServices && sellerServices.length > 0 ? sellerServices[0].location : 'N/A'}</span>
                 </div>
               </div>
               <Button className="mt-4 gap-2" asChild>
@@ -96,7 +98,7 @@ const SellerProfile = () => {
           {/* Services Section */}
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold mb-6">Services</h2>
-            {sellerServices.length > 0 ? (
+            {sellerServices && sellerServices.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {sellerServices.map(service => (
                   <ServiceCard key={service.id} service={service} />
