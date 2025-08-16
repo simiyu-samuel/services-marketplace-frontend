@@ -154,3 +154,20 @@ export interface AdminDashboardData {
   stats: AdminDashboardStats;
   charts: AdminDashboardCharts;
 }
+
+// User Dashboard Types
+export interface SellerDashboardStats {
+  active_services_count: number;
+  pending_bookings_count: number;
+  total_earnings: string;
+  completed_bookings_count: number;
+}
+
+export interface CustomerDashboardStats {
+  upcoming_bookings_count: number;
+  reviews_to_write_count: number;
+  total_spent: string;
+  completed_bookings_count: number;
+}
+
+export type DashboardStats = SellerDashboardStats | CustomerDashboardStats;
