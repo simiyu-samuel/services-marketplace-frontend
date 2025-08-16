@@ -4,10 +4,11 @@ export interface User {
   email: string;
   phone_number: string;
   user_type: 'customer' | 'seller' | 'admin';
-  is_active: boolean;
+  is_active?: boolean;
   profile_image_url?: string;
   seller_package?: 'basic' | 'standard' | 'premium';
   package_expiry_date?: string;
+  email_verified_at?: string;
 }
 
 export interface AuthResponse {
