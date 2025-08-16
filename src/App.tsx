@@ -52,6 +52,8 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminPayments from "./pages/admin/Payments";
 import AdminContacts from "./pages/admin/Contacts";
 import AdminBlog from "./pages/admin/Blog";
+import CreateBlogPost from "./pages/admin/CreateBlogPost";
+import EditBlogPost from "./pages/admin/EditBlogPost";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +112,8 @@ const App = () => (
                 <Route path="payments" element={<AdminPayments />} />
                 <Route path="contacts" element={<AdminContacts />} />
                 <Route path="blog" element={<AdminBlog />} />
+                <Route path="blog/new" element={<CreateBlogPost />} />
+                <Route path="blog/edit/:slug" element={<EditBlogPost />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Route>
