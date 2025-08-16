@@ -19,8 +19,8 @@ const AdminLayout = () => {
       <aside className="hidden w-64 flex-col border-r bg-background sm:flex">
         <div className="border-b p-4">
           <NavLink to="/admin/dashboard" className="flex items-center gap-2 font-semibold">
-            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text">
-              Themabinti <span className="font-semibold text-muted-foreground/80">Admin</span>
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text bg-[length:200%_auto] animate-gradient-pan transition-transform duration-300 hover:scale-105 [text-shadow:2px_2px_0px_hsl(var(--secondary)/0.4)]">
+              Themabinti <span className="font-semibold text-muted-foreground/80 [text-shadow:none]">Admin</span>
             </span>
           </NavLink>
         </div>

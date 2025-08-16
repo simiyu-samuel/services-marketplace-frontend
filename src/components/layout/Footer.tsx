@@ -9,7 +9,7 @@ const Footer = () => {
       <div className="container py-12">
         <div className="grid lg:grid-cols-3 gap-12">
           <div className="lg:col-span-1">
-            <h3 className="font-extrabold text-3xl mb-2 tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text">
+            <h3 className="font-extrabold text-3xl mb-2 tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text bg-[length:200%_auto] animate-gradient-pan transition-transform duration-300 hover:scale-105 [text-shadow:2px_2px_0px_hsl(var(--secondary)/0.4)]">
               Themabinti
             </h3>
             <p className="text-muted-foreground text-sm mb-4">

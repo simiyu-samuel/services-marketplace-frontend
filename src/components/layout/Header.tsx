@@ -56,7 +56,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container relative flex h-16 items-center">
         <Link to="/" className="flex items-center space-x-2">
-          <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text">
+          <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text bg-[length:200%_auto] animate-gradient-pan transition-transform duration-300 hover:scale-105 [text-shadow:2px_2px_0px_hsl(var(--secondary)/0.4)]">
             Themabinti
           </span>
         </Link>
