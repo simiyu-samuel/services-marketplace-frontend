@@ -1,25 +1,29 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Calendar, Briefcase, User, Settings } from "lucide-react";
+import { LayoutDashboard, Calendar, Briefcase, User, Settings, CreditCard } from "lucide-react";
 
 const baseNavLinks = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/dashboard/bookings", label: "My Bookings", icon: Calendar },
-  { to: "/dashboard/profile", label: "Profile", icon: User },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 const sellerNavLinks = [
   { to: "/dashboard/services", label: "My Services", icon: Briefcase },
 ];
 
+const accountNavLinks = [
+  { to: "/dashboard/payments", label: "Payment History", icon: CreditCard },
+  { to: "/dashboard/profile", label: "Profile", icon: User },
+  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
 const DashboardLayout = () => {
   const { user } = useAuth();
 
   const navLinks = user?.user_type === 'seller' 
-    ? [...baseNavLinks.slice(0, 2), ...sellerNavLinks, ...baseNavLinks.slice(2)] 
-    : baseNavLinks;
+    ? [...baseNavLinks, ...sellerNavLinks, ...accountNavLinks] 
+    : [...baseNavLinks, ...accountNavLinks];
 
   return (
     <div className="container py-8">

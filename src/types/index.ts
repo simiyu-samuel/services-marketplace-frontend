@@ -79,6 +79,20 @@ export interface Review {
   customer: Pick<User, 'name' | 'profile_image'>;
 }
 
+export interface Payment {
+  id: number;
+  user_id: number;
+  amount: string;
+  phone_number: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  payment_type: 'seller_registration' | 'package_upgrade' | 'service_payment';
+  checkout_request_id: string;
+  mpesa_receipt_number?: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
 // Updated to match the new flat pagination structure from the API
 export interface PaginatedResponse<T> {
   data: T[];

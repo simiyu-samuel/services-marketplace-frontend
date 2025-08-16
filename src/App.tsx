@@ -41,6 +41,7 @@ import CreateService from "./pages/dashboard/CreateService";
 import EditService from "./pages/dashboard/EditService";
 import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
+import PaymentHistory from "./pages/dashboard/PaymentHistory";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -91,6 +92,7 @@ const App = () => (
                   <Route path="services/:id/edit" element={<EditService />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="settings" element={<Settings />} />
+                  <Route path="payments" element={<PaymentHistory />} />
                 </Route>
               </Route>
             </Route>
