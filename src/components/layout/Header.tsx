@@ -34,32 +34,6 @@ const categories = [
   },
 ];
 
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
-
 const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -80,54 +54,59 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Link to="/" className="mr-6 flex items-center space-x-2">
+      <div className="container relative flex h-16 items-center">
+        <Link to="/" className="flex items-center space-x-2">
           <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
             Themabinti
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                cn(navigationMenuTriggerStyle(), "bg-transparent",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="grid w-[600px] grid-cols-3 gap-3 p-4">
-                    {categories.map((category) => (
-                      <div key={category.title} className="flex flex-col space-y-2">
-                        <div className="flex items-center gap-2 px-3">
-                          <category.icon className="h-5 w-5 text-primary" />
-                          <h3 className="font-semibold text-sm">{category.title}</h3>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <nav className="hidden md:flex items-center">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {navLinks.map((link) => (
+                  <NavigationMenuItem key={link.to}>
+                    <NavLink to={link.to} className={({ isActive }) => cn(navigationMenuTriggerStyle(), "bg-transparent", isActive ? "text-primary" : "text-muted-foreground")}>
+                      {link.label}
+                    </NavLink>
+                  </NavigationMenuItem>
+                ))}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid grid-cols-3 gap-x-8 gap-y-4 p-6 w-[700px]">
+                      {categories.map((category) => (
+                        <div key={category.title} className="flex flex-col">
+                          <div className="mb-3 flex items-center gap-2">
+                            <category.icon className="h-5 w-5 text-primary" />
+                            <h3 className="font-semibold text-sm text-foreground">{category.title}</h3>
+                          </div>
+                          <ul className="space-y-2">
+                            {category.subcategories.map((item) => (
+                              <li key={item}>
+                                <NavigationMenuLink asChild>
+                                  <Link
+                                    to={`/services?category=${encodeURIComponent(item)}`}
+                                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
+                                  >
+                                    {item}
+                                  </Link>
+                                </NavigationMenuLink>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        {category.subcategories.map((item) => (
-                          <ListItem key={item} href="/services" title={item} />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </nav>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </nav>
+        </div>
 
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
