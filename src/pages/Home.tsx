@@ -1,5 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import FeaturedCategories from "@/components/home/FeaturedCategories";
+import FeaturedServices from "@/components/home/FeaturedServices";
+import HowItWorks from "@/components/home/HowItWorks";
+import RecentBlogPosts from "@/components/home/RecentBlogPosts";
 
 const Home = () => {
   return (
@@ -29,15 +33,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Other sections will go here */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Why Choose Us?</h2>
-          <p className="text-muted-foreground">
-            More content will be added here for other sections like featured services, testimonials, etc.
-          </p>
-        </div>
-      </section>
+      {/* New Sections */}
+      <FeaturedCategories />
+      <FeaturedServices />
+      <HowItWorks />
+      <RecentBlogPosts />
     </div>
   );
 };
