@@ -51,7 +51,11 @@ export interface BlogPost {
   content: string;
   featured_image_url: string;
   category: string;
-  author: Pick<User, 'name' | 'profile_image'>;
+  author: {
+    name: string;
+    profile_image?: string | null;
+    bio?: string;
+  };
   published_at: string;
   reading_time: number; // in minutes
   status?: 'draft' | 'published';
