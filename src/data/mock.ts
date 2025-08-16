@@ -1,4 +1,4 @@
-import { BlogPost, Review } from "@/types";
+import { BlogPost, Review, Contact } from "@/types";
 
 // Services, Bookings are now fetched from the API.
 // Reviews endpoint is missing from the guide, so mock data is kept for now.
@@ -68,4 +68,38 @@ export const mockReviews: Review[] = [
     created_at: "2024-07-15",
     customer: { name: "David O.", profile_image: "/placeholder.svg" },
   },
+];
+
+export const mockContacts: Contact[] = [
+  {
+    id: 1,
+    name: "Jane Doe",
+    email: "jane.doe@example.com",
+    subject: "Question about booking",
+    message: "Hello, I was wondering if it's possible to book a service for a group of 4 people. We are interested in the manicure service next Saturday. Thank you!",
+    status: 'unread',
+    created_at: "2024-07-28T10:00:00Z",
+    updated_at: "2024-07-28T10:00:00Z",
+  },
+  {
+    id: 2,
+    name: "John Smith",
+    email: "john.smith@example.com",
+    subject: "Partnership Inquiry",
+    message: "Hi Themabinti team, I represent a local beauty products supplier and I would love to discuss a potential partnership with your platform. Who would be the best person to talk to?",
+    status: 'read',
+    created_at: "2024-07-27T14:30:00Z",
+    updated_at: "2024-07-27T16:00:00Z",
+  },
+  {
+    id: 3,
+    name: "Emily White",
+    email: "emily.white@example.com",
+    subject: "Feedback on my last appointment",
+    message: "I just wanted to say I had a wonderful experience with one of your sellers, 'Nairobi Nails'. The service was exceptional and I will definitely be using your platform again.",
+    status: 'responded',
+    admin_response: "Thank you so much for your kind words, Emily! We're thrilled to hear you had a great experience and we've passed your feedback on to the seller.",
+    created_at: "2024-07-26T09:15:00Z",
+    updated_at: "2024-07-26T11:00:00Z",
+  }
 ];
