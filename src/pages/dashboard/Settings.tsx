@@ -15,10 +15,10 @@ import PaymentDialog from "@/components/payments/PaymentDialog";
 const passwordSchema = z.object({
   current_password: z.string().min(1, { message: "Current password is required." }),
   new_password: z.string().min(8, { message: "New password must be at least 8 characters." }),
-  confirm_password: z.string(),
-}).refine(data => data.new_password === data.confirm_password, {
+  new_password_confirmation: z.string(),
+}).refine(data => data.new_password === data.new_password_confirmation, {
   message: "New passwords do not match.",
-  path: ["confirm_password"],
+  path: ["new_password_confirmation"],
 });
 
 const packageDetails = {
@@ -28,18 +28,32 @@ const packageDetails = {
 };
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, changePassword } = useAuth();
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { current_password: "", new_password: "", confirm_password: "" },
+    defaultValues: { current_password: "", new_password: "", new_password_confirmation: "" },
   });
 
-  function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
-    console.log("Password change submitted:", values);
-    showSuccess("Password updated successfully!");
-    passwordForm.reset();
+  async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
+    try {
+      await changePassword(values);
+      showSuccess("Password updated successfully!");
+      passwordForm.reset();
+    } catch (error: any) {
+      if (error.response?.status === 422) {
+        const apiErrors = error.response.data.errors;
+        Object.keys(apiErrors).forEach((field) => {
+          passwordForm.setError(field as keyof z.infer<typeof passwordSchema>, {
+            type: "server",
+            message: apiErrors[field][0],
+          });
+        });
+      } else {
+        showError(error.response?.data?.message || "Failed to update password.");
+      }
+    }
   }
 
   const currentPackageName = user?.seller_package || 'basic';
@@ -88,12 +102,14 @@ const Settings = () => {
                 <FormField control={passwordForm.control} name="new_password" render={({ field }) => (
                   <FormItem><FormLabel>New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={passwordForm.control} name="confirm_password" render={({ field }) => (
+                <FormField control={passwordForm.control} name="new_password_confirmation" render={({ field }) => (
                   <FormItem><FormLabel>Confirm New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </CardContent>
               <CardFooter className="border-t px-6 py-4">
-                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Update Password</Button>
+                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
+                  {passwordForm.formState.isSubmitting ? "Updating..." : "Update Password"}
+                </Button>
               </CardFooter>
             </Card>
           </form>
