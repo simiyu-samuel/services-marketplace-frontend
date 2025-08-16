@@ -50,3 +50,12 @@ export interface BlogPost {
   published_at: string;
   reading_time: number; // in minutes
 }
+
+export interface Booking {
+  id: number;
+  service: Pick<Service, 'id' | 'title' | 'price'>;
+  customer: Pick<User, 'id' | 'name'>;
+  seller: Pick<User, 'id' | 'name'>;
+  booking_date: string;
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+}

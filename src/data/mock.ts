@@ -1,4 +1,4 @@
-import { Service, BlogPost } from "@/types";
+import { Service, BlogPost, Booking } from "@/types";
 
 export const mockServices: Service[] = [
   {
@@ -54,8 +54,8 @@ export const mockServices: Service[] = [
     review_count: 76,
     description: "Look absolutely breathtaking on your special day. Our comprehensive bridal package includes a pre-wedding consultation and trial, full-face makeup application on the wedding day using high-end, long-lasting products, and complimentary lash application.",
     seller: {
-      id: 103,
-      name: "Faces by Jane",
+      id: 101, // Changed to Glamour Nails for seller example
+      name: "Glamour Nails",
       profile_image_url: "/placeholder.svg",
     },
     media: [
@@ -123,4 +123,39 @@ export const mockBlogPosts: BlogPost[] = [
         published_at: "2024-07-05",
         reading_time: 6,
     }
+];
+
+export const mockBookings: Booking[] = [
+  {
+    id: 1,
+    service: { id: 1, title: "Luxury Manicure & Pedicure", price: 3500 },
+    customer: { id: 201, name: "Alice Johnson" },
+    seller: { id: 101, name: "Glamour Nails" },
+    booking_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
+    status: "confirmed",
+  },
+  {
+    id: 2,
+    service: { id: 3, title: "Bridal Makeup Package", price: 15000 },
+    customer: { id: 202, name: "Brenda Carol" },
+    seller: { id: 103, name: "Faces by Jane" },
+    booking_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days from now
+    status: "pending",
+  },
+  {
+    id: 3,
+    service: { id: 2, title: "Deep Tissue Massage", price: 5000 },
+    customer: { id: 201, name: "Alice Johnson" },
+    seller: { id: 102, name: "Serenity Spa" },
+    booking_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+    status: "completed",
+  },
+  {
+    id: 4,
+    service: { id: 4, title: "Professional Hair Braiding", price: 4000 },
+    customer: { id: 203, name: "Cynthia Davis" },
+    seller: { id: 104, name: "Knotless Queens" },
+    booking_date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 days ago
+    status: "cancelled",
+  },
 ];
