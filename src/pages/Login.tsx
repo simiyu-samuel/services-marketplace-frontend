@@ -56,7 +56,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-muted/40">
+    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md bg-background shadow-xl border">
         <CardHeader>
           <CardTitle className="text-2xl text-center font-bold bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
