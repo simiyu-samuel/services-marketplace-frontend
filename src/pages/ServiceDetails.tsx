@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, Star, MessageSquare } from "lucide-react";
 import NotFound from "./NotFound";
+import ServiceCard from "@/components/services/ServiceCard";
 
 const ServiceDetails = () => {
   const { id } = useParams();
@@ -15,6 +16,10 @@ const ServiceDetails = () => {
   if (!service) {
     return <NotFound />;
   }
+
+  const otherServices = mockServices.filter(
+    s => s.seller.id === service.seller.id && s.id !== service.id
+  );
 
   const whatsappNumber = service.seller.phone_number;
   const message = `Hello, I'm interested in booking the "${service.title}" service.`;
@@ -111,6 +116,17 @@ const ServiceDetails = () => {
           </div>
         </div>
       </div>
+
+      {otherServices.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">More from {service.seller.name}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {otherServices.map(otherService => (
+              <ServiceCard key={otherService.id} service={otherService} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

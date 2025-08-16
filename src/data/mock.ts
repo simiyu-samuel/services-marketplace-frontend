@@ -130,6 +130,27 @@ export const mockServices: Service[] = [
       { id: 9, url: "/placeholder.svg", type: "image" },
     ],
   },
+  {
+    id: 7,
+    title: "Hot Stone Massage",
+    category: "Wellness",
+    price: 6000,
+    duration: 75,
+    location: "Mombasa",
+    is_mobile: false,
+    rating: 4.9,
+    review_count: 62,
+    description: "Experience deep relaxation as smooth, heated stones are placed on key points of your body. The heat from the stones helps to relax muscles, improve circulation, and calm the nervous system.",
+    seller: {
+      id: 102,
+      name: "Serenity Spa",
+      profile_image_url: "/placeholder.svg",
+      phone_number: "254722345678",
+    },
+    media: [
+      { id: 10, url: "/placeholder.svg", type: "image" },
+    ],
+  },
 ];
 
 export const mockBlogPosts: BlogPost[] = [
