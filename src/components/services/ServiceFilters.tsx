@@ -5,10 +5,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Filters } from "@/pages/Services";
 
 const categories = ["Nails", "Wellness", "Makeup", "Hair", "Skincare"];
 
-const ServiceFilters = () => {
+interface ServiceFiltersProps {
+  filters: Filters;
+  onFilterChange: (key: keyof Filters, value: any) => void;
+}
+
+const ServiceFilters = ({ filters, onFilterChange }: ServiceFiltersProps) => {
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    const newCategories = checked
+      ? [...filters.categories, category]
+      : filters.categories.filter(c => c !== category);
+    onFilterChange('categories', newCategories);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -17,34 +30,52 @@ const ServiceFilters = () => {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="search">Search by keyword</Label>
-          <Input id="search" placeholder="e.g., Massage, Braids" />
+          <Input 
+            id="search" 
+            placeholder="e.g., Massage, Braids" 
+            value={filters.search}
+            onChange={(e) => onFilterChange('search', e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <Label>Category</Label>
           <div className="space-y-2">
             {categories.map(category => (
               <div key={category} className="flex items-center space-x-2">
-                <Checkbox id={`cat-${category}`} />
+                <Checkbox 
+                  id={`cat-${category}`} 
+                  checked={filters.categories.includes(category)}
+                  onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
+                />
                 <Label htmlFor={`cat-${category}`} className="font-normal">{category}</Label>
               </div>
             ))}
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Price Range</Label>
-          <Slider defaultValue={[5000]} max={20000} step={500} />
+          <Label>Price Range (Max: Ksh {filters.maxPrice.toLocaleString()})</Label>
+          <Slider 
+            value={[filters.maxPrice]} 
+            max={20000} 
+            step={500} 
+            onValueChange={(value) => onFilterChange('maxPrice', value[0])}
+          />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Ksh 0</span>
             <span>Ksh 20,000+</span>
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="mobile-service">Mobile Service</Label>
-          <Switch id="mobile-service" />
+          <Label htmlFor="mobile-service">Mobile Service Only</Label>
+          <Switch 
+            id="mobile-service" 
+            checked={filters.isMobile}
+            onCheckedChange={(checked) => onFilterChange('isMobile', checked)}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="sort">Sort by</Label>
-          <Select>
+          <Select value={filters.sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
             <SelectTrigger id="sort">
               <SelectValue placeholder="Recommended" />
             </SelectTrigger>
