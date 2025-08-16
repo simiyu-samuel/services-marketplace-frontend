@@ -29,16 +29,18 @@ export interface Service {
   title: string;
   description: string;
   category: string;
-  subcategory: string;
-  price: string; // Changed from number
-  duration: number; // in minutes
+  subcategory:string;
+  price: string;
+  duration: number;
   location: string;
   is_mobile: boolean;
-  media_files: string[]; // Changed from media: MediaFile[]
-  user: Pick<User, 'id' | 'name' | 'profile_image' | 'phone_number'>; // Changed from seller
-  rating?: number; // Made optional
-  review_count?: number; // Made optional
+  media_files: string[];
+  user: Pick<User, 'id' | 'name' | 'profile_image' | 'phone_number'>;
+  rating?: number;
+  review_count?: number;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface BlogPost {
