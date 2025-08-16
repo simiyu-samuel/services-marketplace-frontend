@@ -9,7 +9,7 @@ import ServiceMediaManager from "@/components/services/ServiceMediaManager";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
-  return data.data as Service;
+  return data as Service;
 };
 
 const updateService = async ({ id, data }: { id: string, data: ServiceFormValues }) => {
