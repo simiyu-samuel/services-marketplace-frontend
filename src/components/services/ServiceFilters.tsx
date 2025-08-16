@@ -9,7 +9,12 @@ import { Filters } from "@/pages/Services";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "../ui/button";
 
-const categories = ["Nails", "Wellness", "Makeup", "Hair", "Skincare"];
+const categories = [
+  "Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", 
+  "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub",
+  "Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", 
+  "Complete Hair Care", "African Wear", "Maasai Wear", "Crotchet/Wear"
+];
 
 interface ServiceFiltersProps {
   filters: Filters;
@@ -46,7 +51,7 @@ const ServiceFilters = ({ filters, onFilterChange, onClearFilters }: ServiceFilt
           <AccordionItem value="category">
             <AccordionTrigger className="text-base">Category</AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2 pt-2 h-64 overflow-y-auto">
                 {categories.map(category => (
                   <div key={category} className="flex items-center space-x-2">
                     <Checkbox 

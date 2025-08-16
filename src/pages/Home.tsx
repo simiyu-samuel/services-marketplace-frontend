@@ -1,17 +1,27 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Search, Calendar, Smile, Gem, HeartPulse, Paintbrush, Scissors, Sparkles } from "lucide-react";
+import { ArrowRight, Search, Calendar, Smile, Sparkles, Scissors, Shirt } from "lucide-react";
 import FeaturedServices from "@/components/home/FeaturedServices";
 import RecentBlogPosts from "@/components/home/RecentBlogPosts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import AnimatedWrapper from "@/components/ui/AnimatedWrapper";
 
-const categories = [
-  { name: "Nails", icon: Gem, href: "/services" },
-  { name: "Wellness", icon: HeartPulse, href: "/services" },
-  { name: "Makeup", icon: Paintbrush, href: "/services" },
-  { name: "Hair", icon: Scissors, href: "/services" },
-  { name: "Skincare", icon: Sparkles, href: "/services" },
+const serviceCategories = [
+  {
+    title: "Beauty Services",
+    icon: Sparkles,
+    items: ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
+  },
+  {
+    title: "Hair Services",
+    icon: Scissors,
+    items: ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
+  },
+  {
+    title: "Fashion Services",
+    icon: Shirt,
+    items: ["African Wear", "Maasai Wear", "Crotchet/Wear"],
+  },
 ];
 
 const steps = [
@@ -65,21 +75,16 @@ const Home = () => {
               </div>
             </AnimatedWrapper>
           </div>
-          <div className="relative h-64 lg:h-full min-h-[300px]">
+          <div className="relative h-64 lg:h-full min-h-[400px] flex items-center justify-center">
             <div className="absolute -top-10 -right-10 w-72 h-72 bg-primary/20 rounded-full filter blur-2xl opacity-70 animate-blob"></div>
             <div className="absolute top-20 -left-4 w-72 h-72 bg-secondary/20 rounded-full filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
             <div className="absolute bottom-0 right-20 w-72 h-72 bg-primary/10 rounded-full filter blur-2xl opacity-70 animate-blob animation-delay-4000"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Card className="w-64 h-80 rotate-6 transform transition-transform duration-500 hover:rotate-0 hover:scale-105 bg-background/50 backdrop-blur-md shadow-2xl">
-                <CardContent className="p-4 flex flex-col items-start justify-between h-full">
-                  <img src="/placeholder.svg" alt="Beauty Services" className="w-full h-40 object-cover rounded-md opacity-70" />
-                  <div className="w-full">
-                    <div className="h-4 bg-muted rounded-full w-3/4 mt-4"></div>
-                    <div className="h-3 bg-muted rounded-full w-1/2 mt-2"></div>
-                    <div className="h-8 bg-primary/20 rounded-md w-full mt-4"></div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="relative w-[350px] h-[450px] lg:w-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl transform rotate-3 transition-transform duration-500 hover:rotate-0 hover:scale-105">
+                <img 
+                    src="https://images.pexels.com/photos/3762875/pexels-photo-3762875.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                    alt="Woman receiving beauty treatment" 
+                    className="w-full h-full object-cover"
+                />
             </div>
           </div>
         </div>
@@ -95,20 +100,25 @@ const Home = () => {
                 Find the perfect service by browsing our most popular categories.
               </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-              {categories.map((category, index) => (
-                <AnimatedWrapper key={category.name} delay={index * 0.1}>
-                  <Link to={category.href}>
-                    <Card className="text-center p-6 transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-2 hover:border-primary bg-muted/50 group">
-                      <CardContent className="p-0 flex flex-col items-center justify-center gap-4">
-                        <div className="bg-background p-4 rounded-full transition-colors duration-300 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20">
-                          <category.icon className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
-                        </div>
-                        <span className="font-semibold text-lg">{category.name}</span>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </AnimatedWrapper>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {serviceCategories.map((category, index) => (
+                  <AnimatedWrapper key={category.title} delay={index * 0.1}>
+                      <Card className="p-6 transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-2 hover:border-primary bg-muted/50 h-full">
+                          <CardContent className="p-0 flex flex-col items-start">
+                              <div className="flex items-center gap-4 mb-4">
+                                  <div className="bg-background p-3 rounded-full">
+                                      <category.icon className="h-8 w-8 text-primary" />
+                                  </div>
+                                  <h3 className="font-bold text-xl">{category.title}</h3>
+                              </div>
+                              <ul className="space-y-2 list-disc list-inside text-muted-foreground">
+                                  {category.items.map(item => (
+                                      <li key={item}>{item}</li>
+                                  ))}
+                              </ul>
+                          </CardContent>
+                      </Card>
+                  </AnimatedWrapper>
               ))}
             </div>
           </AnimatedWrapper>
