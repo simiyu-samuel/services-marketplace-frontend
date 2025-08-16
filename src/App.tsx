@@ -35,6 +35,8 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import MyBookings from "./pages/dashboard/MyBookings";
 import MyServices from "./pages/dashboard/MyServices";
+import CreateService from "./pages/dashboard/CreateService";
+import EditService from "./pages/dashboard/EditService";
 import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
 
@@ -81,6 +83,8 @@ const App = () => (
                   <Route index element={<Dashboard />} />
                   <Route path="bookings" element={<MyBookings />} />
                   <Route path="services" element={<MyServices />} />
+                  <Route path="services/new" element={<CreateService />} />
+                  <Route path="services/:id/edit" element={<EditService />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
