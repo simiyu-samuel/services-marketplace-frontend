@@ -1,4 +1,4 @@
-import { Service, BlogPost, Booking } from "@/types";
+import { Service, BlogPost, Booking, Review } from "@/types";
 
 export const mockServices: Service[] = [
   {
@@ -224,5 +224,32 @@ export const mockBookings: Booking[] = [
     seller: { id: 104, name: "Knotless Queens" },
     booking_date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 days ago
     status: "cancelled",
+  },
+];
+
+export const mockReviews: Review[] = [
+  {
+    id: 1,
+    sellerId: 101,
+    rating: 5,
+    comment: "Absolutely amazing service! My nails have never looked better. The attention to detail was incredible. Will definitely be back!",
+    created_at: "2024-07-20",
+    customer: { name: "Alice J.", profile_image_url: "/placeholder.svg" },
+  },
+  {
+    id: 2,
+    sellerId: 101,
+    rating: 4,
+    comment: "Great experience, very professional and clean environment. My gel polish lasted for almost 3 weeks without chipping.",
+    created_at: "2024-07-18",
+    customer: { name: "Brenda C.", profile_image_url: "/placeholder.svg" },
+  },
+  {
+    id: 3,
+    sellerId: 102,
+    rating: 5,
+    comment: "The deep tissue massage was exactly what I needed. The therapist was very skilled and attentive to my problem areas. Felt like a new person afterwards.",
+    created_at: "2024-07-15",
+    customer: { name: "David O.", profile_image_url: "/placeholder.svg" },
   },
 ];

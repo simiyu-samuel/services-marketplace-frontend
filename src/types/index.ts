@@ -59,3 +59,12 @@ export interface Booking {
   booking_date: string;
   status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
 }
+
+export interface Review {
+  id: number;
+  sellerId: number;
+  rating: number;
+  comment: string;
+  created_at: string;
+  customer: Pick<User, 'name' | 'profile_image_url'>;
+}
