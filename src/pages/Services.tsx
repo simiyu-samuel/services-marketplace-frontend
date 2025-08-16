@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import api from "@/lib/api";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceFilters from "@/components/services/ServiceFilters";
@@ -58,6 +59,20 @@ const fetchServices = async (filters: Filters, page: number) => {
 const Services = () => {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
+
+  // This effect syncs the category from the URL to the filter state
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      const newCategories = categoryFromUrl.split(',');
+      // Check if the filter is already set to avoid unnecessary re-renders
+      if (JSON.stringify(filters.categories) !== JSON.stringify(newCategories)) {
+        setFilters({ ...initialFilters, categories: newCategories });
+        setPage(1);
+      }
+    }
+  }, [searchParams, filters.categories]);
   
   const { data: response, isLoading, isError } = useQuery<PaginatedResponse<Service>>({
     queryKey: ['services', filters, page],
