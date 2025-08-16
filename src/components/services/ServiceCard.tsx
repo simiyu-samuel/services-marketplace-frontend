@@ -16,51 +16,64 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
   const reviewCount = service.review_count ?? 0;
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg group">
-      <Carousel className="w-full">
-        <CarouselContent>
-          {service.media_files.map((mediaUrl, index) => (
-            <CarouselItem key={index}>
-              <div className="aspect-w-16 aspect-h-9 bg-muted">
-                {mediaUrl.endsWith('.mp4') ? (
-                  <video src={mediaUrl} className="object-cover w-full h-full" controls />
-                ) : (
-                  <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
-                )}
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        {service.media_files.length > 1 && (
-          <>
-            <CarouselPrevious className="absolute left-2 transition-opacity opacity-0 group-hover:opacity-100" />
-            <CarouselNext className="absolute right-2 transition-opacity opacity-0 group-hover:opacity-100" />
-          </>
-        )}
-      </Carousel>
-      <CardContent className="p-4">
-        <div className="flex items-center mb-2">
-          <Avatar className="h-6 w-6 mr-2">
-            <AvatarImage src={service.user.profile_image || undefined} />
-            <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium text-muted-foreground">{service.user.name}</span>
+    <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group border-transparent hover:border-primary">
+      <div className="relative">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (
+              <CarouselItem key={index}>
+                <div className="aspect-video bg-muted">
+                  {mediaUrl.endsWith('.mp4') ? (
+                    <video src={mediaUrl} className="object-cover w-full h-full" controls />
+                  ) : (
+                    <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
+                  )}
+                </div>
+              </CarouselItem>
+            )) : (
+              <CarouselItem>
+                <div className="aspect-video bg-muted flex items-center justify-center">
+                  <img src="/placeholder.svg" alt="Placeholder" className="w-1/2 h-1/2 opacity-50" />
+                </div>
+              </CarouselItem>
+            )}
+          </CarouselContent>
+          {service.media_files.length > 1 && (
+            <>
+              <CarouselPrevious className="absolute left-2 transition-opacity opacity-0 group-hover:opacity-100" />
+              <CarouselNext className="absolute right-2 transition-opacity opacity-0 group-hover:opacity-100" />
+            </>
+          )}
+        </Carousel>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
+      <CardContent className="p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={service.user.profile_image || undefined} />
+              <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium text-muted-foreground">{service.user.name}</span>
+          </div>
+          {service.is_mobile && <Badge variant="secondary">Mobile</Badge>}
         </div>
-        <h3 className="font-semibold text-lg truncate group-hover:text-primary">
+        <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
           <Link to={`/services/${service.id}`}>{service.title}</Link>
         </h3>
-        <div className="flex items-center text-sm text-muted-foreground mt-1">
-          <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
-          <span className="font-bold text-foreground mr-1">{rating.toFixed(1)}</span>
-          <span>({reviewCount} reviews)</span>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center text-muted-foreground">
+            <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
+            <span className="font-semibold text-foreground mr-1">{rating.toFixed(1)}</span>
+            <span>({reviewCount} reviews)</span>
+          </div>
+          <div className="flex items-center text-muted-foreground">
+            <MapPin className="h-4 w-4 mr-1" />
+            <span>{service.location}</span>
+          </div>
         </div>
-        <div className="flex items-center text-sm text-muted-foreground mt-2">
-          <MapPin className="h-4 w-4 mr-1" />
-          <span>{service.location}</span>
-          {service.is_mobile && <Badge variant="secondary" className="ml-2">Mobile</Badge>}
-        </div>
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xl font-bold text-primary">
+        <div className="flex items-end justify-between pt-2">
+          <p className="text-2xl font-extrabold text-primary">
             Ksh {parseFloat(service.price).toLocaleString()}
           </p>
           <Button asChild size="sm">

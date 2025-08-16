@@ -8,6 +8,7 @@ import { PaginatedResponse, Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SearchX } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import AnimatedWrapper from "@/components/ui/AnimatedWrapper";
 
 export interface Filters {
   search: string;
@@ -91,68 +92,78 @@ const Services = () => {
   }) : [];
 
   return (
-    <div className="container py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight">Find Your Next Experience</h1>
-        <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-2">
-          Browse through our curated list of premium beauty, health, and lifestyle services.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1">
-          <div className="sticky top-20">
-            <ServiceFilters filters={filters} onFilterChange={handleFilterChange} />
-          </div>
-        </aside>
-        <main className="lg:col-span-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {isLoading ? (
-              Array.from({ length: 6 }).map((_, index) => <ServiceCardSkeleton key={index} />)
-            ) : isError ? (
-              <div className="col-span-full text-center py-16 text-destructive">
-                <p>Failed to load services. Please try again later.</p>
-              </div>
-            ) : sortedServices.length > 0 ? (
-              sortedServices.map(service => (
-                <ServiceCard key={service.id} service={service} />
-              ))
-            ) : (
-              <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
-                <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-2xl font-semibold">No Services Found</h3>
-                <p className="text-muted-foreground mt-2 mb-4">Try adjusting your filters to find what you're looking for.</p>
-                <Button onClick={handleClearFilters}>Clear Filters</Button>
+    <div className="bg-muted/20">
+      <div className="container py-8">
+        <div className="text-center mb-12">
+          <AnimatedWrapper>
+            <h1 className="text-4xl font-extrabold tracking-tight">Find Your Next Experience</h1>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-2">
+              Browse through our curated list of premium beauty, health, and lifestyle services.
+            </p>
+          </AnimatedWrapper>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1">
+            <div className="sticky top-20">
+              <ServiceFilters 
+                filters={filters} 
+                onFilterChange={handleFilterChange} 
+                onClearFilters={handleClearFilters}
+              />
+            </div>
+          </aside>
+          <main className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+              ) : isError ? (
+                <div className="col-span-full text-center py-16 text-destructive">
+                  <p>Failed to load services. Please try again later.</p>
+                </div>
+              ) : sortedServices.length > 0 ? (
+                sortedServices.map((service, index) => (
+                  <AnimatedWrapper key={service.id} delay={index * 0.1}>
+                    <ServiceCard service={service} />
+                  </AnimatedWrapper>
+                ))
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-background rounded-lg">
+                  <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-2xl font-semibold">No Services Found</h3>
+                  <p className="text-muted-foreground mt-2 mb-4">Try adjusting your filters to find what you're looking for.</p>
+                  <Button onClick={handleClearFilters}>Clear Filters</Button>
+                </div>
+              )}
+            </div>
+            {response && response.last_page > 1 && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
+                        className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink>
+                        Page {response.current_page} of {response.last_page}
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext 
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }}
+                        className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
-          </div>
-          {response && response.last_page > 1 && (
-            <div className="mt-8">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      href="#"
-                      onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
-                      className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
-                    />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink>
-                      Page {response.current_page} of {response.last_page}
-                    </PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext 
-                      href="#"
-                      onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }}
-                      className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   );
