@@ -35,4 +35,18 @@ export interface Service {
   seller: Pick<User, 'id' | 'name' | 'profile_image_url'>;
   rating: number;
   review_count: number;
+  description: string;
+}
+
+export interface BlogPost {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  featured_image_url: string;
+  category: string;
+  author: Pick<User, 'name' | 'profile_image_url'>;
+  published_at: string;
+  reading_time: number; // in minutes
 }

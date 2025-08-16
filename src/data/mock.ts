@@ -1,4 +1,4 @@
-import { Service } from "@/types";
+import { Service, BlogPost } from "@/types";
 
 export const mockServices: Service[] = [
   {
@@ -11,6 +11,7 @@ export const mockServices: Service[] = [
     is_mobile: true,
     rating: 4.9,
     review_count: 128,
+    description: "Indulge in our premium manicure and pedicure service. Using top-tier products, our experts will leave your hands and feet feeling soft, refreshed, and beautifully polished. This service includes a soak, exfoliation, cuticle care, massage, and your choice of gel or regular polish.",
     seller: {
       id: 101,
       name: "Glamour Nails",
@@ -31,6 +32,7 @@ export const mockServices: Service[] = [
     is_mobile: false,
     rating: 4.8,
     review_count: 95,
+    description: "Release chronic muscle tension with our deep tissue massage. This therapeutic massage focuses on the deeper layers of muscle tissue, tendons, and fascia. Ideal for those with chronic pain, muscle soreness, or anyone needing to de-stress.",
     seller: {
       id: 102,
       name: "Serenity Spa",
@@ -50,6 +52,7 @@ export const mockServices: Service[] = [
     is_mobile: true,
     rating: 5.0,
     review_count: 76,
+    description: "Look absolutely breathtaking on your special day. Our comprehensive bridal package includes a pre-wedding consultation and trial, full-face makeup application on the wedding day using high-end, long-lasting products, and complimentary lash application.",
     seller: {
       id: 103,
       name: "Faces by Jane",
@@ -71,6 +74,7 @@ export const mockServices: Service[] = [
     is_mobile: false,
     rating: 4.7,
     review_count: 210,
+    description: "Get beautiful, long-lasting braids from our expert stylists. We specialize in a variety of styles including knotless braids, box braids, and cornrows. We use high-quality extensions and techniques that protect your natural hair.",
     seller: {
       id: 104,
       name: "Knotless Queens",
@@ -80,4 +84,43 @@ export const mockServices: Service[] = [
         { id: 7, url: "/placeholder.svg", type: "image" },
     ],
   },
+];
+
+export const mockBlogPosts: BlogPost[] = [
+    {
+        id: 1,
+        slug: "5-skincare-tips-for-glowing-skin",
+        title: "5 Skincare Tips for Glowing Skin in the Kenyan Climate",
+        excerpt: "The Kenyan sun is glorious, but it can be harsh on your skin. Learn how to adapt your skincare routine to protect and nourish your skin for a radiant glow all year round.",
+        content: "<p>Full blog content goes here...</p>",
+        featured_image_url: "/placeholder.svg",
+        category: "Skincare",
+        author: { name: "Aisha Wanjiru", profile_image_url: "/placeholder.svg" },
+        published_at: "2024-07-15",
+        reading_time: 5,
+    },
+    {
+        id: 2,
+        slug: "choosing-the-right-massage",
+        title: "Swedish vs. Deep Tissue: Choosing the Right Massage For You",
+        excerpt: "Feeling sore or stressed? A massage can be a lifesaver, but with so many options, which one is right for you? We break down the differences between two popular types.",
+        content: "<p>Full blog content goes here...</p>",
+        featured_image_url: "/placeholder.svg",
+        category: "Wellness",
+        author: { name: "David Otieno", profile_image_url: "/placeholder.svg" },
+        published_at: "2024-07-10",
+        reading_time: 4,
+    },
+    {
+        id: 3,
+        slug: "latest-nail-art-trends",
+        title: "The Hottest Nail Art Trends Taking Over Nairobi",
+        excerpt: "From chrome finishes to minimalist designs, Nairobi's nail scene is buzzing with creativity. Discover the top trends you need to try for your next manicure.",
+        content: "<p>Full blog content goes here...</p>",
+        featured_image_url: "/placeholder.svg",
+        category: "Nails",
+        author: { name: "Christine Moraa", profile_image_url: "/placeholder.svg" },
+        published_at: "2024-07-05",
+        reading_time: 6,
+    }
 ];
