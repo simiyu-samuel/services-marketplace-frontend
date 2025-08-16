@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar, Briefcase, Star, DollarSign, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -32,17 +32,59 @@ const StatCard = ({ title, value, icon: Icon, description, isLoading }: { title:
   </Card>
 );
 
-const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => (
-  <div>
-    <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <StatCard title="Upcoming Bookings" value={stats?.upcoming_bookings_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
-      <StatCard title="Reviews to Write" value={stats?.reviews_to_write_count ?? 0} icon={Star} description="Share your experience" isLoading={isLoading} />
-      <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
-      <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_spent ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
+const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => {
+  const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
+    queryKey: ['recentBookings'],
+    queryFn: fetchRecentBookings,
+  });
+
+  const upcomingBookings = bookingsResponse?.data.filter(b => ['pending', 'confirmed'].includes(b.status)) || [];
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard title="Upcoming Bookings" value={stats?.upcoming_bookings_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
+          <StatCard title="Reviews to Write" value={stats?.reviews_to_write_count ?? 0} icon={Star} description="Share your experience" isLoading={isLoading} />
+          <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
+          <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_spent ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Upcoming Appointments</CardTitle>
+          <CardDescription>Here are your next few scheduled appointments.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {bookingsLoading ? (
+            <div className="space-y-4"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div>
+          ) : upcomingBookings.length > 0 ? (
+            <div className="space-y-4">
+              {upcomingBookings.map((booking) => (
+                <div key={booking.id} className="flex items-center">
+                  <Avatar className="h-9 w-9"><AvatarImage src={booking.seller.profile_image || undefined} /><AvatarFallback>{booking.seller.name.charAt(0)}</AvatarFallback></Avatar>
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none">{booking.service.title}</p>
+                    <p className="text-sm text-muted-foreground">with {booking.seller.name}</p>
+                  </div>
+                  <div className="ml-auto font-medium">{new Date(booking.appointment_date).toLocaleDateString()}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">You have no upcoming appointments.</p>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button size="sm" variant="outline" className="w-full" asChild>
+            <Link to="/dashboard/bookings">View All Bookings</Link>
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
-  </div>
-);
+  );
+};
 
 const SellerDashboard = ({ stats, isLoading }: { stats?: SellerDashboardStats, isLoading: boolean }) => {
   const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
