@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const fetchDashboardStats = async () => {
   const { data } = await api.get('/dashboard');
-  return data;
+  return data.data; // Correctly unwrap the stats from the 'data' property
 };
 
 const StatCard = ({ title, value, icon: Icon, description, isLoading }: { title: string, value: string | number, icon: React.ElementType, description: string, isLoading: boolean }) => (
@@ -50,7 +50,7 @@ const SellerDashboard = ({ stats, isLoading }: { stats?: SellerDashboardStats, i
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const { data: stats, isLoading } = useQuery({
+    const { data: stats, isLoading, isError } = useQuery({
         queryKey: ['dashboardStats', user?.id],
         queryFn: fetchDashboardStats,
         enabled: !!user,
@@ -58,6 +58,22 @@ const Dashboard = () => {
 
     if (!user) {
         return <p>Loading...</p>;
+    }
+
+    if (isError) {
+        return (
+            <div>
+                <h1 className="text-3xl font-bold mb-6">Welcome back, {user.name}!</h1>
+                <Card className="border-destructive">
+                    <CardHeader>
+                        <CardTitle>Error</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>Could not load your dashboard statistics. Please try again later.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     return (
