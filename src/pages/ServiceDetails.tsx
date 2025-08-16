@@ -197,3 +197,6 @@ const ServiceDetails = () => {
       </div>
     </>
   );
+};
+
+export default ServiceDetails;
