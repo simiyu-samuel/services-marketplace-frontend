@@ -27,14 +27,16 @@ const initialFilters: Filters = {
 };
 
 const fetchServices = async (filters: Filters) => {
+  const priceFilterChanged = filters.priceRange[0] > 0 || filters.priceRange[1] < 20000;
+
   const params = {
-    search: filters.search || undefined,
-    location: filters.location || undefined,
-    category: filters.categories.join(',') || undefined,
-    min_price: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
-    max_price: filters.priceRange[1] < 20000 ? filters.priceRange[1] : undefined,
-    is_mobile: filters.isMobile ? 1 : undefined,
+    'filter[name]': filters.search || undefined,
+    'filter[location]': filters.location || undefined,
+    'filter[category_name]': filters.categories.join(',') || undefined,
+    'filter[price_between]': priceFilterChanged ? `${filters.priceRange[0]},${filters.priceRange[1]}` : undefined,
+    'filter[is_mobile]': filters.isMobile ? 1 : undefined,
   };
+  
   const { data } = await api.get('/services', { params });
   return data.data; // Assuming paginated response
 };
