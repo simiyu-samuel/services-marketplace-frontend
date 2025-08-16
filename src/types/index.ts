@@ -5,13 +5,16 @@ export interface User {
   phone_number: string;
   user_type: 'customer' | 'seller' | 'admin';
   is_active?: boolean;
-  profile_image?: string | null; // Changed from profile_image_url
+  profile_image?: string | null;
   profile_image_url?: string; // Keep for AuthContext compatibility for now
-  seller_package?: 'basic' | 'standard' | 'premium';
-  package_expiry_date?: string;
-  email_verified_at?: string;
-  location?: string;
-  bio?: string;
+  seller_package?: 'basic' | 'standard' | 'premium' | null;
+  package_expiry_date?: string | null;
+  email_verified_at?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  phone_verified_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AuthResponse {
