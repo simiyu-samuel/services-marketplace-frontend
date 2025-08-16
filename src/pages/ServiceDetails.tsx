@@ -14,7 +14,7 @@ import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
-  return data;
+  return data.data; // Assuming single service is wrapped in a 'data' object
 };
 
 const fetchServices = async () => {
@@ -57,13 +57,16 @@ const ServiceDetails = () => {
   }
 
   const otherServices = allServices?.filter(
-    s => s.seller.id === service.seller.id && s.id !== service.id
+    s => s.user.id === service.user.id && s.id !== service.id
   ) || [];
 
-  const whatsappNumber = service.seller.phone_number;
+  const whatsappNumber = service.user.phone_number;
   const message = `Hello, I'm interested in booking the "${service.title}" service.`;
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+  const rating = service.rating ?? 0;
+  const reviewCount = service.review_count ?? 0;
 
   return (
     <div className="container py-8">
@@ -74,8 +77,8 @@ const ServiceDetails = () => {
           <div className="flex items-center gap-4 text-muted-foreground mb-4">
             <div className="flex items-center">
               <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
-              <span className="font-bold text-foreground">{service.rating}</span>
-              <span className="ml-1">({service.review_count} reviews)</span>
+              <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
+              <span className="ml-1">({reviewCount} reviews)</span>
             </div>
             <div className="flex items-center">
               <MapPin className="h-5 w-5 mr-1" />
@@ -85,10 +88,14 @@ const ServiceDetails = () => {
 
           <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
             <CarouselContent>
-              {service.media && service.media.length > 0 ? service.media.map((m) => (
-                <CarouselItem key={m.id}>
+              {service.media_files && service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (
+                <CarouselItem key={index}>
                   <div className="aspect-w-16 aspect-h-9 bg-muted">
-                    <img src={m.url} alt={service.title} className="object-cover w-full h-full" />
+                    {mediaUrl.endsWith('.mp4') ? (
+                      <video src={mediaUrl} className="object-cover w-full h-full" controls />
+                    ) : (
+                      <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
+                    )}
                   </div>
                 </CarouselItem>
               )) : (
@@ -121,7 +128,7 @@ const ServiceDetails = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-center text-2xl font-bold text-primary">
-                  Ksh {service.price.toLocaleString()}
+                  Ksh {parseFloat(service.price).toLocaleString()}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -144,16 +151,16 @@ const ServiceDetails = () => {
                 <CardTitle>About the Seller</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-4">
-                <Link to={`/sellers/${service.seller.id}`}>
+                <Link to={`/sellers/${service.user.id}`}>
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={service.seller.profile_image_url} />
-                    <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={service.user.profile_image || undefined} />
+                    <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Link>
                 <div>
-                  <Link to={`/sellers/${service.seller.id}`} className="font-bold text-lg hover:underline">{service.seller.name}</Link>
+                  <Link to={`/sellers/${service.user.id}`} className="font-bold text-lg hover:underline">{service.user.name}</Link>
                   <Button variant="link" className="p-0 h-auto" asChild>
-                    <Link to={`/sellers/${service.seller.id}`}>View Profile</Link>
+                    <Link to={`/sellers/${service.user.id}`}>View Profile</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -164,7 +171,7 @@ const ServiceDetails = () => {
 
       {otherServices.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">More from {service.seller.name}</h2>
+          <h2 className="text-2xl font-bold mb-6">More from {service.user.name}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {otherServices.map(otherService => (
               <ServiceCard key={otherService.id} service={otherService} />

@@ -29,7 +29,7 @@ const SellerProfile = () => {
     enabled: !!sellerId,
   });
 
-  const seller = sellerServices && sellerServices.length > 0 ? sellerServices[0].seller : null;
+  const seller = sellerServices && sellerServices.length > 0 ? sellerServices[0].user : null;
   
   // Reviews are still mocked as there's no public endpoint for them in the guide
   const sellerReviews = mockReviews.filter(r => r.sellerId === sellerId);
@@ -68,7 +68,7 @@ const SellerProfile = () => {
         <Card className="mb-8">
           <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
             <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-white shadow-md">
-              <AvatarImage src={seller.profile_image_url} />
+              <AvatarImage src={seller.profile_image || undefined} />
               <AvatarFallback className="text-4xl">{seller.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="text-center md:text-left">

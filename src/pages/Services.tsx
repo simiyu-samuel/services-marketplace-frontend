@@ -64,17 +64,16 @@ const Services = () => {
   };
 
   const services = response?.data || [];
-  const meta = response?.meta;
 
   // Client-side sorting as it's not in the API guide
   const sortedServices = services ? [...services].sort((a, b) => {
     switch (filters.sortBy) {
       case 'rating':
-        return b.rating - a.rating;
+        return (b.rating ?? 0) - (a.rating ?? 0);
       case 'price-asc':
-        return a.price - b.price;
+        return parseFloat(a.price) - parseFloat(b.price);
       case 'price-desc':
-        return b.price - a.price;
+        return parseFloat(b.price) - parseFloat(a.price);
       default:
         return 0;
     }
@@ -115,7 +114,7 @@ const Services = () => {
               </div>
             )}
           </div>
-          {meta && meta.last_page > 1 && (
+          {response && response.last_page > 1 && (
             <div className="mt-8">
               <Pagination>
                 <PaginationContent>
@@ -123,19 +122,19 @@ const Services = () => {
                     <PaginationPrevious 
                       href="#"
                       onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
-                      className={meta.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                      className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
                     />
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationLink>
-                      Page {meta.current_page} of {meta.last_page}
+                      Page {response.current_page} of {response.last_page}
                     </PaginationLink>
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationNext 
                       href="#"
-                      onClick={(e) => { e.preventDefault(); setPage(p => Math.min(meta.last_page, p + 1)); }}
-                      className={meta.current_page === meta.last_page ? 'pointer-events-none opacity-50' : ''}
+                      onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }}
+                      className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''}
                     />
                   </PaginationItem>
                 </PaginationContent>

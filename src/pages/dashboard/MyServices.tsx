@@ -73,8 +73,8 @@ const MyServices = () => {
                 <TableRow key={service.id}>
                   <TableCell className="font-medium">{service.title}</TableCell>
                   <TableCell>{service.category}</TableCell>
-                  <TableCell>Ksh {service.price.toLocaleString()}</TableCell>
-                  <TableCell><Badge>Active</Badge></TableCell>
+                  <TableCell>Ksh {parseFloat(service.price).toLocaleString()}</TableCell>
+                  <TableCell><Badge>{service.is_active ? 'Active' : 'Inactive'}</Badge></TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

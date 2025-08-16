@@ -12,19 +12,26 @@ interface ServiceCardProps {
 }
 
 const ServiceCard = ({ service }: ServiceCardProps) => {
+  const rating = service.rating ?? 0;
+  const reviewCount = service.review_count ?? 0;
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg group">
       <Carousel className="w-full">
         <CarouselContent>
-          {service.media.map((m) => (
-            <CarouselItem key={m.id}>
-              <div className="aspect-w-16 aspect-h-9">
-                <img src={m.url} alt={service.title} className="object-cover w-full h-full" />
+          {service.media_files.map((mediaUrl, index) => (
+            <CarouselItem key={index}>
+              <div className="aspect-w-16 aspect-h-9 bg-muted">
+                {mediaUrl.endsWith('.mp4') ? (
+                  <video src={mediaUrl} className="object-cover w-full h-full" controls />
+                ) : (
+                  <img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />
+                )}
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        {service.media.length > 1 && (
+        {service.media_files.length > 1 && (
           <>
             <CarouselPrevious className="absolute left-2 transition-opacity opacity-0 group-hover:opacity-100" />
             <CarouselNext className="absolute right-2 transition-opacity opacity-0 group-hover:opacity-100" />
@@ -34,18 +41,18 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
       <CardContent className="p-4">
         <div className="flex items-center mb-2">
           <Avatar className="h-6 w-6 mr-2">
-            <AvatarImage src={service.seller.profile_image_url} />
-            <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
+            <AvatarImage src={service.user.profile_image || undefined} />
+            <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium text-muted-foreground">{service.seller.name}</span>
+          <span className="text-sm font-medium text-muted-foreground">{service.user.name}</span>
         </div>
         <h3 className="font-semibold text-lg truncate group-hover:text-primary">
           <Link to={`/services/${service.id}`}>{service.title}</Link>
         </h3>
         <div className="flex items-center text-sm text-muted-foreground mt-1">
           <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
-          <span className="font-bold text-foreground mr-1">{service.rating}</span>
-          <span>({service.review_count} reviews)</span>
+          <span className="font-bold text-foreground mr-1">{rating.toFixed(1)}</span>
+          <span>({reviewCount} reviews)</span>
         </div>
         <div className="flex items-center text-sm text-muted-foreground mt-2">
           <MapPin className="h-4 w-4 mr-1" />
@@ -54,7 +61,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
         </div>
         <div className="flex items-center justify-between mt-4">
           <p className="text-xl font-bold text-primary">
-            Ksh {service.price.toLocaleString()}
+            Ksh {parseFloat(service.price).toLocaleString()}
           </p>
           <Button asChild size="sm">
             <Link to={`/services/${service.id}`}>Book Now</Link>
