@@ -54,6 +54,7 @@ export interface BlogPost {
   author: Pick<User, 'name' | 'profile_image'>;
   published_at: string;
   reading_time: number; // in minutes
+  status?: 'draft' | 'published';
 }
 
 export interface Booking {
@@ -93,7 +94,18 @@ export interface Payment {
   user?: User;
 }
 
-// Updated to match the new flat pagination structure from the API
+export interface Contact {
+    id: number;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    status: 'unread' | 'read' | 'responded';
+    admin_response?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   current_page: number;

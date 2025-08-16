@@ -49,6 +49,9 @@ import AdminUsers from "./pages/admin/Users";
 import AdminServices from "./pages/admin/Services";
 import AdminBookings from "./pages/admin/Bookings";
 import AdminSettings from "./pages/admin/Settings";
+import AdminPayments from "./pages/admin/Payments";
+import AdminContacts from "./pages/admin/Contacts";
+import AdminBlog from "./pages/admin/Blog";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +107,9 @@ const App = () => (
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="services" element={<AdminServices />} />
                 <Route path="bookings" element={<AdminBookings />} />
+                <Route path="payments" element={<AdminPayments />} />
+                <Route path="contacts" element={<AdminContacts />} />
+                <Route path="blog" element={<AdminBlog />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Route>

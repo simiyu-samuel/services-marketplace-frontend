@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Home, Users, Briefcase, Calendar, Settings } from "lucide-react";
+import { Home, Users, Briefcase, Calendar, Settings, CreditCard, MessageSquare, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNavLinks = [
@@ -7,6 +7,9 @@ const adminNavLinks = [
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/services", label: "Services", icon: Briefcase },
   { to: "/admin/bookings", label: "Bookings", icon: Calendar },
+  { to: "/admin/payments", label: "Payments", icon: CreditCard },
+  { to: "/admin/contacts", label: "Contacts", icon: MessageSquare },
+  { to: "/admin/blog", label: "Blog", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
