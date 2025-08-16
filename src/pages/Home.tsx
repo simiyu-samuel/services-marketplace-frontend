@@ -36,8 +36,8 @@ const Home = () => {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative bg-white dark:bg-gray-900 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 via-pink-100/50 to-white dark:from-purple-900/20 dark:via-pink-900/20 dark:to-gray-900"></div>
+      <section className="relative bg-background overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent"></div>
         <div className="container mx-auto px-4 relative z-10 text-center py-24 md:py-40">
           <AnimatedWrapper>
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
@@ -67,7 +67,7 @@ const Home = () => {
       </section>
 
       {/* Featured Categories */}
-      <section className="py-16 bg-muted/40 dark:bg-muted/20">
+      <section className="py-16 bg-muted">
         <div className="container mx-auto px-4">
           <AnimatedWrapper>
             <div className="text-center mb-12">
@@ -102,7 +102,7 @@ const Home = () => {
       </AnimatedWrapper>
 
       {/* How It Works */}
-      <section className="py-16 bg-muted/40 dark:bg-muted/20">
+      <section className="py-16 bg-muted">
         <div className="container mx-auto px-4">
           <AnimatedWrapper>
             <div className="text-center mb-12">

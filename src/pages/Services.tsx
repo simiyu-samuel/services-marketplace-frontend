@@ -92,11 +92,11 @@ const Services = () => {
   }) : [];
 
   return (
-    <div className="bg-muted/20">
+    <div className="bg-muted">
       <div className="container py-8">
         <div className="text-center mb-12">
           <AnimatedWrapper>
-            <h1 className="text-4xl font-extrabold tracking-tight">Find Your Next Experience</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">Find Your Next Experience</h1>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-2">
               Browse through our curated list of premium beauty, health, and lifestyle services.
             </p>

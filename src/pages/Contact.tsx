@@ -34,11 +34,11 @@ const Contact = () => {
   }
 
   return (
-    <div className="bg-muted/20">
+    <div className="bg-muted">
       <div className="container py-16">
         <div className="text-center mb-12">
           <AnimatedWrapper>
-            <h1 className="text-4xl font-extrabold tracking-tight">Get in Touch</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">Get in Touch</h1>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-2">
               We'd love to hear from you. Fill out the form below or use our contact details.
             </p>

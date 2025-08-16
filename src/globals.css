@@ -19,7 +19,7 @@
     --secondary: 340.4 92.1% 60.2%; /* Pink */
     --secondary-foreground: 0 0% 100%;
  
-    --muted: 240 4.8% 95.9%;
+    --muted: 262 80% 96%; /* Light Purple */
     --muted-foreground: 240 3.8% 46.1%;
  
     --accent: 340.4 92.1% 60.2%; /* Pink */
@@ -51,7 +51,7 @@
     --secondary: 340.4 92.1% 60.2%;
     --secondary-foreground: 0 0% 100%;
  
-    --muted: 240 3.7% 15.9%;
+    --muted: 262 20% 10%; /* Dark Purple */
     --muted-foreground: 240 5% 64.9%;
  
     --accent: 340.4 92.1% 60.2%;
