@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Service } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,10 @@ import { BookingDialog } from "@/components/services/BookingDialog";
 import ReviewSummary from "@/components/services/ReviewSummary";
 import ReviewCard from "@/components/sellers/ReviewCard";
 import { mockReviews } from "@/data/mock";
+import ImageGallery from "@/components/services/ImageGallery";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { showError } from "@/utils/toast";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
@@ -29,6 +32,7 @@ const fetchServices = async () => {
 
 const ServiceDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   const { data: service, isLoading, isError } = useQuery<Service>({
@@ -74,23 +78,39 @@ const ServiceDetails = () => {
               <div className="flex items-center"><Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" /><span className="font-bold text-foreground">{rating.toFixed(1)}</span><span className="ml-1">({reviewCount} reviews)</span></div>
               <div className="flex items-center"><MapPin className="h-5 w-5 mr-1" /><span>{service.location}</span></div>
             </div>
-            <Carousel className="w-full mb-8 rounded-lg overflow-hidden">
-              <CarouselContent>{service.media_files && service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (<CarouselItem key={index}><div className="aspect-w-16 aspect-h-9 bg-muted">{mediaUrl.endsWith('.mp4') ? (<video src={mediaUrl} className="object-cover w-full h-full" controls />) : (<img src={mediaUrl} alt={service.title} className="object-cover w-full h-full" />)}</div></CarouselItem>)) : (<CarouselItem><div className="aspect-w-16 aspect-h-9 bg-muted"><img src="/placeholder.svg" alt="Placeholder" className="object-cover w-full h-full" /></div></CarouselItem>)}</CarouselContent>
-              <CarouselPrevious className="absolute left-4" /><CarouselNext className="absolute right-4" />
-            </Carousel>
-            <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
-            <div className="prose dark:prose-invert max-w-none"><p>{service.description}</p></div>
+            
+            <ImageGallery mediaFiles={service.media_files} serviceTitle={service.title} />
+
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
+              <div className="prose dark:prose-invert max-w-none"><p>{service.description}</p></div>
+            </div>
+
             <div className="mt-12">
               <h2 className="text-2xl font-bold mb-4 border-b pb-2">Reviews</h2>
               {reviewCount > 0 ? (
                 <div className="space-y-6">
                   <ReviewSummary rating={rating} reviewCount={reviewCount} />
-                  <div className="space-y-4">
+                  <div className="space-y-4 mt-6">
                     {sampleReviews.map(review => <ReviewCard key={review.id} review={review} />)}
                   </div>
                 </div>
               ) : (
                 <p className="text-muted-foreground">No reviews for this service yet.</p>
+              )}
+            </div>
+
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4 border-b pb-2">Leave a Review</h2>
+              {user ? (
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    <Textarea placeholder="Share your experience with this service..." />
+                    <Button onClick={() => showError("Review submission coming soon!")}>Submit Review</Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <p className="text-muted-foreground">You must be <Link to="/login" className="text-primary underline">logged in</Link> to leave a review.</p>
               )}
             </div>
           </div>

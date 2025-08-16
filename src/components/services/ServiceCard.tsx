@@ -18,6 +18,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
   return (
     <Card className="overflow-hidden transition-all duration-300 ease-in-out shadow-md hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 group border">
       <div className="relative">
+        <Badge className="absolute top-2 left-2 z-10">{service.category}</Badge>
         <Carousel className="w-full">
           <CarouselContent>
             {service.media_files.length > 0 ? service.media_files.map((mediaUrl, index) => (
