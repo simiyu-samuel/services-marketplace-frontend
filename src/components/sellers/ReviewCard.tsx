@@ -13,7 +13,7 @@ const ReviewCard = ({ review }: ReviewCardProps) => {
       <CardContent className="p-6">
         <div className="flex items-center mb-4">
           <Avatar className="h-10 w-10 mr-4">
-            <AvatarImage src={review.customer.profile_image_url} />
+            <AvatarImage src={review.customer.profile_image || undefined} />
             <AvatarFallback>{review.customer.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>

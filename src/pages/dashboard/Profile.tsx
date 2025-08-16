@@ -65,7 +65,7 @@ const Profile = () => {
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.profile_image_url} />
+            <AvatarImage src={user.profile_image || undefined} />
             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <Button onClick={() => showError("Feature coming soon!")}>Upload New Picture</Button>

@@ -29,7 +29,7 @@ const BlogCard = ({ post }: BlogCardProps) => {
       <CardFooter className="flex justify-between items-center text-sm text-muted-foreground border-t pt-4">
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={post.author.profile_image_url} />
+            <AvatarImage src={post.author.profile_image || undefined} />
             <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <span>{post.author.name}</span>

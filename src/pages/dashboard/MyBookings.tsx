@@ -26,7 +26,6 @@ const MyBookings = () => {
   });
 
   const userBookings = response?.data || [];
-  const meta = response?.meta;
 
   const upcomingBookings = userBookings?.filter(b => new Date(b.booking_date) >= new Date() && (b.status === 'confirmed' || b.status === 'pending')) || [];
   const pastBookings = userBookings?.filter(b => new Date(b.booking_date) < new Date() || b.status === 'completed' || b.status === 'cancelled') || [];
@@ -98,7 +97,7 @@ const MyBookings = () => {
             {renderTable(pastBookings, "You have no past bookings.")}
           </TabsContent>
         </Tabs>
-        {meta && meta.last_page > 1 && (
+        {response && response.last_page > 1 && (
           <div className="mt-8">
             <Pagination>
               <PaginationContent>
@@ -106,19 +105,19 @@ const MyBookings = () => {
                   <PaginationPrevious 
                     href="#"
                     onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
-                    className={meta.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
+                    className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationLink>
-                    Page {meta.current_page} of {meta.last_page}
+                    Page {response.current_page} of {response.last_page}
                   </PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationNext 
                     href="#"
-                    onClick={(e) => { e.preventDefault(); setPage(p => Math.min(meta.last_page, p + 1)); }}
-                    className={meta.current_page === meta.last_page ? 'pointer-events-none opacity-50' : ''}
+                    onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }}
+                    className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
               </PaginationContent>

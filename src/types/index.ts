@@ -46,7 +46,7 @@ export interface BlogPost {
   content: string;
   featured_image_url: string;
   category: string;
-  author: Pick<User, 'name' | 'profile_image_url'>;
+  author: Pick<User, 'name' | 'profile_image'>;
   published_at: string;
   reading_time: number; // in minutes
 }
@@ -66,7 +66,7 @@ export interface Review {
   rating: number;
   comment: string;
   created_at: string;
-  customer: Pick<User, 'name' | 'profile_image_url'>;
+  customer: Pick<User, 'name' | 'profile_image'>;
 }
 
 // Updated to match the new flat pagination structure from the API

@@ -22,7 +22,7 @@ const BlogDetails = () => {
           <div className="flex justify-center items-center gap-6 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={post.author.profile_image_url} />
+                <AvatarImage src={post.author.profile_image || undefined} />
                 <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <span>By {post.author.name}</span>

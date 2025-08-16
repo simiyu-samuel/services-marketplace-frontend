@@ -13,7 +13,7 @@ export const mockBlogPosts: BlogPost[] = [
         content: "<p>Full blog content goes here...</p>",
         featured_image_url: "/placeholder.svg",
         category: "Skincare",
-        author: { name: "Aisha Wanjiru", profile_image_url: "/placeholder.svg" },
+        author: { name: "Aisha Wanjiru", profile_image: "/placeholder.svg" },
         published_at: "2024-07-15",
         reading_time: 5,
     },
@@ -25,7 +25,7 @@ export const mockBlogPosts: BlogPost[] = [
         content: "<p>Full blog content goes here...</p>",
         featured_image_url: "/placeholder.svg",
         category: "Wellness",
-        author: { name: "David Otieno", profile_image_url: "/placeholder.svg" },
+        author: { name: "David Otieno", profile_image: "/placeholder.svg" },
         published_at: "2024-07-10",
         reading_time: 4,
     },
@@ -37,7 +37,7 @@ export const mockBlogPosts: BlogPost[] = [
         content: "<p>Full blog content goes here...</p>",
         featured_image_url: "/placeholder.svg",
         category: "Nails",
-        author: { name: "Christine Moraa", profile_image_url: "/placeholder.svg" },
+        author: { name: "Christine Moraa", profile_image: "/placeholder.svg" },
         published_at: "2024-07-05",
         reading_time: 6,
     }
@@ -50,7 +50,7 @@ export const mockReviews: Review[] = [
     rating: 5,
     comment: "Absolutely amazing service! My nails have never looked better. The attention to detail was incredible. Will definitely be back!",
     created_at: "2024-07-20",
-    customer: { name: "Alice J.", profile_image_url: "/placeholder.svg" },
+    customer: { name: "Alice J.", profile_image: "/placeholder.svg" },
   },
   {
     id: 2,
@@ -58,7 +58,7 @@ export const mockReviews: Review[] = [
     rating: 4,
     comment: "Great experience, very professional and clean environment. My gel polish lasted for almost 3 weeks without chipping.",
     created_at: "2024-07-18",
-    customer: { name: "Brenda C.", profile_image_url: "/placeholder.svg" },
+    customer: { name: "Brenda C.", profile_image: "/placeholder.svg" },
   },
   {
     id: 3,
@@ -66,6 +66,6 @@ export const mockReviews: Review[] = [
     rating: 5,
     comment: "The deep tissue massage was exactly what I needed. The therapist was very skilled and attentive to my problem areas. Felt like a new person afterwards.",
     created_at: "2024-07-15",
-    customer: { name: "David O.", profile_image_url: "/placeholder.svg" },
+    customer: { name: "David O.", profile_image: "/placeholder.svg" },
   },
 ];
