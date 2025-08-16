@@ -1,7 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { AdminDashboardData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Briefcase, Calendar, DollarSign } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import RevenueChart from "@/components/admin/RevenueChart";
+import AppointmentsChart from "@/components/admin/AppointmentsChart";
+
+const fetchAdminDashboardData = async () => {
+  const { data } = await api.get('/admin/dashboard');
+  return data as AdminDashboardData;
+};
 
 const AdminDashboard = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: fetchAdminDashboardData,
+  });
+
+  const stats = data?.stats;
+  const charts = data?.charts;
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
@@ -12,8 +31,8 @@ const AdminDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Ksh 452,310</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            {isLoading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">Ksh {parseFloat(stats?.total_revenue || '0').toLocaleString()}</div>}
+            <p className="text-xs text-muted-foreground">All-time revenue</p>
           </CardContent>
         </Card>
         <Card>
@@ -22,8 +41,8 @@ const AdminDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.total_users}</div>}
+            <p className="text-xs text-muted-foreground">{stats?.total_customers} Customers, {stats?.total_sellers} Sellers</p>
           </CardContent>
         </Card>
         <Card>
@@ -32,8 +51,8 @@ const AdminDashboard = () => {
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-xs text-muted-foreground">+19 from last month</p>
+            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.active_services}</div>}
+            <p className="text-xs text-muted-foreground">out of {stats?.total_services} total services</p>
           </CardContent>
         </Card>
         <Card>
@@ -42,18 +61,23 @@ const AdminDashboard = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+72</div>
+            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.pending_appointments}</div>}
             <p className="text-xs text-muted-foreground">Action required</p>
           </CardContent>
         </Card>
       </div>
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">Recent activity feed will be implemented here.</p>
-          </CardContent>
-        </Card>
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
+        {isLoading || !charts ? (
+          <>
+            <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-[300px] w-full" /></CardContent></Card>
+            <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-[300px] w-full" /></CardContent></Card>
+          </>
+        ) : (
+          <>
+            <RevenueChart data={charts.revenue_trend_last_6_months} />
+            <AppointmentsChart data={charts.appointment_status_breakdown} />
+          </>
+        )}
       </div>
     </div>
   );

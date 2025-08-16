@@ -117,3 +117,40 @@ export interface PaginatedResponse<T> {
   next_page_url: string | null;
   prev_page_url: string | null;
 }
+
+// Admin Dashboard Types
+export interface AdminDashboardStats {
+  total_users: number;
+  total_customers: number;
+  total_sellers: number;
+  active_sellers: number;
+  total_services: number;
+  active_services: number;
+  pending_services: number;
+  total_appointments: number;
+  pending_appointments: number;
+  completed_appointments: number;
+  total_revenue: string;
+  monthly_revenue: string;
+  unread_contacts: number;
+}
+
+export interface RevenueTrend {
+  month: string;
+  total_amount: string;
+}
+
+export interface AppointmentStatusBreakdown {
+  status: string;
+  count: number;
+}
+
+export interface AdminDashboardCharts {
+  revenue_trend_last_6_months: RevenueTrend[];
+  appointment_status_breakdown: AppointmentStatusBreakdown[];
+}
+
+export interface AdminDashboardData {
+  stats: AdminDashboardStats;
+  charts: AdminDashboardCharts;
+}
