@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { showError, showSuccess } from "@/utils/toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import PaymentDialog from "@/components/payments/PaymentDialog";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -23,10 +24,22 @@ const formSchema = z.object({
   path: ["password_confirmation"],
 });
 
+const packageDetails = {
+  basic: { name: "Basic", price: 0 },
+  standard: { name: "Standard", price: 1000 },
+  premium: { name: "Premium", price: 2500 },
+};
+
 const RegisterSeller = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    open: boolean;
+    amount: number;
+    packageType: 'standard' | 'premium';
+    email: string;
+  } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,8 +50,21 @@ const RegisterSeller = () => {
     setIsLoading(true);
     try {
       await register({ ...values, user_type: 'seller' });
-      showSuccess("Registration successful!");
-      navigate("/verify-email", { state: { email: values.email } });
+      
+      const { seller_package, email } = values;
+
+      if (seller_package === 'basic') {
+        showSuccess("Registration successful!");
+        navigate("/verify-email", { state: { email } });
+      } else {
+        showSuccess("Account created! Please complete the payment to proceed.");
+        setPaymentInfo({
+          open: true,
+          amount: packageDetails[seller_package].price,
+          packageType: seller_package,
+          email: email,
+        });
+      }
     } catch (error: any) {
       if (error.response?.status === 422) {
         const apiErrors = error.response.data.errors;
@@ -57,50 +83,71 @@ const RegisterSeller = () => {
     }
   }
 
+  const handlePaymentSuccess = () => {
+    if (paymentInfo) {
+      navigate("/verify-email", { state: { email: paymentInfo.email } });
+    }
+    setPaymentInfo(null);
+  };
+
   return (
-    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-muted/40">
-      <Card className="w-full max-w-md bg-background shadow-xl border">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center font-bold">Create a Seller Account</CardTitle>
-          <CardDescription className="text-center">Grow your business with us.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Business/Full Name</FormLabel><FormControl><Input placeholder="Glamour Studios" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Business Email</FormLabel><FormControl><Input placeholder="contact@glamour.com" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="phone_number" render={({ field }) => (
-                <FormItem><FormLabel>Business Phone</FormLabel><FormControl><Input placeholder="0712345678" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="password_confirmation" render={({ field }) => (
-                <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="seller_package" render={({ field }) => (
-                <FormItem className="space-y-3"><FormLabel>Choose your starting package</FormLabel>
-                  <FormControl>
-                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                      <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic</FormLabel></FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal">Standard</FormLabel></FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="premium" /></FormControl><FormLabel className="font-normal">Premium</FormLabel></FormItem>
-                    </RadioGroup>
-                  </FormControl><FormMessage />
-                </FormItem>
-              )} />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Create Account & Proceed"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-muted/40">
+        <Card className="w-full max-w-md bg-background shadow-xl border">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center font-bold">Create a Seller Account</CardTitle>
+            <CardDescription className="text-center">Grow your business with us.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField control={form.control} name="name" render={({ field }) => (
+                  <FormItem><FormLabel>Business/Full Name</FormLabel><FormControl><Input placeholder="Glamour Studios" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem><FormLabel>Business Email</FormLabel><FormControl><Input placeholder="contact@glamour.com" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="phone_number" render={({ field }) => (
+                  <FormItem><FormLabel>Business Phone</FormLabel><FormControl><Input placeholder="0712345678" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="password" render={({ field }) => (
+                  <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="password_confirmation" render={({ field }) => (
+                  <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="seller_package" render={({ field }) => (
+                  <FormItem className="space-y-3"><FormLabel>Choose your starting package</FormLabel>
+                    <FormControl>
+                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic (Free)</FormLabel></FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal">Standard (Ksh 1,000)</FormLabel></FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="premium" /></FormControl><FormLabel className="font-normal">Premium (Ksh 2,500)</FormLabel></FormItem>
+                      </RadioGroup>
+                    </FormControl><FormMessage />
+                  </FormItem>
+                )} />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating Account..." : "Create Account & Proceed"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+      {paymentInfo && (
+        <PaymentDialog
+          isOpen={paymentInfo.open}
+          onOpenChange={(open) => {
+            if (!open) setPaymentInfo(null);
+          }}
+          amount={paymentInfo.amount}
+          paymentType="seller_registration"
+          packageType={paymentInfo.packageType}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+    </>
   );
 };
 
