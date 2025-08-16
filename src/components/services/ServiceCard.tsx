@@ -16,7 +16,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
   const reviewCount = service.review_count ?? 0;
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group border-transparent hover:border-primary">
+    <Card className="overflow-hidden transition-all duration-300 ease-in-out shadow-md hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 group border">
       <div className="relative">
         <Carousel className="w-full">
           <CarouselContent>

@@ -56,8 +56,8 @@ const RegisterCustomer = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-gradient-to-br from-purple-100 via-pink-100 to-white dark:from-purple-900/20 dark:via-pink-900/20 dark:to-gray-900">
-      <Card className="w-full max-w-md bg-white/30 dark:bg-black/30 backdrop-blur-lg border-white/20">
+    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-muted/40">
+      <Card className="w-full max-w-md bg-background shadow-xl border">
         <CardHeader>
           <CardTitle className="text-2xl text-center font-bold">Create a Customer Account</CardTitle>
           <CardDescription className="text-center">Find and book the best services.</CardDescription>

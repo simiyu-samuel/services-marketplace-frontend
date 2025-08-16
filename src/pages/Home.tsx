@@ -36,38 +36,51 @@ const Home = () => {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative bg-background overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent"></div>
-        <div className="container mx-auto px-4 relative z-10 text-center py-24 md:py-40">
-          <AnimatedWrapper>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
-              <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-                Discover & Book
-              </span>
-              <br />
-              Premium Lifestyle Services
-            </h1>
-            <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
-              Themabinti is your modern, inclusive hub for the best beauty, health, and lifestyle services across Kenya.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link to="/services" className="gap-2">
-                  Explore Services <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/register/seller">
-                  Become a Seller
-                </Link>
-              </Button>
+      <section className="relative w-full overflow-hidden bg-muted/40">
+        <div className="container grid lg:grid-cols-2 gap-12 items-center py-20 md:py-32">
+          <div className="z-10">
+            <AnimatedWrapper>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+                <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
+                  Discover & Book
+                </span>
+                <br />
+                Premium Lifestyle Services
+              </h1>
+              <p className="max-w-xl text-lg md:text-xl text-muted-foreground mb-8">
+                Themabinti is your modern, inclusive hub for the best beauty, health, and lifestyle services across Kenya.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-start gap-4">
+                <Button size="lg" asChild>
+                  <Link to="/services" className="gap-2">
+                    Explore Services <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/register/seller">
+                    Become a Seller
+                  </Link>
+                </Button>
+              </div>
+            </AnimatedWrapper>
+          </div>
+          <div className="relative h-64 lg:h-full min-h-[300px]">
+            <div className="absolute -top-10 -right-10 w-72 h-72 bg-primary/20 rounded-full filter blur-xl opacity-70 animate-blob"></div>
+            <div className="absolute top-20 -left-4 w-72 h-72 bg-secondary/20 rounded-full filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+            <div className="absolute bottom-0 right-20 w-72 h-72 bg-primary/10 rounded-full filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Card className="w-72 h-96 rotate-6 transform transition-transform duration-500 hover:rotate-0 hover:scale-105 bg-background/50 backdrop-blur-md">
+                <CardContent className="p-4 flex items-center justify-center h-full">
+                  <img src="/placeholder.svg" alt="Beauty Services" className="w-48 h-48 opacity-50" />
+                </CardContent>
+              </Card>
             </div>
-          </AnimatedWrapper>
+          </div>
         </div>
       </section>
 
       {/* Featured Categories */}
-      <section className="py-16 bg-muted">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <AnimatedWrapper>
             <div className="text-center mb-12">
@@ -80,7 +93,7 @@ const Home = () => {
               {categories.map((category, index) => (
                 <AnimatedWrapper key={category.name} delay={index * 0.1}>
                   <Link to={category.href}>
-                    <Card className="text-center p-6 transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-2 hover:border-primary bg-background/50">
+                    <Card className="text-center p-6 transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-2 hover:border-primary bg-muted/50">
                       <CardContent className="p-0 flex flex-col items-center justify-center gap-4">
                         <div className="bg-primary/10 text-primary p-4 rounded-full">
                           <category.icon className="h-8 w-8" />
@@ -102,7 +115,7 @@ const Home = () => {
       </AnimatedWrapper>
 
       {/* How It Works */}
-      <section className="py-16 bg-muted">
+      <section className="py-16 bg-muted/40">
         <div className="container mx-auto px-4">
           <AnimatedWrapper>
             <div className="text-center mb-12">
@@ -111,17 +124,18 @@ const Home = () => {
                 Getting your next beauty or wellness treatment is as easy as 1, 2, 3.
               </p>
             </div>
-            <div className="relative grid md:grid-cols-3 gap-8 text-center">
-              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
+            <div className="grid md:grid-cols-3 gap-8 text-center">
               {steps.map((step, index) => (
-                <AnimatedWrapper key={index} delay={index * 0.2} className="relative z-10">
-                  <div className="flex flex-col items-center p-6 bg-background rounded-lg shadow-sm">
-                    <div className="bg-primary/10 text-primary p-4 rounded-full mb-4 ring-8 ring-background">
-                      <step.icon className="h-8 w-8" />
+                <AnimatedWrapper key={index} delay={index * 0.2}>
+                  <Card className="p-6 bg-background border-2 border-transparent hover:border-primary/50 transition-colors duration-300 h-full">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-primary/10 text-primary p-4 rounded-full mb-4 ring-8 ring-background">
+                        <step.icon className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                      <p className="text-muted-foreground">{step.description}</p>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
-                  </div>
+                  </Card>
                 </AnimatedWrapper>
               ))}
             </div>
