@@ -20,7 +20,10 @@ api.interceptors.request.use(config => {
 // We need to fetch a CSRF cookie from Sanctum before making state-changing requests
 export const fetchCsrfToken = () => {
     // This endpoint is the standard for Sanctum SPA authentication
-    return axios.get('http://localhost:8000/sanctum/csrf-cookie');
+    // FIX: Ensure this request also sends credentials to allow setting the cookie
+    return axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+        withCredentials: true,
+    });
 };
 
 export default api;
