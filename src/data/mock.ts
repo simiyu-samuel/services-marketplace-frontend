@@ -56,7 +56,7 @@ export const mockServices: Service[] = [
     review_count: 76,
     description: "Look absolutely breathtaking on your special day. Our comprehensive bridal package includes a pre-wedding consultation and trial, full-face makeup application on the wedding day using high-end, long-lasting products, and complimentary lash application.",
     seller: {
-      id: 101, // Changed to Glamour Nails for seller example
+      id: 101,
       name: "Glamour Nails",
       profile_image_url: "/placeholder.svg",
       phone_number: "254712345678",
@@ -86,6 +86,48 @@ export const mockServices: Service[] = [
     },
     media: [
         { id: 7, url: "/placeholder.svg", type: "image" },
+    ],
+  },
+  {
+    id: 5,
+    title: "Gel Polish Application",
+    category: "Nails",
+    price: 1500,
+    duration: 45,
+    location: "Nairobi",
+    is_mobile: true,
+    rating: 4.9,
+    review_count: 250,
+    description: "A quick and durable gel polish application for a flawless finish that lasts for weeks. Choose from a wide variety of colors.",
+    seller: {
+      id: 101,
+      name: "Glamour Nails",
+      profile_image_url: "/placeholder.svg",
+      phone_number: "254712345678",
+    },
+    media: [
+      { id: 8, url: "/placeholder.svg", type: "image" },
+    ],
+  },
+  {
+    id: 6,
+    title: "Relaxing Aromatherapy Facial",
+    category: "Skincare",
+    price: 4500,
+    duration: 60,
+    location: "Nairobi",
+    is_mobile: false,
+    rating: 4.8,
+    review_count: 88,
+    description: "Rejuvenate your skin and senses with our aromatherapy facial. Customized to your skin type using essential oils and natural products.",
+    seller: {
+      id: 102,
+      name: "Serenity Spa",
+      profile_image_url: "/placeholder.svg",
+      phone_number: "254722345678",
+    },
+    media: [
+      { id: 9, url: "/placeholder.svg", type: "image" },
     ],
   },
 ];

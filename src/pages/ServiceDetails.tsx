@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { mockServices } from "@/data/mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -94,13 +94,17 @@ const ServiceDetails = () => {
                 <CardTitle>About the Seller</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={service.seller.profile_image_url} />
-                  <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <Link to={`/sellers/${service.seller.id}`}>
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={service.seller.profile_image_url} />
+                    <AvatarFallback>{service.seller.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div>
-                  <h3 className="font-bold text-lg">{service.seller.name}</h3>
-                  <Button variant="link" className="p-0 h-auto">View Profile</Button>
+                  <Link to={`/sellers/${service.seller.id}`} className="font-bold text-lg hover:underline">{service.seller.name}</Link>
+                  <Button variant="link" className="p-0 h-auto" asChild>
+                    <Link to={`/sellers/${service.seller.id}`}>View Profile</Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

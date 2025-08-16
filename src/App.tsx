@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
+import SellerProfile from "./pages/SellerProfile";
 import Blog from "./pages/Blog";
 import BlogDetails from "./pages/BlogDetails";
 import Contact from "./pages/Contact";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:id" element={<ServiceDetails />} />
+              <Route path="/sellers/:id" element={<SellerProfile />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogDetails />} />
               <Route path="/contact" element={<Contact />} />
