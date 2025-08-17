@@ -15,8 +15,8 @@ import { PaginatedResponse, Service } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const fetchMyServices = async (sellerId: number) => {
-  const { data } = await api.get('/services', { 
-    params: { 'filter[seller_id]': sellerId } 
+  const { data } = await api.get('/services', {
+    params: { 'filter[user_id]': sellerId }
   });
   return (data as PaginatedResponse<Service>).data;
 };

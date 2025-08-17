@@ -1,48 +1,116 @@
-import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Twitter, Facebook, Instagram, Linkedin } from "lucide-react";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Twitter, Facebook, Instagram, Linkedin, Send } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const Footer = () => {
+const Footer: React.FC = () => {
+  const socialLinks = [
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Facebook, href: "#", label: "Facebook" },
+    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+  ];
+
+  const footerSections = [
+    {
+      title: "Services",
+      links: [
+        { label: "Branding", href: "#" },
+        { label: "Design", href: "#" },
+        { label: "Marketing", href: "#" },
+        { label: "Advertisement", href: "#" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About us", href: "#" },
+        { label: "Contact", href: "#" },
+        { label: "Jobs", href: "#" },
+        { label: "Press kit", href: "#" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { label: "Terms of use", href: "/terms-of-service" },
+        { label: "Privacy policy", href: "/privacy-policy" },
+        { label: "Cookie policy", href: "#" },
+      ],
+    },
+  ];
+
   return (
-    <footer className="bg-background border-t">
-      <div className="container py-12">
-        <div className="grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-1">
-            <h3 className="font-extrabold text-3xl mb-2 tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text bg-[length:200%_auto] animate-gradient-pan transition-transform duration-300 hover:scale-105 [text-shadow:2px_2px_0px_hsl(var(--secondary)/0.4)]">
-              Themabinti
-            </h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              Your modern, inclusive hub for the best beauty, health, and lifestyle services across Kenya.
+    <footer className="bg-background border-t border-border/40 text-foreground font-sans">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-4">
+            <Link to="/">
+              <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+            </Link>
+            <p className="text-muted-foreground text-base mt-4 max-w-md">
+              Your modern, inclusive hub for the best beauty, health, and lifestyle services across Kenya. Discover and book with ease.
             </p>
+            <div className="flex items-center gap-5 mt-8">
+              {socialLinks.map((link) => (
+                <motion.a
+                  key={link.label}
+                  href={link.href}
+                  whileHover={{ scale: 1.2, rotate: -10, color: "hsl(var(--primary))" }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  className="text-muted-foreground hover:text-primary transition-colors duration-300"
+                  aria-label={link.label}
+                >
+                  <link.icon className="h-6 w-6" />
+                </motion.a>
+              ))}
+            </div>
           </div>
-          <div className="lg:col-span-2">
-            <h4 className="font-semibold text-lg mb-2">Stay Updated</h4>
-            <p className="text-muted-foreground text-sm mb-4">
-              Subscribe to our newsletter to get the latest news, updates, and special offers.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2">
-              <Input type="email" placeholder="Enter your email" className="flex-grow" />
-              <Button type="submit">Subscribe</Button>
-            </form>
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {footerSections.map((section) => (
+              <div key={section.title}>
+                <h4 className="font-semibold text-lg tracking-wide text-foreground mb-4">{section.title}</h4>
+                <ul className="space-y-3">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link to={link.href} className="text-muted-foreground hover:text-primary transition-colors duration-300 text-base relative group">
+                        {link.label}
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div>
+              <h4 className="font-semibold text-lg tracking-wide text-foreground mb-4">Stay Updated</h4>
+              <p className="text-muted-foreground text-base mb-4">Subscribe for latest updates.</p>
+              <form className="flex items-center gap-2">
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  className="flex-grow bg-muted border-border/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background" 
+                  aria-label="Email for newsletter"
+                />
+                <Button size="icon" className="group">
+                  <Send className="h-5 w-5" />
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-      <div className="bg-muted/50">
-        <div className="container py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+      <div className="bg-muted/50 py-6 border-t border-border/40">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground text-center sm:text-left">
             © {new Date().getFullYear()} Themabinti Services Hub. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary">Terms of Service</Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"><Twitter className="h-5 w-5" /></a>
-            <a href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"><Facebook className="h-5 w-5" /></a>
-            <a href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"><Instagram className="h-5 w-5" /></a>
-            <a href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"><Linkedin className="h-5 w-5" /></a>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Designed with <span role="img" aria-label="love">❤️</span> & <span role="img" aria-label="coffee">☕</span> by Themabinti
+          </p>
         </div>
       </div>
     </footer>

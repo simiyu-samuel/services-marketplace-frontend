@@ -1,125 +1,163 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Filters } from "@/pages/Services";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "../ui/button";
-
-const categories = [
-  "Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", 
-  "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub",
-  "Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", 
-  "Complete Hair Care", "African Wear", "Maasai Wear", "Crotchet/Wear"
-];
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Search, MapPin, Tag, X } from 'lucide-react';
+import { Filters } from '@/pages/Services';
 
 interface ServiceFiltersProps {
   filters: Filters;
-  onFilterChange: (key: keyof Filters, value: any) => void;
-  onClearFilters: () => void;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+  categories: string[];
 }
 
-const ServiceFilters = ({ filters, onFilterChange, onClearFilters }: ServiceFiltersProps) => {
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    const newCategories = checked
-      ? [...filters.categories, category]
-      : filters.categories.filter(c => c !== category);
-    onFilterChange('categories', newCategories);
+const ServiceFilters: React.FC<ServiceFiltersProps> = ({ filters, setFilters, categories }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setFilters(prev => {
+      const newCategories = prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category];
+      return { ...prev, categories: newCategories };
+    });
+  };
+
+  const handlePriceChange = (value: number[]) => {
+    setFilters(prev => ({ ...prev, priceRange: [value[0], value[1]] }));
+  };
+
+  const handleSortChange = (value: string) => {
+    setFilters(prev => ({ ...prev, sortBy: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      location: '',
+      categories: [],
+      priceRange: [0, 20000],
+      isMobile: false,
+      sortBy: 'recommended',
+    });
   };
 
   return (
-    <Card className="bg-background/80 backdrop-blur-sm">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Filter & Sort</CardTitle>
-        <Button variant="ghost" size="sm" onClick={onClearFilters}>Clear</Button>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="search">Search by keyword</Label>
-          <Input 
-            id="search" 
-            placeholder="e.g., Massage, Braids" 
+    <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      className="bg-muted/50 p-6 rounded-2xl border border-border/40 mb-12 shadow-lg"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Search Input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="text"
+            name="search"
+            placeholder="Search services..."
             value={filters.search}
-            onChange={(e) => onFilterChange('search', e.target.value)}
+            onChange={handleInputChange}
+            className="pl-10 h-12 text-base bg-background"
           />
         </div>
-        
-        <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
-          <AccordionItem value="category">
-            <AccordionTrigger className="text-base">Category</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2 pt-2 h-64 overflow-y-auto">
-                {categories.map(category => (
-                  <div key={category} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`cat-${category}`} 
-                      checked={filters.categories.includes(category)}
-                      onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
-                    />
-                    <Label htmlFor={`cat-${category}`} className="font-normal">{category}</Label>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
 
-          <AccordionItem value="price">
-            <AccordionTrigger className="text-base">Price Range</AccordionTrigger>
-            <AccordionContent>
-              <div className="pt-4">
-                <Slider 
-                  value={filters.priceRange} 
-                  max={20000} 
-                  step={500} 
-                  onValueChange={(value) => onFilterChange('priceRange', value as [number, number])}
-                />
-                <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                  <span>Ksh {filters.priceRange[0].toLocaleString()}</span>
-                  <span>Ksh {filters.priceRange[1].toLocaleString()}{filters.priceRange[1] === 20000 ? '+' : ''}</span>
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-
-        <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
-          <Input 
-            id="location" 
-            placeholder="e.g., Nairobi, Mombasa" 
+        {/* Location Input */}
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="text"
+            name="location"
+            placeholder="Location"
             value={filters.location}
-            onChange={(e) => onFilterChange('location', e.target.value)}
+            onChange={handleInputChange}
+            className="pl-10 h-12 text-base bg-background"
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border p-3">
-          <Label htmlFor="mobile-service">Mobile Service Only</Label>
-          <Switch 
-            id="mobile-service" 
-            checked={filters.isMobile}
-            onCheckedChange={(checked) => onFilterChange('isMobile', checked)}
-          />
-        </div>
+        {/* Sort By */}
+        <Select value={filters.sortBy} onValueChange={handleSortChange}>
+          <SelectTrigger className="h-12 text-base bg-background">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recommended">Recommended</SelectItem>
+            <SelectItem value="rating">Highest Rated</SelectItem>
+            <SelectItem value="price-asc">Price: Low to High</SelectItem>
+            <SelectItem value="price-desc">Price: High to Low</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <div className="space-y-2">
-          <Label htmlFor="sort">Sort by</Label>
-          <Select value={filters.sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
-            <SelectTrigger id="sort">
-              <SelectValue placeholder="Recommended" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recommended">Recommended</SelectItem>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-              <SelectItem value="price-asc">Price: Low to High</SelectItem>
-              <SelectItem value="price-desc">Price: High to Low</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Clear Filters Button */}
+        <Button variant="ghost" onClick={clearFilters} className="h-12 text-base group">
+          <X className="mr-2 h-5 w-5 text-muted-foreground group-hover:text-destructive transition-colors" />
+          Clear Filters
+        </Button>
+      </div>
+
+      {/* Categories */}
+      <div className="mt-6 pt-6 border-t border-border/40">
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <Tag className="mr-2 h-5 w-5" />
+          Categories
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          {categories.map(category => (
+            <motion.button
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors duration-300 ${
+                filters.categories.includes(category)
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-accent hover:border-accent-foreground border-border'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {category}
+            </motion.button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Price Range Slider */}
+      <div className="mt-6 pt-6 border-t border-border/40">
+        <h3 className="text-lg font-semibold mb-4">Price Range</h3>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">Ksh {filters.priceRange[0]}</span>
+          <Slider
+            min={0}
+            max={20000}
+            step={500}
+            value={filters.priceRange}
+            onValueChange={handlePriceChange}
+          />
+          <span className="text-sm font-medium">Ksh {filters.priceRange[1]}</span>
+        </div>
+      </div>
+      
+      {/* Mobile Service Checkbox */}
+      <div className="mt-6 pt-6 border-t border-border/40 flex items-center space-x-2">
+        <Checkbox 
+          id="isMobile" 
+          checked={filters.isMobile}
+          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isMobile: !!checked }))}
+        />
+        <label
+          htmlFor="isMobile"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Mobile Service (Provider comes to you)
+        </label>
+      </div>
+    </motion.div>
   );
 };
 

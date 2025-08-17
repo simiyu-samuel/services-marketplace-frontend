@@ -36,7 +36,7 @@ const SellerProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="container py-8">
+      <div className="container py-8 px-4 md:px-0">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <ServiceCardSkeleton />
@@ -63,7 +63,7 @@ const SellerProfile = () => {
 
   return (
     <div className="bg-muted/20">
-      <div className="container py-8">
+      <div className="container py-8 px-4 md:px-0 mt-16">
         {/* Seller Header */}
         <Card className="mb-8">
           <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">

@@ -1,12 +1,15 @@
+import React, { Suspense } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import RouteTransitions from "./components/ui/RouteTransitions";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
 
 // Layouts
 import MainLayout from "./components/layout/MainLayout";
+import PremiumLayout from "./components/layout/PremiumLayout";
 import AdminLayout from "./components/layout/AdminLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
 
@@ -15,59 +18,58 @@ import AdminRoute from "./components/auth/AdminRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Public Pages
-import Home from "./pages/Home";
-import Services from "./pages/Services";
-import ServiceDetails from "./pages/ServiceDetails";
-import SellerProfile from "./pages/SellerProfile";
-import Blog from "./pages/Blog";
-import BlogDetails from "./pages/BlogDetails";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import RegisterCustomer from "./pages/RegisterCustomer";
-import RegisterSeller from "./pages/RegisterSeller";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyEmail from "./pages/VerifyEmail";
-import NotFound from "./pages/NotFound";
+const Home = React.lazy(() => import("./pages/Home"));
+const Services = React.lazy(() => import("./pages/Services"));
+const ServiceDetails = React.lazy(() => import("./pages/ServiceDetails"));
+const SellerProfile = React.lazy(() => import("./pages/SellerProfile"));
+const Blog = React.lazy(() => import("./pages/Blog"));
+const BlogDetails = React.lazy(() => import("./pages/BlogDetails"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Register"));
+const RegisterCustomer = React.lazy(() => import("./pages/RegisterCustomer"));
+const RegisterSeller = React.lazy(() => import("./pages/RegisterSeller"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
+const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Dashboard Pages
-import Dashboard from "./pages/Dashboard";
-import MyBookings from "./pages/dashboard/MyBookings";
-import MyServices from "./pages/dashboard/MyServices";
-import CreateService from "./pages/dashboard/CreateService";
-import EditService from "./pages/dashboard/EditService";
-import Profile from "./pages/dashboard/Profile";
-import Settings from "./pages/dashboard/Settings";
-import PaymentHistory from "./pages/dashboard/PaymentHistory";
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const MyBookings = React.lazy(() => import("./pages/dashboard/MyBookings"));
+const MyServices = React.lazy(() => import("./pages/dashboard/MyServices"));
+const CreateService = React.lazy(() => import("./pages/dashboard/CreateService"));
+const EditService = React.lazy(() => import("./pages/dashboard/EditService"));
+const Profile = React.lazy(() => import("./pages/dashboard/Profile"));
+const Settings = React.lazy(() => import("./pages/dashboard/Settings"));
+const PaymentHistory = React.lazy(() => import("./pages/dashboard/PaymentHistory"));
 
 // Admin Pages
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminUsers from "./pages/admin/Users";
-import AdminServices from "./pages/admin/Services";
-import AdminBookings from "./pages/admin/Bookings";
-import AdminSettings from "./pages/admin/Settings";
-import AdminPayments from "./pages/admin/Payments";
-import AdminContacts from "./pages/admin/Contacts";
-import AdminBlog from "./pages/admin/Blog";
-import CreateBlogPost from "./pages/admin/CreateBlogPost";
-import EditBlogPost from "./pages/admin/EditBlogPost";
+const AdminDashboard = React.lazy(() => import("./pages/admin/Dashboard"));
+const AdminUsers = React.lazy(() => import("./pages/admin/Users"));
+const AdminServices = React.lazy(() => import("./pages/admin/Services"));
+const AdminBookings = React.lazy(() => import("./pages/admin/Bookings"));
+const AdminSettings = React.lazy(() => import("./pages/admin/Settings"));
+const AdminPayments = React.lazy(() => import("./pages/admin/Payments"));
+const AdminContacts = React.lazy(() => import("./pages/admin/Contacts"));
+const AdminBlog = React.lazy(() => import("./pages/admin/Blog"));
+const CreateBlogPost = React.lazy(() => import("./pages/admin/CreateBlogPost"));
+const EditBlogPost = React.lazy(() => import("./pages/admin/EditBlogPost"));
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+const AppContent = () => {
+  const location = useLocation();
+  return (
+    <AuthProvider>
+      <RouteTransitions>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes location={location}>
             {/* Public Routes */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
+            <Route element={<PremiumLayout />}>
+            <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:id" element={<ServiceDetails />} />
               <Route path="/sellers/:id" element={<SellerProfile />} />
@@ -118,7 +120,19 @@ const App = () => (
               </Route>
             </Route>
           </Routes>
-        </AuthProvider>
+        </Suspense>
+      </RouteTransitions>
+    </AuthProvider>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppContent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -5,7 +5,7 @@ axios.defaults.withCredentials = true;
 axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
 axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
 
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = 'http://127.0.0.1:8000';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
@@ -24,9 +24,9 @@ api.interceptors.request.use(config => {
 });
 
 // Recursive function to prepend backend URL to image paths
-const processImagePaths = (data: any): any => {
+const processImagePaths = (data: unknown): unknown => {
     if (Array.isArray(data)) {
-        return data.map(item => processImagePaths(item));
+        return data.map(item => processImagePaths(item as unknown));
     }
     if (typeof data === 'object' && data !== null) {
         const newData = { ...data }; 

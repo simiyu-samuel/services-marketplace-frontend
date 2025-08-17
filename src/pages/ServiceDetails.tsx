@@ -22,7 +22,6 @@ import { showError } from "@/utils/toast";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
-  // The API returns the service object directly, not wrapped in a 'data' key.
   return data;
 };
 
@@ -49,8 +48,15 @@ const ServiceDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="container py-8">
-        <div className="grid md:grid-cols-3 gap-8"><div className="md:col-span-2 space-y-4"><ServiceCardSkeleton /></div><div className="md:col-span-1 space-y-4"><ServiceCardSkeleton /></div></div>
+      <div className="container py-8 px-4 md:px-0">
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-4">
+            <ServiceCardSkeleton />
+          </div>
+          <div className="md:col-span-1 space-y-4">
+            <ServiceCardSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -66,25 +72,34 @@ const ServiceDetails = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
   const rating = service.rating ?? 0;
   const reviewCount = service.review_count ?? 0;
-  const sampleReviews = mockReviews.slice(0, 3); // Using mock data as placeholder
+  const sampleReviews = mockReviews.slice(0, 3);
 
   return (
     <>
       <BookingDialog serviceId={service.id} isOpen={isBookingOpen} onOpenChange={setIsBookingOpen} />
-      <div className="container py-8">
+      <div className="container py-8 px-4 md:px-0 mt-16">
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">{service.title}</h1>
             <div className="flex items-center gap-4 text-muted-foreground mb-4">
-              <div className="flex items-center"><Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" /><span className="font-bold text-foreground">{rating.toFixed(1)}</span><span className="ml-1">({reviewCount} reviews)</span></div>
-              <div className="flex items-center"><MapPin className="h-5 w-5 mr-1" /><span>{service.location}</span></div>
+              <div className="flex items-center">
+                <Star className="h-5 w-5 mr-1 text-yellow-500 fill-yellow-500" />
+                <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
+                <span className="ml-1">({reviewCount} reviews)</span>
+              </div>
+              <div className="flex items-center">
+                <MapPin className="h-5 w-5 mr-1" />
+                <span>{service.location}</span>
+              </div>
             </div>
-            
+
             <ImageGallery mediaFiles={service.media_files} serviceTitle={service.title} />
 
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
-              <div className="prose dark:prose-invert max-w-none"><p>{service.description}</p></div>
+              <div className="prose dark:prose-invert max-w-none">
+                <p>{service.description}</p>
+              </div>
             </div>
 
             <div className="mt-12">
@@ -93,7 +108,9 @@ const ServiceDetails = () => {
                 <div className="space-y-6">
                   <ReviewSummary rating={rating} reviewCount={reviewCount} />
                   <div className="space-y-4 mt-6">
-                    {sampleReviews.map(review => <ReviewCard key={review.id} review={review} />)}
+                    {sampleReviews.map(review => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -111,30 +128,59 @@ const ServiceDetails = () => {
                   </CardContent>
                 </Card>
               ) : (
-                <p className="text-muted-foreground">You must be <Link to="/login" className="text-primary underline">logged in</Link> to leave a review.</p>
+                <p className="text-muted-foreground">
+                  You must be <Link to="/login" className="text-primary underline">logged in</Link> to leave a review.
+                </p>
               )}
             </div>
           </div>
+
           <div className="md:col-span-1">
             <div className="sticky top-20 space-y-6">
               <Card>
-                <CardHeader><CardTitle className="text-center text-2xl font-bold text-primary">Ksh {parseFloat(service.price).toLocaleString()}</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl font-bold text-primary">
+                    Ksh {parseFloat(service.price).toLocaleString()}
+                  </CardTitle>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center text-muted-foreground"><Clock className="h-5 w-5 mr-2" /><span>Duration: {service.duration} minutes</span></div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="h-5 w-5 mr-2" />
+                    <span>Duration: {service.duration} minutes</span>
+                  </div>
                   {service.is_mobile && <Badge>Mobile Service Available</Badge>}
                   <div className="grid grid-cols-1 gap-2">
-                    <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}><CalendarPlus className="h-5 w-5" />Book Appointment</Button>
-                    <Button size="lg" variant="outline" className="w-full gap-2" asChild><a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageSquare className="h-5 w-5" />Contact via WhatsApp</a></Button>
+                    <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
+                      <CalendarPlus className="h-5 w-5" />
+                      Book Appointment
+                    </Button>
+                    <Button size="lg" variant="outline" className="w-full gap-2" asChild>
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                        <MessageSquare className="h-5 w-5" />
+                        Contact via WhatsApp
+                      </a>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader><CardTitle>About the Seller</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>About the Seller</CardTitle>
+                </CardHeader>
                 <CardContent className="flex items-center gap-4">
-                  <Link to={`/sellers/${service.user.id}`}><Avatar className="h-16 w-16"><AvatarImage src={service.user.profile_image || undefined} /><AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback></Avatar></Link>
+                  <Link to={`/sellers/${service.user.id}`}>
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={service.user.profile_image || undefined} />
+                      <AvatarFallback>{service.user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
-                    <Link to={`/sellers/${service.user.id}`} className="font-bold text-lg hover:underline">{service.user.name}</Link>
-                    <Button variant="link" className="p-0 h-auto" asChild><Link to={`/sellers/${service.user.id}`}>View Profile</Link></Button>
+                    <Link to={`/sellers/${service.user.id}`} className="font-bold text-lg hover:underline">
+                      {service.user.name}
+                    </Link>
+                    <Button variant="link" className="p-0 h-auto" asChild>
+                      <Link to={`/sellers/${service.user.id}`}>View Profile</Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -144,7 +190,11 @@ const ServiceDetails = () => {
         {otherServices.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">More from {service.user.name}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{otherServices.map(otherService => (<ServiceCard key={otherService.id} service={otherService} />))}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {otherServices.map(otherService => (
+                <ServiceCard key={otherService.id} service={otherService} />
+              ))}
+            </div>
           </div>
         )}
       </div>
