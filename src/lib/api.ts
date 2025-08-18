@@ -5,7 +5,7 @@ axios.defaults.withCredentials = true;
 axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
 axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
 
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const BACKEND_URL = 'https://api.themabinti.com';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,

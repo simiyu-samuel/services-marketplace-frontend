@@ -163,8 +163,10 @@ export interface AdminDashboardData {
 export interface SellerDashboardStats {
   active_services_count: number;
   pending_bookings_count: number;
-  total_earnings: string;
   completed_bookings_count: number;
+  total_earnings_last_30_days: number;
+  all_time_earnings: number;
+  monthly_earnings_trend: { month: string; total_amount: number }[];
 }
 
 export interface CustomerDashboardStats {

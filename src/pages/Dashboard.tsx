@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const fetchDashboardStats = async () => {
-  const { data } = await api.get('/dashboard');
+  const { data } = await api.get('/seller/dashboard/insights');
   return data.data;
 };
 
@@ -100,7 +100,7 @@ const SellerDashboard = ({ stats, isLoading }: { stats?: SellerDashboardStats, i
           <StatCard title="Active Services" value={stats?.active_services_count ?? 0} icon={Briefcase} description="Manage your service listings" isLoading={isLoading} />
           <StatCard title="Pending Bookings" value={stats?.pending_bookings_count ?? 0} icon={Calendar} description="Respond to new clients" isLoading={isLoading} />
           <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments fulfilled" isLoading={isLoading} />
-          <StatCard title="Total Revenue" value={`Ksh ${parseFloat(stats?.total_earnings ?? '0').toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
+<StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
         </div>
       </div>
       <Card>

@@ -3,10 +3,13 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const x = (e.clientX - window.innerWidth / 2) / 50; // Increased parallax effect
@@ -45,9 +48,22 @@ const HeroSection: React.FC = () => {
           >
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input placeholder="Search for services..." className="pl-10 h-12 text-base" />
+              <Input
+                placeholder="Search for services..."
+                className="pl-10 h-12 text-base text-black"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <Button size="lg" className="w-full sm:w-auto group">
+            <Button
+              size="lg"
+              className="w-full sm:w-auto group"
+              onClick={() => {
+                if (searchQuery) {
+                  navigate(`/services?search=${searchQuery}`);
+                }
+              }}
+            >
               Search
               <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>

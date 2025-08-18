@@ -65,7 +65,6 @@ const DashboardLayout = () => {
           </main>
         </div>
       </div>
-      <Footer />
     </>
   );
 };
