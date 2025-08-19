@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import CreateAdminService from "./pages/admin/CreateAdminService";
+import EditAdminService from "./pages/admin/EditAdminService";
 
 // Layouts
 import MainLayout from "./components/layout/MainLayout";
@@ -59,6 +61,8 @@ const AdminBlog = React.lazy(() => import("./pages/admin/Blog"));
 const CreateBlogPost = React.lazy(() => import("./pages/admin/CreateBlogPost"));
 const EditBlogPost = React.lazy(() => import("./pages/admin/EditBlogPost"));
 const PackageUpgrade = React.lazy(() => import("./pages/PackageUpgrade"));
+const AdminMyServices = React.lazy(() => import("./pages/admin/MyServices"));
+
 
 const queryClient = new QueryClient();
 
@@ -121,6 +125,9 @@ const AppContent = () => {
                 <Route path="blog/new" element={<CreateBlogPost />} />
                 <Route path="blog/edit/:id" element={<EditBlogPost />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="my-services" element={<AdminMyServices />} />  {/* Add this line */}
+                <Route path="my-services/create" element={<CreateAdminService />} /> {/* Add this line */}
+                <Route path="my-services/:id/edit" element={<EditAdminService />} /> {/* Add this line */}
               </Route>
             </Route>
           </Routes>

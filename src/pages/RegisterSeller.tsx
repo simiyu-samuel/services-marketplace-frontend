@@ -10,8 +10,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { showError, showSuccess } from "@/utils/toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { usePackagePrices } from "@/hooks/usePackagePrices";
 import PaymentDialog from "@/components/payments/PaymentDialog";
 import { RegisterPayload } from "@/types";
+import { AxiosError } from "axios";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -34,6 +36,7 @@ const packageDetails = {
 const RegisterSeller = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+    const { data: packagePrices, isLoading: pricesLoading, isError } = usePackagePrices();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<{
     open: boolean;
@@ -57,7 +60,11 @@ const RegisterSeller = () => {
 
       if (needs_seller_payment) {
         const { seller_package, email } = values;
-        const selectedPackage = packageDetails[seller_package];
+        // Store selected package and price in local storage
+        localStorage.setItem('selectedPackage', JSON.stringify({
+          name: seller_package,
+          price: packagePrices[seller_package as keyof typeof packagePrices],
+        }));
         showSuccess("Account created! Please complete the payment to proceed.");
         navigate("/seller-onboarding/payment"); // Redirect to the dedicated payment page
       } else {
@@ -114,19 +121,42 @@ const RegisterSeller = () => {
                   <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="seller_package" render={({ field }) => (
-                  <FormItem className="space-y-3"><FormLabel>Choose your starting package</FormLabel>
+                  <FormItem className="space-y-3">
+                    <FormLabel>Choose your starting package</FormLabel>
                     <FormControl>
-                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="basic" /></FormControl><FormLabel className="font-normal">Basic (Ksh {packageDetails.basic.price.toLocaleString()})</FormLabel></FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal">Standard (Ksh {packageDetails.standard.price.toLocaleString()})</FormLabel></FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="premium" /></FormControl><FormLabel className="font-normal">Premium (Ksh {packageDetails.premium.price.toLocaleString()})</FormLabel></FormItem>
-                      </RadioGroup>
-                    </FormControl><FormMessage />
+                      {pricesLoading ? (
+                        <p>Loading package prices...</p>
+                      ) : isError ? (
+                        <p>Error loading package prices.</p>
+                      ) : packagePrices ? (
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl><RadioGroupItem value="basic" /></FormControl>
+                            <FormLabel className="font-normal">Basic (Ksh {packagePrices.basic.toLocaleString()})</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl><RadioGroupItem value="standard" /></FormControl>
+                            <FormLabel className="font-normal">Standard (Ksh {packagePrices.standard.toLocaleString()})</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl><RadioGroupItem value="premium" /></FormControl>
+                            <FormLabel className="font-normal">Premium (Ksh {packagePrices.premium.toLocaleString()})</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      ) : null}
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating Account..." : "Create Account & Proceed"}
-                </Button>
+                {pricesLoading ? (
+                  <p>Loading package prices...</p>
+                ) : isError ? (
+                  <p>Error loading package prices.</p>
+                ) : packagePrices ? (
+                  <Button type="submit" className="w-full" disabled={pricesLoading}>
+                    {isLoading ? "Creating Account..." : "Create Account & Proceed"}
+                  </Button>
+                ) : null}
               </form>
             </Form>
           </CardContent>

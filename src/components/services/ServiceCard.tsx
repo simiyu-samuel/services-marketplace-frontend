@@ -74,7 +74,15 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
                 service.media_files.map((media, index) => (
                   <CarouselItem key={index}>
                     <div className="aspect-video bg-muted flex items-center justify-center">
-                      <img src={media} alt={`Service image ${index + 1}`} className="object-cover w-full h-full" />
+                      <img
+                        src={media}
+                        alt={`Service image ${index + 1}`}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null; // Prevent infinite loop
+                          e.currentTarget.src = 'https://placehold.co/800x600/CCCCCC/FFFFFF?text=Service+Image'; // Fallback HD image
+                        }}
+                      />
                     </div>
                   </CarouselItem>
                 ))

@@ -25,6 +25,7 @@ export interface User {
   phone_verified_at?: string | null;
   created_at?: string;
   updated_at?: string;
+  deleted_at?: string | null; // Add this line
 }
 
 export interface AuthResponse {

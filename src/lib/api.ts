@@ -24,6 +24,14 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+// Interceptor to fetch CSRF token before making state-changing requests
+api.interceptors.request.use(async config => {
+  if (config.method !== 'get') {
+    await fetchCsrfToken();
+  }
+  return config;
+});
+
 // Interceptor to handle 401 Unauthorized and 403 Forbidden responses globally
 api.interceptors.response.use(
   response => response,

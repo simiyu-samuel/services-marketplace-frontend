@@ -1,153 +1,295 @@
-import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import { PaginatedResponse, User } from "@/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { showSuccess, showError } from "@/utils/toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useCallback } from 'react';
+import apiClient from '@/lib/api'; // Assuming a pre-configured axios instance
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
-const fetchUsers = async () => {
-  const { data } = await api.get('/admin/users');
-  return data as PaginatedResponse<User>;
-};
+// --- Type Definitions ---
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  user_type: string;
+  is_active: boolean;
+  deleted_at: string | null;
+  // Add any other user fields you need, like seller_package
+}
 
-const updateUserStatus = async ({ id, is_active }: { id: number, is_active: boolean }) => {
-  await api.put(`/admin/users/${id}`, { is_active });
-};
+interface Pagination {
+  current_page: number;
+  last_page: number;
+  total: number;
+  per_page: number;
+}
 
-const AdminUsers = () => {
-  const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [userTypeFilter, setUserTypeFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+interface UserApiResponse {
+  data: User[];
+  meta: Pagination; // Assuming pagination data is in a 'meta' object
+}
 
-  const { data: response, isLoading } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: fetchUsers,
+interface UserFilters {
+  user_type: string;
+  is_active: string; // Use string to accommodate 'true', 'false', and ''
+  search: string;
+  trashed: boolean;
+  page: number;
+}
+
+// --- Component ---
+const AdminUsersPage: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<UserFilters>({
+    user_type: '',
+    is_active: '',
+    search: '',
+    trashed: false,
+    page: 1,
   });
+  const [password, setPassword] = useState('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [actionDetails, setActionDetails] = useState<{ userId: number | null; action: string; passwordRequired: boolean }>({ userId: null, action: '', passwordRequired: false });
 
-  const mutation = useMutation({
-    mutationFn: updateUserStatus,
-    onSuccess: () => {
-      showSuccess("User status updated.");
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: () => {
-      showError("Failed to update user status.");
-    },
-  });
+  // Assume the logged-in admin's ID is available, e.g., from an auth context
+  const loggedInAdminId = 1;
 
-  const handleStatusChange = (user: User, checked: boolean) => {
-    mutation.mutate({ id: user.id, is_active: checked });
+  // --- Data Fetching ---
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: filters.page.toString(),
+        search: filters.search,
+        user_type: filters.user_type,
+        is_active: filters.is_active,
+        trashed: String(filters.trashed),
+      });
+
+      const response = await apiClient.get<UserApiResponse>(`/admin/users?${params.toString()}`);
+      setUsers(response.data.data);
+      setPagination(response.data.meta);
+    } catch (error) {
+      toast.error('Failed to fetch users. Please try again.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // --- Event Handlers ---
+  const handleFilterChange = (key: keyof Omit<UserFilters, 'page'>, value: string | boolean) => {
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 })); // Reset to page 1 on filter change
   };
 
-  const filteredUsers = useMemo(() => {
-    if (!response?.data) return [];
-    
-    return response.data.filter(user => {
-      const searchMatch = searchTerm.toLowerCase() === '' ||
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const typeMatch = userTypeFilter === 'all' || user.user_type === userTypeFilter;
-      
-      const statusMatch = statusFilter === 'all' ||
-        (statusFilter === 'active' && user.is_active) ||
-        (statusFilter === 'inactive' && !user.is_active);
-        
-      return searchMatch && typeMatch && statusMatch;
-    });
-  }, [response, searchTerm, userTypeFilter, statusFilter]);
-
-  const clearFilters = () => {
-    setSearchTerm("");
-    setUserTypeFilter("all");
-    setStatusFilter("all");
+  const handlePageChange = (newPage: number) => {
+    setFilters((prev) => ({ ...prev, page: newPage }));
+  };
+  
+  const openConfirmationDialog = (userId: number, action: string, passwordRequired: boolean) => {
+    setActionDetails({ userId, action, passwordRequired });
+    setConfirmDialogOpen(true);
   };
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>User Management</CardTitle>
-        <CardDescription>View, filter, and manage all users on the platform.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <Input
-            placeholder="Search by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-          <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="customer">Customer</SelectItem>
-              <SelectItem value="seller">Seller</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={clearFilters}>Clear</Button>
-        </div>
+  const closeConfirmationDialog = () => {
+    setConfirmDialogOpen(false);
+    setPassword('');
+    setActionDetails({ userId: null, action: '', passwordRequired: false });
+  };
 
-        {isLoading ? (
-          <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+  // --- Action Logic ---
+  const confirmAction = async () => {
+    if (!actionDetails.userId) return;
+
+    try {
+      let response;
+      const { userId, action, passwordRequired } = actionDetails;
+      const user = users.find(u => u.id === userId);
+
+      switch (action) {
+        case 'activateDeactivate':
+          if (user) {
+            response = await apiClient.put(`/admin/users/${userId}`, { is_active: !user.is_active });
+          }
+          break;
+        case 'deleteSoft':
+          response = await apiClient.delete(`/admin/users/${userId}`, { data: { admin_password: password } });
+          break;
+        case 'restore':
+          response = await apiClient.post(`/admin/users/${userId}/restore`);
+          break;
+        case 'forceDelete':
+          response = await apiClient.delete(`/admin/users/${userId}/force-delete`, { data: { admin_password: password } });
+          break;
+        default:
+          throw new Error('Invalid action');
+      }
+
+      toast.success(response.data.message);
+      fetchUsers(); // Re-fetch users to update the list
+      closeConfirmationDialog();
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'An unknown error occurred.';
+      toast.error(`Action failed: ${errorMessage}`);
+      // Don't close dialog if a password was required, to allow retry
+      if (!actionDetails.passwordRequired) {
+        closeConfirmationDialog();
+      }
+    }
+  };
+
+  // --- UI Rendering Helpers ---
+  const getUserStatusBadge = (user: User) => {
+    if (user.deleted_at) {
+      return <Badge variant="outline">Deleted</Badge>;
+    }
+    return user.is_active ? <Badge>Active</Badge> : <Badge variant="destructive">Inactive</Badge>;
+  };
+
+  const getActionButtons = (user: User) => {
+    const isSelf = user.id === loggedInAdminId;
+    return (
+      <div className="flex space-x-2">
+        {user.deleted_at === null ? (
+          <>
+            <Button variant="outline" size="sm" onClick={() => openConfirmationDialog(user.id, 'activateDeactivate', false)} disabled={isSelf}>
+              {user.is_active ? 'Deactivate' : 'Activate'}
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => openConfirmationDialog(user.id, 'deleteSoft', true)} disabled={isSelf}>
+              Delete
+            </Button>
+          </>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Registered On</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell><Badge variant="outline" className="capitalize">{user.user_type}</Badge></TableCell>
-                  <TableCell>{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={!!user.is_active}
-                      onCheckedChange={(checked) => handleStatusChange(user, checked)}
-                      aria-label="Toggle user status"
-                    />
-                  </TableCell>
-                </TableRow>
-              )) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">No users found matching your criteria.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <>
+            <Button variant="secondary" size="sm" onClick={() => openConfirmationDialog(user.id, 'restore', false)}>
+              Restore
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => openConfirmationDialog(user.id, 'forceDelete', true)} disabled={isSelf}>
+              Force Delete
+            </Button>
+          </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    );
+  };
+  
+  // --- JSX ---
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Admin User Management</h1>
+
+      {/* Filter Controls */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex space-x-4">
+          <Input placeholder="Search users..." value={filters.search} onChange={(e) => handleFilterChange('search', e.target.value)} className="max-w-sm" />
+          <select value={filters.user_type} onChange={(e) => handleFilterChange('user_type', e.target.value)} className="p-2 border rounded">
+            <option value="">All Types</option>
+            <option value="admin">Admin</option>
+            <option value="seller">Seller</option>
+            <option value="customer">Customer</option>
+          </select>
+          <select value={filters.is_active} onChange={(e) => handleFilterChange('is_active', e.target.value)} className="p-2 border rounded">
+            <option value="">All Statuses</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox id="showDeleted" checked={filters.trashed} onCheckedChange={(checked) => handleFilterChange('trashed', !!checked)} />
+          <label htmlFor="showDeleted">Show Deleted Users</label>
+        </div>
+      </div>
+
+      {/* User Table */}
+      {loading ? (
+        <div>Loading users...</div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.user_type}</TableCell>
+                <TableCell>{getUserStatusBadge(user)}</TableCell>
+                <TableCell>{getActionButtons(user)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {/* Pagination Controls */}
+      {pagination && pagination.last_page > 1 && (
+        <div className="flex justify-end items-center space-x-2 mt-4">
+            <Button onClick={() => handlePageChange(filters.page - 1)} disabled={filters.page <= 1}>Previous</Button>
+            <span>Page {pagination.current_page} of {pagination.last_page}</span>
+            <Button onClick={() => handlePageChange(filters.page + 1)} disabled={filters.page >= pagination.last_page}>Next</Button>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {actionDetails.action === 'deleteSoft' && 'Confirm Deletion'}
+              {actionDetails.action === 'forceDelete' && 'Confirm Permanent Deletion'}
+              {actionDetails.action === 'restore' && 'Confirm Restore'}
+              {actionDetails.action === 'activateDeactivate' && 'Confirm Status Change'}
+            </DialogTitle>
+            <DialogDescription>
+              {actionDetails.action === 'activateDeactivate' && 'Are you sure you want to change this user\'s status?'}
+              {actionDetails.action === 'deleteSoft' && 'This will deactivate the user\'s account. You can restore it later. Please enter your password to confirm.'}
+              {actionDetails.action === 'restore' && 'Are you sure you want to restore this user\'s account?'}
+              {actionDetails.action === 'forceDelete' && 'This action is irreversible and will permanently delete the user. Please enter your password to confirm.'}
+            </DialogDescription>
+          </DialogHeader>
+          {actionDetails.passwordRequired && (
+            <div className="grid gap-4 py-4">
+              <label htmlFor="password">Admin Password</label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={closeConfirmationDialog}>Cancel</Button>
+            <Button type="button" onClick={confirmAction} disabled={actionDetails.passwordRequired && !password}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
-export default AdminUsers;
+export default AdminUsersPage;

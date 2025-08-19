@@ -12,6 +12,7 @@ const adminNavLinks = [
   { to: "/admin/contacts", label: "Contacts", icon: MessageSquare },
   { to: "/admin/blog", label: "Blog", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
+  { to: "/admin/my-services", label: "My Admin Services", icon: Briefcase }, // Add new link
 ];
 
 const AdminLayout = () => {

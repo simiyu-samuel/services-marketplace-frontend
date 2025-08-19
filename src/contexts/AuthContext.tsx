@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { User, AuthResponse, LoginPayload, RegisterPayload, ChangePasswordPayload } from '@/types';
 import api, { fetchCsrfToken } from '@/lib/api';
 import { showLoading, dismissToast } from '@/utils/toast';
+import axios, { AxiosError } from 'axios';
 
 interface AuthContextType {
   user: User | null;
@@ -26,18 +27,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const response = await api.get('/user');
           setUser(response.data.user);
-        } catch (error) {
+        } catch (error: any) {
           console.error("Failed to fetch user, token might be invalid.", error);
           localStorage.removeItem('authToken');
           setUser(null);
+        } finally {
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     initializeAuth();
   }, []);
 
-  const login = async (data: any): Promise<AuthResponse> => {
+  const login = async (data: LoginPayload): Promise<AuthResponse> => {
     await fetchCsrfToken();
     const response = await api.post('/login', data);
     const { access_token, user } = response.data;
@@ -46,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return response.data;
   };
 
-  const register = async (data: any): Promise<AuthResponse> => {
+  const register = async (data: RegisterPayload): Promise<AuthResponse> => {
     await fetchCsrfToken();
     const response = await api.post('/register', data);
     const { access_token, user, needs_seller_payment } = response.data;
@@ -78,8 +82,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return updatedUser;
   };
 
-  const changePassword = async (data: any): Promise<void> => {
-    await api.put('/user/password', data);
+  const changePassword = async (data: ChangePasswordPayload): Promise<void> => {
+    try {
+      await api.put('/user/password', data);
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error("Change password failed:", error.message);
+      } else {
+        console.error("Change password failed:", error);
+      }
+      throw error;
+    }
   };
 
   return (
