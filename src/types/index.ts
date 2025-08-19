@@ -1,3 +1,12 @@
+import { AxiosError } from "axios";
+
+export interface ApiError {
+  message: string;
+  errors: {
+    [key: string]: string[];
+  };
+}
+
 export interface User {
   id: number;
   name: string;
@@ -9,6 +18,7 @@ export interface User {
   profile_image_url?: string; // Keep for AuthContext compatibility for now
   seller_package?: 'basic' | 'standard' | 'premium' | null;
   package_expiry_date?: string | null;
+  pending_seller_package?: 'basic' | 'standard' | 'premium' | null; // Added for seller registration flow
   email_verified_at?: string | null;
   location?: string | null;
   bio?: string | null;
@@ -22,6 +32,28 @@ export interface AuthResponse {
   user: User;
   access_token: string;
   token_type: string;
+  needs_seller_payment?: boolean; // Added for seller registration flow
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  phone_number: string;
+  password: string;
+  password_confirmation: string;
+  user_type: 'customer' | 'seller';
+  seller_package?: 'basic' | 'standard' | 'premium';
+}
+
+export interface ChangePasswordPayload {
+  current_password?: string;
+  password: string;
+  password_confirmation: string;
 }
 
 export interface Service {
@@ -102,6 +134,7 @@ export interface Contact {
     id: number;
     name: string;
     email: string;
+    phone: string | null;
     subject: string;
     message: string;
     status: 'unread' | 'read' | 'responded';
@@ -170,10 +203,31 @@ export interface SellerDashboardStats {
 }
 
 export interface CustomerDashboardStats {
-  upcoming_bookings_count: number;
-  reviews_to_write_count: number;
-  total_spent: string;
-  completed_bookings_count: number;
+  total_appointments_count: number;
+  upcoming_appointments_count: number;
+  completed_appointments_count: number;
+  cancelled_appointments_count: number;
+  total_amount_spent: number; // Changed from string to number based on sample
+  recent_appointments: Booking[]; // Added recent_appointments
 }
 
 export type DashboardStats = SellerDashboardStats | CustomerDashboardStats;
+
+// Define UserPackageInfo based on the feedback and existing User type
+export interface UserPackageInfo {
+  seller_package: 'basic' | 'standard' | 'premium' | null;
+  package_expiry_date: string | null;
+  phone_number: string | null;
+  name?: string;
+  email?: string;
+  user_type?: 'customer' | 'seller';
+  // Define the structure of the package configs
+  package_details?: {
+    price: number;
+    services_limit: number | null;
+    photos_per_service: number;
+    video_per_service: number | null;
+    listing_visibility: string;
+    support_level: string;
+  } | null;
+}

@@ -11,8 +11,10 @@ import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { PaginatedResponse, Service } from "@/types";
+import { PaginatedResponse, Service, SellerDashboardStats } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { packageConfigs } from '@/config/packageConfig'; // Import packageConfigs
 
 const fetchMyServices = async (sellerId: number) => {
   const { data } = await api.get('/services', {
@@ -29,6 +31,11 @@ const updateServiceStatus = async ({ id, is_active }: { id: number, is_active: b
   await api.put(`/services/${id}`, { is_active });
 };
 
+const fetchSellerInsights = async () => {
+  const { data } = await api.get('/seller/dashboard/insights');
+  return data.data;
+};
+
 const MyServices = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -42,11 +49,25 @@ const MyServices = () => {
     enabled: user?.user_type === 'seller' && !!user?.id,
   });
 
+  const { data: insights, isLoading: isInsightsLoading } = useQuery<SellerDashboardStats>({
+    queryKey: ['sellerInsights', user?.id],
+    queryFn: fetchSellerInsights,
+    enabled: user?.user_type === 'seller' && !!user?.id,
+  });
+
+  const activeServicesCount = insights?.active_services_count ?? 0;
+  const currentPackageKey = user?.seller_package;
+  const serviceLimit = currentPackageKey ? packageConfigs.seller_packages[currentPackageKey as keyof typeof packageConfigs.seller_packages]?.services_limit : null;
+  const isAddServiceDisabled = serviceLimit !== null && activeServicesCount >= serviceLimit;
+  const serviceLimitDisplay = serviceLimit === null ? 'Unlimited' : serviceLimit;
+
   const deleteMutation = useMutation({
     mutationFn: deleteService,
     onSuccess: () => {
       showSuccess("Service deleted successfully.");
       queryClient.invalidateQueries({ queryKey: ['my-services'] });
+      // Refetch seller insights to update active_services_count
+      queryClient.invalidateQueries({ queryKey: ['sellerInsights'] });
       setIsDeleteDialogOpen(false);
       setSelectedService(null);
     },
@@ -95,12 +116,32 @@ const MyServices = () => {
             <CardTitle>My Services</CardTitle>
             <CardDescription>Manage your service listings.</CardDescription>
           </div>
-          <Button asChild>
-            <Link to="/dashboard/services/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create New Service
-            </Link>
-          </Button>
+          <div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-block">
+                    <Button asChild disabled={isAddServiceDisabled} aria-label={isAddServiceDisabled ? "Service limit reached" : undefined}>
+                      <Link to="/dashboard/services/new" className={isAddServiceDisabled ? "pointer-events-none" : ""}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Create New Service
+                      </Link>
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {isAddServiceDisabled && (
+                  <TooltipContent>
+                    Upgrade your package to add more services.
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            {isAddServiceDisabled && (
+              <p className="text-sm text-destructive mt-2">
+                Service Limit Reached: {activeServicesCount}/{serviceLimitDisplay}.
+              </p>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

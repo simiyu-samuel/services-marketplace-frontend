@@ -3,14 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar, Briefcase, Star, DollarSign, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { SellerDashboardStats, CustomerDashboardStats, PaginatedResponse, Booking } from "@/types";
+import { SellerDashboardStats, CustomerDashboardStats, PaginatedResponse, Booking, User } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-const fetchDashboardStats = async () => {
-  const { data } = await api.get('/seller/dashboard/insights');
+const fetchDashboardStats = async (userType: 'customer' | 'seller') => {
+  const endpoint = userType === 'seller' ? '/seller/dashboard/insights' : '/customer/dashboard/insights';
+  const { data } = await api.get(endpoint);
   return data.data;
 };
 
@@ -33,35 +34,30 @@ const StatCard = ({ title, value, icon: Icon, description, isLoading }: { title:
 );
 
 const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => {
-  const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
-    queryKey: ['recentBookings'],
-    queryFn: fetchRecentBookings,
-  });
-
-  const upcomingBookings = bookingsResponse?.data.filter(b => ['pending', 'confirmed'].includes(b.status)) || [];
+  const recentAppointments = stats?.recent_appointments || [];
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Upcoming Bookings" value={stats?.upcoming_bookings_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
-          <StatCard title="Reviews to Write" value={stats?.reviews_to_write_count ?? 0} icon={Star} description="Share your experience" isLoading={isLoading} />
-          <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
-          <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_spent ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
+          <StatCard title="Upcoming Bookings" value={stats?.upcoming_appointments_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
+          <StatCard title="Completed Bookings" value={stats?.completed_appointments_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
+          <StatCard title="Total Bookings" value={stats?.total_appointments_count ?? 0} icon={Briefcase} description="All your appointments" isLoading={isLoading} />
+          <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
         </div>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Upcoming Appointments</CardTitle>
-          <CardDescription>Here are your next few scheduled appointments.</CardDescription>
+          <CardTitle>Recent Appointments</CardTitle>
+          <CardDescription>Here are your most recent appointments.</CardDescription>
         </CardHeader>
         <CardContent>
-          {bookingsLoading ? (
+          {isLoading ? (
             <div className="space-y-4"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div>
-          ) : upcomingBookings.length > 0 ? (
+          ) : recentAppointments.length > 0 ? (
             <div className="space-y-4">
-              {upcomingBookings.map((booking) => (
+              {recentAppointments.map((booking) => (
                 <div key={booking.id} className="flex items-center">
                   <Avatar className="h-9 w-9"><AvatarImage src={booking.seller.profile_image || undefined} /><AvatarFallback>{booking.seller.name.charAt(0)}</AvatarFallback></Avatar>
                   <div className="ml-4 space-y-1">
@@ -73,7 +69,7 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">You have no upcoming appointments.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">You have no recent appointments.</p>
           )}
         </CardContent>
         <CardFooter>
@@ -86,7 +82,7 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
   );
 };
 
-const SellerDashboard = ({ stats, isLoading }: { stats?: SellerDashboardStats, isLoading: boolean }) => {
+const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: SellerDashboardStats, isLoading: boolean }) => {
   const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
     queryKey: ['recentBookings'],
     queryFn: fetchRecentBookings,
@@ -103,6 +99,58 @@ const SellerDashboard = ({ stats, isLoading }: { stats?: SellerDashboardStats, i
 <StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
         </div>
       </div>
+
+      {/* Package Overview Section */}
+      <Card className={`mb-6 ${
+        (() => {
+          if (!user.seller_package || !user.package_expiry_date) return 'border-gray-400';
+          const expiryDate = new Date(user.package_expiry_date);
+          const today = new Date();
+          const timeDiff = expiryDate.getTime() - today.getTime();
+          const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+          if (daysDiff < 0) return 'border-red-500 bg-red-50'; // Expired
+          if (daysDiff <= 7) return 'border-yellow-500 bg-yellow-50'; // Expiring Soon
+          return 'border-green-500 bg-green-50'; // Active
+        })()
+      }`}>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>{user.seller_package ? `${user.seller_package.charAt(0).toUpperCase() + user.seller_package.slice(1)} Package` : 'No Active Package'}</span>
+            {(() => {
+              if (!user.seller_package || !user.package_expiry_date) return null;
+              const expiryDate = new Date(user.package_expiry_date);
+              const today = new Date();
+              const timeDiff = expiryDate.getTime() - today.getTime();
+              const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+              if (daysDiff < 0) return <span className="text-sm font-bold text-red-600">Expired! Please renew.</span>;
+              if (daysDiff <= 7) return <span className="text-sm font-bold text-yellow-600 animate-pulse">Expiring Soon!</span>;
+              return <span className="text-sm font-normal text-green-600">Active</span>;
+            })()}
+          </CardTitle>
+          {user.package_expiry_date && user.seller_package && (
+            <CardDescription>
+              Expires on: {new Date(user.package_expiry_date).toLocaleDateString()}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent>
+          {user.seller_package ? (
+            <p>You have <span className="font-bold">{stats?.active_services_count ?? 0}</span> active services.</p>
+          ) : (
+            <p>You need an active package to start selling. Choose a plan to get started!</p>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button size="sm" className="w-full" asChild>
+            <Link to="/dashboard/seller/package-upgrade">
+              {user.seller_package ? 'Upgrade / Renew Package' : 'Choose a Package'}
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Recent Bookings</CardTitle>
@@ -142,7 +190,7 @@ const Dashboard = () => {
     const { user } = useAuth();
     const { data: stats, isLoading, isError } = useQuery({
         queryKey: ['dashboardStats', user?.id],
-        queryFn: fetchDashboardStats,
+        queryFn: () => fetchDashboardStats(user!.user_type as 'customer' | 'seller'),
         enabled: !!user,
     });
 
@@ -165,8 +213,26 @@ const Dashboard = () => {
     return (
         <div>
             <h1 className="text-3xl font-bold mb-6">Welcome back, {user.name}!</h1>
-            {user.user_type === 'seller' 
-                ? <SellerDashboard stats={stats} isLoading={isLoading} /> 
+
+            {user.user_type === 'customer' && user.pending_seller_package && (
+                <Card className="mb-6 border-yellow-500 bg-yellow-50/50">
+                    <CardHeader>
+                        <CardTitle className="text-yellow-800">Action Required: Complete Seller Registration</CardTitle>
+                        <CardDescription className="text-yellow-700">
+                            You registered as a seller, but your payment for the <span className="font-semibold capitalize">{user.pending_seller_package}</span> package is pending.
+                            Please complete the payment to activate your seller account and access all features.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" asChild>
+                            <Link to="/seller-onboarding/payment">Complete Payment Now</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
+            {user.user_type === 'seller'
+                ? <SellerDashboard user={user} stats={stats} isLoading={isLoading} />
                 : <CustomerDashboard stats={stats} isLoading={isLoading} />}
         </div>
     );

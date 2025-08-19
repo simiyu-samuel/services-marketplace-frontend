@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { showError, showSuccess } from "@/utils/toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import PaymentDialog from "@/components/payments/PaymentDialog";
+import { RegisterPayload } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -39,6 +40,8 @@ const RegisterSeller = () => {
     amount: number;
     packageType: 'basic' | 'standard' | 'premium';
     email: string;
+    userId: number; // Added userId
+    phoneNumber: string; // Added phoneNumber
   } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,18 +52,18 @@ const RegisterSeller = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await register({ ...values, user_type: 'seller' });
-      
-      const { seller_package, email } = values;
-      const selectedPackage = packageDetails[seller_package];
+      const response = await register({ ...values, user_type: 'seller' } as RegisterPayload);
+      const { user, needs_seller_payment } = response;
 
-      showSuccess("Account created! Please complete the payment to proceed.");
-      setPaymentInfo({
-        open: true,
-        amount: selectedPackage.price,
-        packageType: seller_package,
-        email: email,
-      });
+      if (needs_seller_payment) {
+        const { seller_package, email } = values;
+        const selectedPackage = packageDetails[seller_package];
+        showSuccess("Account created! Please complete the payment to proceed.");
+        navigate("/seller-onboarding/payment"); // Redirect to the dedicated payment page
+      } else {
+        showSuccess("Registration successful!");
+        navigate("/dashboard"); // Redirect to dashboard if no payment needed (e.g., if user_type was customer)
+      }
     } catch (error: any) {
       if (error.response?.status === 422) {
         const apiErrors = error.response.data.errors;
@@ -79,12 +82,10 @@ const RegisterSeller = () => {
     }
   }
 
-  const handlePaymentSuccess = () => {
-    if (paymentInfo) {
-      navigate("/verify-email", { state: { email: paymentInfo.email } });
-    }
-    setPaymentInfo(null);
-  };
+  // The handlePaymentSuccess is no longer directly used here as the payment dialog
+  // is now handled by the SellerOnboardingPayment page.
+  // The redirect to dashboard after successful payment will be handled by the
+  // useEffect in SellerOnboardingPayment.tsx which observes user.user_type.
 
   return (
     <>
@@ -131,18 +132,7 @@ const RegisterSeller = () => {
           </CardContent>
         </Card>
       </div>
-      {paymentInfo && (
-        <PaymentDialog
-          isOpen={paymentInfo.open}
-          onOpenChange={(open) => {
-            if (!open) setPaymentInfo(null);
-          }}
-          amount={paymentInfo.amount}
-          paymentType="seller_registration"
-          packageType={paymentInfo.packageType}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
-      )}
+      {/* PaymentDialog is no longer directly rendered here, it's on SellerOnboardingPayment page */}
     </>
   );
 };

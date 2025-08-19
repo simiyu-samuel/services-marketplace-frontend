@@ -70,13 +70,31 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
           <Badge className="absolute top-2 left-2 z-10">{service.category}</Badge>
           <Carousel className="w-full">
             <CarouselContent>
-              <CarouselItem>
-                <div className="aspect-video bg-muted flex items-center justify-center">
-                  <img src="/placeholder.svg" alt="Placeholder" className="object-cover w-full h-full" />
-                </div>
-              </CarouselItem>
+              {service.media_files && service.media_files.length > 0 ? (
+                service.media_files.map((media, index) => (
+                  <CarouselItem key={index}>
+                    <div className="aspect-video bg-muted flex items-center justify-center">
+                      <img src={media} alt={`Service image ${index + 1}`} className="object-cover w-full h-full" />
+                    </div>
+                  </CarouselItem>
+                ))
+              ) : (
+                <CarouselItem>
+                  <div className="aspect-video bg-muted flex items-center justify-center">
+                    {/* Replace placeholder with actual image */}
+                    {service.media_files && service.media_files.length === 0 ? (
+                      <img src="/placeholder.svg" alt="Placeholder" className="object-cover w-full h-full" />
+                    ) : null}
+                  </div>
+                </CarouselItem>
+              )}
             </CarouselContent>
-            {/* Carousel navigation removed as only one placeholder image is used */}
+            {service.media_files && service.media_files.length > 1 && (
+              <>
+                <CarouselPrevious />
+                <CarouselNext />
+              </>
+            )}
           </Carousel>
         </div>
         <CardContent className="p-4 space-y-2 bg-background">

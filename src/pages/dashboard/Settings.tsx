@@ -11,58 +11,56 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import PaymentDialog from "@/components/payments/PaymentDialog";
+import { packageConfigs } from "@/config/packageConfig"; // Import from shared config
+import { ChangePasswordPayload, UserPackageInfo, ApiError } from "@/types"; // Import necessary types
+import { AxiosError } from "axios"; // Import AxiosError
 
 const passwordSchema = z.object({
   current_password: z.string().min(1, { message: "Current password is required." }),
-  new_password: z.string().min(8, { message: "New password must be at least 8 characters." }),
-  new_password_confirmation: z.string(),
-}).refine(data => data.new_password === data.new_password_confirmation, {
+  password: z.string().min(8, { message: "New password must be at least 8 characters." }),
+  password_confirmation: z.string(),
+}).refine(data => data.password === data.password_confirmation, {
   message: "New passwords do not match.",
-  path: ["new_password_confirmation"],
+  path: ["password_confirmation"],
 });
-
-const packageDetails = {
-  basic: { name: "Basic", price: 1000.00 },
-  standard: { name: "Standard", price: 1500.00 },
-  premium: { name: "Premium", price: 2500.00 },
-};
 
 const Settings = () => {
   const { user, changePassword } = useAuth();
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
-  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+  const passwordForm = useForm<ChangePasswordPayload>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { current_password: "", new_password: "", new_password_confirmation: "" },
+    defaultValues: { current_password: "", password: "", password_confirmation: "" },
   });
 
-  async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
+  async function onPasswordSubmit(values: ChangePasswordPayload) {
     try {
       await changePassword(values);
       showSuccess("Password updated successfully!");
       passwordForm.reset();
-    } catch (error: any) {
-      if (error.response?.status === 422) {
-        const apiErrors = error.response.data.errors;
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiError>;
+      if (axiosError.response?.status === 422) {
+        const apiErrors = axiosError.response.data.errors;
         Object.keys(apiErrors).forEach((field) => {
-          passwordForm.setError(field as keyof z.infer<typeof passwordSchema>, {
+          passwordForm.setError(field as keyof ChangePasswordPayload, {
             type: "server",
             message: apiErrors[field][0],
           });
         });
       } else {
-        showError(error.response?.data?.message || "Failed to update password.");
+        showError(axiosError.response?.data?.message || axiosError.message || "Failed to update password.");
       }
     }
   }
 
   const currentPackageName = user?.seller_package || 'basic';
-  const currentPackage = packageDetails[currentPackageName];
+  const currentPackage = packageConfigs.seller_packages[currentPackageName as keyof typeof packageConfigs.seller_packages];
   
   const packageOrder: Array<'basic' | 'standard' | 'premium'> = ['basic', 'standard', 'premium'];
   const currentPackageIndex = packageOrder.indexOf(currentPackageName);
   const nextPackageName = currentPackageIndex < 2 ? packageOrder[currentPackageIndex + 1] : null;
-  const nextPackage = nextPackageName ? packageDetails[nextPackageName] : null;
+  const nextPackage = nextPackageName ? packageConfigs.seller_packages[nextPackageName as keyof typeof packageConfigs.seller_packages] : null;
 
   const upgradePrice = nextPackage ? nextPackage.price : 0;
 
@@ -77,14 +75,15 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <p>You are currently on the <span className="font-bold text-primary capitalize">{currentPackage?.name}</span> package.</p>
+              {user?.package_expiry_date && (
+                <p className="text-sm text-muted-foreground">Expires on: {new Date(user.package_expiry_date).toLocaleDateString()}</p>
+              )}
             </CardContent>
-            {currentPackageName !== 'premium' && nextPackage && (
-              <CardFooter>
-                <Button onClick={() => setIsPaymentDialogOpen(true)}>
-                  Upgrade to {nextPackage.name} (Ksh {upgradePrice.toLocaleString()})
-                </Button>
-              </CardFooter>
-            )}
+            <CardFooter>
+              <Button asChild>
+                <a href="/dashboard/seller/package-upgrade">Upgrade or Renew Package</a>
+              </Button>
+            </CardFooter>
           </Card>
         )}
 
@@ -99,10 +98,10 @@ const Settings = () => {
                 <FormField control={passwordForm.control} name="current_password" render={({ field }) => (
                   <FormItem><FormLabel>Current Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={passwordForm.control} name="new_password" render={({ field }) => (
+                <FormField control={passwordForm.control} name="password" render={({ field }) => (
                   <FormItem><FormLabel>New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={passwordForm.control} name="new_password_confirmation" render={({ field }) => (
+                <FormField control={passwordForm.control} name="password_confirmation" render={({ field }) => (
                   <FormItem><FormLabel>Confirm New Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </CardContent>
@@ -156,7 +155,11 @@ const Settings = () => {
           amount={upgradePrice}
           paymentType="package_upgrade"
           packageType={nextPackage.name as 'standard' | 'premium'}
-          onPaymentSuccess={() => setIsPaymentDialogOpen(false)}
+          initialPhoneNumber={user?.phone_number || ''}
+          onPaymentSuccess={() => {
+            setIsPaymentDialogOpen(false);
+            // Optionally re-fetch user data or invalidate queries to update package info immediately
+          }}
         />
       )}
     </>

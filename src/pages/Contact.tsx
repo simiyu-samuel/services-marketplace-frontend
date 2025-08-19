@@ -10,10 +10,12 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import AnimatedWrapper from "@/components/ui/AnimatedWrapper";
 import { motion } from "framer-motion";
+import api from "@/lib/api";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
   subject: z.string().min(5, { message: "Subject must be at least 5 characters." }),
   message: z.string().min(10, { message: "Message must be at least 10 characters." }),
 });
@@ -21,12 +23,12 @@ const formSchema = z.object({
 const Contact = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", email: "", subject: "", message: "" },
+    defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      console.log("Form submitted:", values);
+      await api.post('/contact', values);
       showSuccess("Your message has been sent successfully!");
       form.reset();
     } catch (error) {
@@ -75,6 +77,9 @@ const Contact = () => {
                         <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input placeholder="you@example.com" {...field} className="h-12 bg-background" /></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
+                    <FormField control={form.control} name="phone" render={({ field }) => (
+                      <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="e.g., 254712345678" {...field} className="h-12 bg-background" /></FormControl><FormMessage /></FormItem>
+                    )} />
                     <FormField control={form.control} name="subject" render={({ field }) => (
                       <FormItem><FormLabel>Subject</FormLabel><FormControl><Input placeholder="What is your message about?" {...field} className="h-12 bg-background" /></FormControl><FormMessage /></FormItem>
                     )} />

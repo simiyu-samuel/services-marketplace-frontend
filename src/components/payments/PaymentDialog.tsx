@@ -20,15 +20,15 @@ interface PaymentDialogProps {
   paymentType: 'seller_registration' | 'package_upgrade' | 'service_payment';
   packageType?: 'basic' | 'standard' | 'premium';
   onPaymentSuccess?: () => void;
+  initialPhoneNumber: string; // Added initialPhoneNumber
 }
 
-const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType, onPaymentSuccess }: PaymentDialogProps) => {
-  const { user } = useAuth();
-  const { status, initiatePayment } = usePayment();
+const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType, onPaymentSuccess, initialPhoneNumber }: PaymentDialogProps) => {
+  const { status, error, initiatePayment } = usePayment(); // Destructure error here
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { phone_number: user?.phone_number || "2547" },
+    defaultValues: { phone_number: initialPhoneNumber || "2547" },
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
@@ -40,8 +40,13 @@ const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType,
     });
   };
 
-  if (status === 'completed' && onPaymentSuccess) {
-    onPaymentSuccess();
+  // Call onPaymentSuccess when status is completed
+  if (status === 'completed') {
+    if (onPaymentSuccess) {
+      onPaymentSuccess();
+    }
+    // Close the dialog after a successful payment
+    onOpenChange(false);
   }
 
   const isLoading = status === 'initiating' || status === 'polling';
@@ -60,6 +65,32 @@ const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType,
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
             <p className="font-semibold">Processing Payment...</p>
             <p className="text-sm text-muted-foreground text-center">Please check your phone to enter your M-Pesa PIN.</p>
+          </div>
+        ) : status === 'timed_out' ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="font-semibold text-yellow-500">Payment Timed Out</p>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              Payment is taking longer than expected. Please check your M-Pesa for a confirmation message. You can also check your payment history for updates.
+            </p>
+            <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
+          </div>
+        ) : status === 'failed' ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="font-semibold text-red-500">Payment Failed</p>
+            <p className="text-sm text-muted-foreground text-center mt-2">{error || 'An error occurred during payment.'}</p> {/* Use the error state here */}
+            <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
+          </div>
+        ) : status === 'cancelled' ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="font-semibold text-blue-500">Payment Cancelled</p>
+            <p className="text-sm text-muted-foreground text-center mt-2">Your payment was cancelled. Please try again or contact support.</p>
+            <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
+          </div>
+        ) : status === 'completed' ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="font-semibold text-green-500">Payment Successful!</p>
+            <p className="text-sm text-muted-foreground text-center mt-2">Your payment has been processed successfully.</p>
+            <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
           </div>
         ) : (
           <Form {...form}>

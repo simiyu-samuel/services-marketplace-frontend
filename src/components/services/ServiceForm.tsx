@@ -37,10 +37,14 @@ interface ServiceFormProps {
   initialData?: Service;
   isLoading: boolean;
   submitButtonText?: string;
+  photosPerService?: number;
+  videosPerService?: number;
 }
 
-const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Save Service" }: ServiceFormProps) => {
+const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Save Service", photosPerService, videosPerService }: ServiceFormProps) => {
   const [previews, setPreviews] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(formSchema),
@@ -56,14 +60,40 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (files: FileList | null) => void) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (files: FileList | null) => void, photosPerService?: number, videosPerService?: number) => {
     const files = e.target.files;
-    fieldChange(files);
     if (files) {
-        const newPreviews = Array.from(files).map(file => URL.createObjectURL(file));
-        setPreviews(newPreviews);
-    } else {
+      const numPhotos = Array.from(files).filter(file => file.type.startsWith('image')).length;
+      const numVideos = Array.from(files).filter(file => file.type.startsWith('video')).length;
+
+      if (photosPerService !== undefined && numPhotos > photosPerService) {
+        alert(`You can only upload a maximum of ${photosPerService} images.`);
+        fieldChange(null);
         setPreviews([]);
+        setImagePreviews([]);
+        return;
+      }
+
+      if (videosPerService !== undefined && numVideos > videosPerService) {
+        alert(`You can only upload a maximum of ${videosPerService} videos.`);
+        fieldChange(null);
+        setPreviews([]);
+        setVideoPreviews([]);
+        return;
+      }
+
+      const newImagePreviews = Array.from(files).filter(file => file.type.startsWith('image/')).map(file => URL.createObjectURL(file));
+      const newVideoPreviews = Array.from(files).filter(file => file.type.startsWith('video/')).map(file => URL.createObjectURL(file));
+      setImagePreviews(newImagePreviews);
+      setVideoPreviews(newVideoPreviews);
+      const newPreviews = [...newImagePreviews, ...newVideoPreviews];
+      setPreviews(newPreviews);
+      fieldChange(files);
+    } else {
+      fieldChange(null);
+      setPreviews([]);
+      setImagePreviews([]);
+      setVideoPreviews([]);
     }
   };
 
@@ -101,14 +131,26 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
               <FormField control={form.control} name="media_files" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Service Media (Images/Videos)</FormLabel>
+                  {photosPerService !== undefined && videosPerService !== undefined && (
+                    <p className="text-sm text-muted-foreground">
+                      Upload up to {photosPerService} images and {videosPerService} videos.
+                    </p>
+                  )}
                   <FormControl>
-                    <Input type="file" multiple accept="image/*,video/*" onChange={(e) => handleFileChange(e, field.onChange)} />
+                    <Input type="file" multiple accept="image/*,video/*" onChange={(e) => handleFileChange(e, field.onChange, photosPerService, videosPerService)} />
                   </FormControl>
                   <FormMessage />
-                  {previews.length > 0 && (
+                  {imagePreviews.length > 0 && (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-2">
-                      {previews.map((src, index) => (
-                        <img key={index} src={src} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                      {imagePreviews.map((src, index) => (
+                        <img key={index} src={src} alt={`Image Preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                      ))}
+                    </div>
+                  )}
+                  {videoPreviews.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-2">
+                      {videoPreviews.map((src, index) => (
+                        <video key={index} src={src} className="w-full h-24 object-cover rounded-md" controls />
                       ))}
                     </div>
                   )}

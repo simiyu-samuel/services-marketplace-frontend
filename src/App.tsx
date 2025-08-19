@@ -34,6 +34,7 @@ const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
+const SellerOnboardingPayment = React.lazy(() => import("./pages/SellerOnboardingPayment")); // New import
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Dashboard Pages
@@ -57,6 +58,7 @@ const AdminContacts = React.lazy(() => import("./pages/admin/Contacts"));
 const AdminBlog = React.lazy(() => import("./pages/admin/Blog"));
 const CreateBlogPost = React.lazy(() => import("./pages/admin/CreateBlogPost"));
 const EditBlogPost = React.lazy(() => import("./pages/admin/EditBlogPost"));
+const PackageUpgrade = React.lazy(() => import("./pages/PackageUpgrade"));
 
 const queryClient = new QueryClient();
 
@@ -85,6 +87,7 @@ const AppContent = () => {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/seller-onboarding/payment" element={<SellerOnboardingPayment />} /> {/* New route */}
               <Route path="*" element={<NotFound />} />
             </Route>
 
@@ -100,6 +103,7 @@ const AppContent = () => {
                   <Route path="profile" element={<Profile />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="payments" element={<PaymentHistory />} />
+                  <Route path="seller/package-upgrade" element={<PackageUpgrade />} />
                 </Route>
               </Route>
             </Route>

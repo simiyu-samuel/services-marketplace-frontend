@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showError } from '../utils/toast'; // Import showError for error handling
 
 // Set defaults for all axios instances to ensure credentials and CSRF tokens are handled correctly.
 axios.defaults.withCredentials = true;
@@ -22,6 +23,22 @@ api.interceptors.request.use(config => {
   }
   return config;
 });
+
+// Interceptor to handle 401 Unauthorized and 403 Forbidden responses globally
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401 || status === 403) {
+        localStorage.removeItem('authToken'); // Clear token
+        showError('Session expired. Please log in again.'); // Display toast
+        window.location.href = '/login'; // Navigate to login page
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Recursive function to prepend backend URL to image paths
 const processImagePaths = (data: unknown): unknown => {
