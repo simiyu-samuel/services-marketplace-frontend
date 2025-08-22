@@ -6,12 +6,14 @@ import ServiceCard from "@/components/services/ServiceCard";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 import { PaginatedResponse, Service } from "@/types";
 import { Button } from "@/components/ui/button";
-import { SearchX, SlidersHorizontal } from "lucide-react";
+import { SearchX, SlidersHorizontal, Grid, List } from "lucide-react";
 import AnimatedWrapper from "@/components/ui/AnimatedWrapper";
 import Masonry from 'react-masonry-css';
-import ServiceFilters from "@/components/services/ServiceFilters";
+import EnhancedServiceFilters from "@/components/services/EnhancedServiceFilters";
+import ServiceListView from "@/components/services/ServiceListView";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const categories = [
   "Beauty",
@@ -44,6 +46,7 @@ const fetchServices = async () => {
 
 const Services = () => {
   const [searchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<Filters>({
     search: '',
     location: '',
@@ -135,72 +138,135 @@ const Services = () => {
   };
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen pt-20">
       <div className="container pt-32 pb-16">
         <div className="text-center mb-12">
           <AnimatedWrapper>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
               Find Your Perfect Service
             </h1>
-            <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground">
-              Explore a universe of services tailored for you.
+            <p className="max-w-2xl mx-auto text-muted-foreground">
+              Discover and book amazing services from verified providers in your area
             </p>
           </AnimatedWrapper>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3">
-            <main>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Enhanced Filters Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              {!isMobile ? (
+                <EnhancedServiceFilters 
+                  filters={filters} 
+                  setFilters={setFilters} 
+                  categories={categories} 
+                />
+              ) : null}
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-4">
+            {/* Mobile Filters & View Toggle */}
+            <div className="flex justify-between items-center mb-6">
               {isMobile && (
-                <div className="mb-6 flex justify-end">
-                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                    <SheetTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        <SlidersHorizontal className="h-5 w-5" />
-                        Filters
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="bottom" className="w-full sm:w-[400px] overflow-y-auto">
-                      <SheetHeader>
-                        <SheetTitle>Filter Services</SheetTitle>
-                      </SheetHeader>
-                      <ServiceFilters filters={filters} setFilters={setFilters} categories={categories} />
-                    </SheetContent>
-                  </Sheet>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-full sm:w-[400px] overflow-y-auto">
+                    <SheetHeader>
+                      <SheetTitle>Filter Services</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6">
+                      <EnhancedServiceFilters 
+                        filters={filters} 
+                        setFilters={setFilters} 
+                        categories={categories} 
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
+              
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Results Count */}
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground">
+                {status === 'pending' ? 'Loading...' : `${filteredServices.length} services found`}
+              </p>
+            </div>
+
+            <main>
+              {viewMode === 'grid' ? (
+                <Masonry
+                  breakpointCols={breakpointColumnsObj}
+                  className="my-masonry-grid"
+                  columnClassName="my-masonry-grid_column"
+                >
+                  {status === 'pending' ? (
+                    Array.from({ length: 9 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+                  ) : status === 'error' ? (
+                    <div className="col-span-full text-center py-16 text-destructive">
+                      <p>Error: {error.message}</p>
+                    </div>
+                  ) : filteredServices.length > 0 ? (
+                    filteredServices.map((service, index) => (
+                      <AnimatedWrapper key={`${service.id}-${index}`} delay={index * 0.05}>
+                        <ServiceCard service={service} />
+                      </AnimatedWrapper>
+                    ))
+                  ) : (
+                    <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
+                      <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
+                      <h3 className="text-2xl font-semibold">No Services Found</h3>
+                      <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>
+                    </div>
+                  )}
+                </Masonry>
+              ) : (
+                <div className="space-y-4">
+                  {status === 'pending' ? (
+                    Array.from({ length: 6 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+                  ) : status === 'error' ? (
+                    <div className="text-center py-16 text-destructive">
+                      <p>Error: {error.message}</p>
+                    </div>
+                  ) : filteredServices.length > 0 ? (
+                    filteredServices.map((service, index) => (
+                      <ServiceListView key={`${service.id}-${index}`} service={service} index={index} />
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
+                      <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
+                      <h3 className="text-2xl font-semibold">No Services Found</h3>
+                      <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>
+                    </div>
+                  )}
                 </div>
               )}
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="my-masonry-grid"
-                columnClassName="my-masonry-grid_column"
-              >
-                {status === 'pending' ? (
-                  Array.from({ length: 9 }).map((_, index) => <ServiceCardSkeleton key={index} />)
-                ) : status === 'error' ? (
-                  <div className="col-span-full text-center py-16 text-destructive">
-                    <p>Error: {error.message}</p>
-                  </div>
-                ) : filteredServices.length > 0 ? (
-                  filteredServices.map((service, index) => (
-                    <AnimatedWrapper key={`${service.id}-${index}`} delay={index * 0.05}>
-                      <ServiceCard service={service} />
-                    </AnimatedWrapper>
-                  ))
-                ) : (
-                  <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
-                    <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
-                    <h3 className="text-2xl font-semibold">No Services Found</h3>
-                    <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>
-                  </div>
-                )}
-              </Masonry>
             </main>
           </div>
-          {!isMobile && (
-            <aside className="lg:col-span-1">
-              <ServiceFilters filters={filters} setFilters={setFilters} categories={categories} />
-            </aside>
-          )}
         </div>
       </div>
     </div>

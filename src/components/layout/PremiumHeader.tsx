@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Command, Search, Menu, X, User } from 'lucide-react';
+import { Command, Search, Menu, X, User, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import MobileLocationSelector from './MobileLocationSelector';
 
 const PremiumHeader: React.FC = () => {
   const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -67,6 +68,14 @@ const PremiumHeader: React.FC = () => {
         </Link>
         
         <div className="flex items-center gap-2">
+          {/* Mobile-specific navigation items */}
+          <div className="flex md:hidden items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="text-primary font-medium">
+              <Link to="/services">Find Services</Link>
+            </Button>
+            <MobileLocationSelector />
+          </div>
+
           <Button variant="ghost" size="icon" onClick={() => setIsCommandOpen(true)} className="group">
             <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             <span className="sr-only">Search</span>
@@ -120,6 +129,14 @@ const PremiumHeader: React.FC = () => {
                   {link.text}
                 </Link>
               ))}
+              <div className="border-t border-border/40 pt-4 mt-4">
+                <Button asChild className="w-full mb-2">
+                  <Link to="/services">Find Services</Link>
+                </Button>
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/register">Join as Provider</Link>
+                </Button>
+              </div>
               <Button asChild className="w-full mt-4">
                 <Link to="/login">Get Started</Link>
               </Button>

@@ -1,7 +1,10 @@
 import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 import RouteTransitions from "./components/ui/RouteTransitions";
+import AuthGuard from "./components/auth/AuthGuard";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,8 +15,9 @@ import EditAdminService from "./pages/admin/EditAdminService";
 // Layouts
 import MainLayout from "./components/layout/MainLayout";
 import PremiumLayout from "./components/layout/PremiumLayout";
+import ImprovedLayout from "./components/layout/ImprovedLayout";
+import ImprovedDashboardLayout from "./components/dashboard/ImprovedDashboardLayout";
 import AdminLayout from "./components/layout/AdminLayout";
-import DashboardLayout from "./components/layout/DashboardLayout";
 
 // Auth
 import AdminRoute from "./components/auth/AdminRoute";
@@ -69,19 +73,48 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   return (
-    <AuthProvider>
-      <RouteTransitions>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Routes location={location}>
+    <ErrorBoundary>
+      <AuthProvider>
+        <RouteTransitions>
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <LoadingSpinner size="lg" text="Loading application..." />
+            </div>
+          }>
+            <Routes location={location}>
             {/* Public Routes */}
-            <Route element={<PremiumLayout />}>
-            <Route path="/" element={<Home />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/services/:id" element={<ServiceDetails />} />
-              <Route path="/sellers/:id" element={<SellerProfile />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogDetails />} />
-              <Route path="/contact" element={<Contact />} />
+            <Route element={<ImprovedLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/services" element={
+                <AuthGuard>
+                  <Services />
+                </AuthGuard>
+              } />
+              <Route path="/services/:id" element={
+                <AuthGuard>
+                  <ServiceDetails />
+                </AuthGuard>
+              } />
+              <Route path="/sellers/:id" element={
+                <AuthGuard>
+                  <SellerProfile />
+                </AuthGuard>
+              } />
+              <Route path="/blog" element={
+                <AuthGuard>
+                  <Blog />
+                </AuthGuard>
+              } />
+              <Route path="/blog/:slug" element={
+                <AuthGuard>
+                  <BlogDetails />
+                </AuthGuard>
+              } />
+              <Route path="/contact" element={
+                <AuthGuard>
+                  <Contact />
+                </AuthGuard>
+              } />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/register/customer" element={<RegisterCustomer />} />
@@ -97,8 +130,7 @@ const AppContent = () => {
 
             {/* User Dashboard Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route element={<MainLayout />}>
-                <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<ImprovedDashboardLayout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="bookings" element={<MyBookings />} />
                   <Route path="services" element={<MyServices />} />
@@ -110,11 +142,11 @@ const AppContent = () => {
                   <Route path="seller/package-upgrade" element={<PackageUpgrade />} />
                 </Route>
               </Route>
-            </Route>
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="services" element={<AdminServices />} />
@@ -130,10 +162,11 @@ const AppContent = () => {
                 <Route path="my-services/:id/edit" element={<EditAdminService />} /> {/* Add this line */}
               </Route>
             </Route>
-          </Routes>
-        </Suspense>
-      </RouteTransitions>
-    </AuthProvider>
+            </Routes>
+          </Suspense>
+        </RouteTransitions>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 
