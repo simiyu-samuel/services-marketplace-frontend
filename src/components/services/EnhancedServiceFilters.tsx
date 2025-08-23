@@ -18,14 +18,14 @@ interface EnhancedServiceFiltersProps {
 }
 
 const subcategories = {
-  Beauty: ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
-  Hair: ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
-  Fashion: ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
-  Photography: ["Event", "Lifestyle", "Portrait"],
-  Bridal: ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
-  Health: ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
+  "Beauty Services": ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
+  "Hair Services": ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
+  "Fashion Services": ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
+  "Photography": ["Event", "Lifestyle", "Portrait"],
+  "Bridal Services": ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
+  "Health Services": ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
   "Celebrate Her": ["Florist", "Decor", "Journey to Motherhood"],
-  Fitness: ["Gym", "Personal Trainers", "Nutritionist"],
+  "Fitness Services": ["Gym", "Personal Trainers", "Nutritionist"],
   "Home & Lifestyles": ["Cleaning Services", "Laundry Services", "Home & Home Decor"],
 };
 
@@ -48,14 +48,12 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCategorySelect = (category: string) => {
+  const handleMainCategorySelect = (category: string) => {
     setSelectedMainCategory(category);
-    setFilters(prev => ({ 
-      ...prev, 
-      categories: prev.categories.includes(category) 
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category],
-      subcategories: [] // Clear subcategories when main category changes
+    setFilters(prev => ({
+      ...prev,
+      categories: [category], // Only one main category can be selected
+      subcategories: [], // Clear subcategories when main category changes
     }));
   };
 
@@ -85,7 +83,7 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
     setSelectedMainCategory('');
   };
 
-  const hasActiveFilters = filters.search || filters.location || filters.categories.length > 0 || 
+  const hasActiveFilters = filters.search || filters.location || selectedMainCategory ||
     filters.subcategories.length > 0 || filters.priceRange[0] > 0 || filters.priceRange[1] < 20000 || filters.isMobile;
 
   return (
@@ -93,7 +91,7 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
       {/* Quick Search & Location */}
       <Card className="bg-background/95 backdrop-blur-lg border-border/40 shadow-lg">
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -189,9 +187,9 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div className="space-y-6">
                   {/* Main Categories */}
-                  <div className="lg:col-span-4">
+                  <div className="lg:col-span-1">
                     <h3 className="font-semibold mb-4 text-foreground">Main Categories</h3>
                     <ScrollArea className="h-64">
                       <div className="space-y-2 pr-4">
@@ -200,16 +198,16 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
                             key={category}
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleCategorySelect(category)}
+                            onClick={() => handleMainCategorySelect(category)}
                             className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center justify-between group ${
-                              filters.categories.includes(category)
-                                ? 'bg-primary text-primary-foreground shadow-md' 
+                              selectedMainCategory === category
+                                ? 'bg-primary text-primary-foreground shadow-md'
                                 : 'hover:bg-muted border border-transparent hover:border-border'
                             }`}
                           >
                             <span className="font-medium">{category}</span>
                             <ChevronRight className={`h-4 w-4 transition-transform ${
-                              filters.categories.includes(category) ? 'rotate-90' : 'group-hover:translate-x-1'
+                              selectedMainCategory === category ? 'rotate-90' : 'group-hover:translate-x-1'
                             }`} />
                           </motion.button>
                         ))}
@@ -218,22 +216,20 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
                   </div>
 
                   {/* Subcategories */}
-                  <div className="lg:col-span-4">
+                  <div className="lg:col-span-1">
                     <h3 className="font-semibold mb-4 text-foreground">
-                      {filters.categories.length > 0 ? 'Specific Services' : 'Select a category first'}
+                      {selectedMainCategory ? 'Specific Services' : 'Select a category first'}
                     </h3>
                     <ScrollArea className="h-64">
                       <AnimatePresence mode="wait">
-                        {filters.categories.length > 0 && (
+                        {selectedMainCategory && (
                           <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-2 pr-4"
                           >
-                            {filters.categories.flatMap(category => 
-                              subcategories[category as keyof typeof subcategories] || []
-                            ).map(subcategory => (
+                            {(subcategories[selectedMainCategory as keyof typeof subcategories] || []).map(subcategory => (
                               <motion.button
                                 key={subcategory}
                                 whileHover={{ scale: 1.02 }}
@@ -255,7 +251,7 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
                   </div>
 
                   {/* Additional Filters */}
-                  <div className="lg:col-span-4 space-y-6">
+                  <div className="lg:col-span-1 space-y-6">
                     <div>
                       <h3 className="font-semibold mb-4 text-foreground">Price Range</h3>
                       <div className="space-y-4">

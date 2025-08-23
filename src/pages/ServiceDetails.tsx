@@ -65,11 +65,11 @@ const ServiceDetails = () => {
     return <NotFound />;
   }
 
-  const otherServices = allServices?.filter(s => s.user.id === service.user.id && s.id !== service.id) || [];
-  const whatsappNumber = service.user.phone_number;
+const otherServices = allServices?.filter(s => s.user && service.user && s.user.id === service.user.id && s.id !== service.id) || [];
+const whatsappNumber = service.user?.phone_number;
   const message = `Hello, I'm interested in booking the "${service.title}" service.`;
   const encodedMessage = encodeURIComponent(message);
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodedMessage}` : "";
   const rating = service.rating ?? 0;
   const reviewCount = service.review_count ?? 0;
   const sampleReviews = mockReviews.slice(0, 3);
@@ -93,7 +93,35 @@ const ServiceDetails = () => {
               </div>
             </div>
 
-            <ImageGallery mediaFiles={service.media_files} serviceTitle={service.title} />
+<ImageGallery mediaFiles={service.media_files} serviceTitle={service.title} />
+            <Card className="mt-6 md:hidden block">
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl font-bold text-primary">
+                    Ksh {parseFloat(service.price).toLocaleString()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="h-5 w-5 mr-2" />
+                    <span>Duration: {service.duration} minutes</span>
+                  </div>
+                  {service.is_mobile && <Badge>Mobile Service Available</Badge>}
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
+                      <CalendarPlus className="h-5 w-5" />
+                      Book Appointment
+                    </Button>
+{whatsappUrl && (
+                    <Button size="lg" variant="outline" className="w-full gap-2" asChild>
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                        <MessageSquare className="h-5 w-5" />
+                        Contact via WhatsApp
+                      </a>
+                    </Button>
+                  )}
+                  </div>
+                </CardContent>
+              </Card>
 
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4 border-b pb-2">About this service</h2>
@@ -135,9 +163,9 @@ const ServiceDetails = () => {
             </div>
           </div>
 
-          <div className="md:col-span-1">
+<div className="md:col-span-1">
             <div className="sticky top-20 space-y-6">
-              <Card>
+              <Card className="hidden md:block">
                 <CardHeader>
                   <CardTitle className="text-center text-2xl font-bold text-primary">
                     Ksh {parseFloat(service.price).toLocaleString()}
@@ -154,15 +182,18 @@ const ServiceDetails = () => {
                       <CalendarPlus className="h-5 w-5" />
                       Book Appointment
                     </Button>
+{whatsappUrl && (
                     <Button size="lg" variant="outline" className="w-full gap-2" asChild>
                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                         <MessageSquare className="h-5 w-5" />
                         Contact via WhatsApp
                       </a>
                     </Button>
+                  )}
                   </div>
                 </CardContent>
               </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>About the Seller</CardTitle>
@@ -191,8 +222,8 @@ const ServiceDetails = () => {
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">More from {service.user.name}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {otherServices.map(otherService => (
-                <ServiceCard key={otherService.id} service={otherService} />
+{otherServices.map(otherService => otherService && (
+                <ServiceCard key={otherService?.id} service={otherService} />
               ))}
             </div>
           </div>

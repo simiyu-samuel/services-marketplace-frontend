@@ -36,12 +36,14 @@ api.interceptors.request.use(async config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response) {
-      const { status } = error.response;
+if (error.response) {
+      const { status, config } = error.response;
       if (status === 401 || status === 403) {
-        localStorage.removeItem('authToken'); // Clear token
-        showError('Session expired. Please log in again.'); // Display toast
-        window.location.href = '/login'; // Navigate to login page
+        if (!(config.url === '/services' && config.method === 'post')) {
+          localStorage.removeItem('authToken'); // Clear token
+          showError('Session expired. Please log in again.'); // Display toast
+          window.location.href = '/login'; // Navigate to login page
+        }
       }
     }
     return Promise.reject(error);

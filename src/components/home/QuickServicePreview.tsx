@@ -55,15 +55,8 @@ const QuickServicePreview = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-2"
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Trending Services</h2>
-          </div>
-          <p className="max-w-2xl mx-auto text-muted-foreground text-lg">
-            Discover the most popular and highly-rated services in your area
-          </p>
         </motion.div>
 
         <motion.div

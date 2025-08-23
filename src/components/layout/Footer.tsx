@@ -109,7 +109,7 @@ const Footer: React.FC = () => {
             © {new Date().getFullYear()} Themabinti Services Hub. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
-            Designed with <span role="img" aria-label="love"></span><span role="img" aria-label="coffee">☕</span> by ICORE Information Systems
+            Designed<span role="img" aria-label="love"></span><span role="img" aria-label="coffee"></span> by ICORE Information Systems
           </p>
         </div>
       </div>

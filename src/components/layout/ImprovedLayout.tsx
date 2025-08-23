@@ -7,7 +7,7 @@ const ImprovedLayout: React.FC = () => {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <ImprovedHeader />
-      <main className="min-h-screen">
+      <main className="min-h-screen pt-50 container py-8 flex-grow">
         <Outlet />
       </main>
       <Footer />

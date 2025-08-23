@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import StatCard from "@/components/dashboard/StatCard"; // Changed to default import
 
 const fetchDashboardStats = async (userType: 'customer' | 'seller') => {
   const endpoint = userType === 'seller' ? '/seller/dashboard/insights' : '/customer/dashboard/insights';
@@ -20,37 +21,24 @@ const fetchRecentBookings = async () => {
   return data as PaginatedResponse<Booking>;
 };
 
-const StatCard = ({ title, value, icon: Icon, description, isLoading }: { title: string, value: string | number, icon: React.ElementType, description: string, isLoading: boolean }) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className="h-4 w-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{value}</div>}
-      <p className="text-xs text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
-);
-
 const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => {
   const recentAppointments = stats?.recent_appointments || [];
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <h2 className="text-2xl font-bold mb-4 text-foreground">Your Activity</h2> {/* Added text-foreground */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
           <StatCard title="Upcoming Bookings" value={stats?.upcoming_appointments_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
           <StatCard title="Completed Bookings" value={stats?.completed_appointments_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
           <StatCard title="Total Bookings" value={stats?.total_appointments_count ?? 0} icon={Briefcase} description="All your appointments" isLoading={isLoading} />
           <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
         </div>
       </div>
-      <Card>
+      <Card className="bg-card border-border shadow-md"> {/* Enhanced card styling */}
         <CardHeader>
-          <CardTitle>Recent Appointments</CardTitle>
-          <CardDescription>Here are your most recent appointments.</CardDescription>
+          <CardTitle className="text-xl font-semibold">Recent Appointments</CardTitle> {/* Enhanced title */}
+          <CardDescription className="text-muted-foreground">Here are your most recent appointments.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -58,13 +46,17 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
           ) : recentAppointments.length > 0 ? (
             <div className="space-y-4">
               {recentAppointments.map((booking) => (
-                <div key={booking.id} className="flex items-center">
-                  <Avatar className="h-9 w-9"><AvatarImage src={booking.seller.profile_image || undefined} /><AvatarFallback>{booking.seller.name.charAt(0)}</AvatarFallback></Avatar>
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">{booking.service.title}</p>
-                    <p className="text-sm text-muted-foreground">with {booking.seller.name}</p>
+                <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center p-3 hover:bg-muted/50 rounded-lg transition-colors border-b border-border/50 last:border-b-0"> {/* Enhanced item styling and responsiveness */}
+                  <div className="flex items-center mb-2 sm:mb-0 sm:w-1/2">
+                    <Avatar className="h-10 w-10 border border-primary/20"><AvatarImage src={booking.seller.profile_image || undefined} /><AvatarFallback>{booking.seller.name.charAt(0)}</AvatarFallback></Avatar>
+                    <div className="ml-4 space-y-1">
+                      <p className="text-base font-medium leading-none text-foreground">{booking.service.title}</p> {/* Enhanced text */}
+                      <p className="text-sm text-muted-foreground">with {booking.seller.name}</p>
+                    </div>
                   </div>
-                  <div className="ml-auto font-medium">{new Date(booking.appointment_date).toLocaleDateString()}</div>
+                  <div className="ml-auto text-sm font-medium text-muted-foreground sm:w-1/2 sm:text-right"> {/* Responsive alignment */}
+                    {new Date(booking.appointment_date).toLocaleDateString()}
+                  </div>
                 </div>
               ))}
             </div>
@@ -72,10 +64,10 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
             <p className="text-sm text-muted-foreground text-center py-4">You have no recent appointments.</p>
           )}
         </CardContent>
-        <CardFooter>
-          <Button size="sm" variant="outline" className="w-full" asChild>
+        <CardFooter className="border-t border-border/50 p-4"> {/* Enhanced footer styling */}
+          <Button size="sm" variant="outline" className="w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/30" asChild>
             <Link to="/dashboard/bookings">View All Bookings</Link>
-          </Button>
+          </Button> {/* Enhanced button styling */}
         </CardFooter>
       </Card>
     </div>
@@ -91,31 +83,31 @@ const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: Selle
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Your Business</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <h2 className="text-2xl font-bold mb-4 text-foreground">Your Business</h2> {/* Added text-foreground */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
           <StatCard title="Active Services" value={stats?.active_services_count ?? 0} icon={Briefcase} description="Manage your service listings" isLoading={isLoading} />
           <StatCard title="Pending Bookings" value={stats?.pending_bookings_count ?? 0} icon={Calendar} description="Respond to new clients" isLoading={isLoading} />
           <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments fulfilled" isLoading={isLoading} />
-<StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
+          <StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
         </div>
       </div>
 
       {/* Package Overview Section */}
-      <Card className={`mb-6 ${
+      <Card className={`mb-6 bg-card border-border shadow-md ${ /* Enhanced card styling */
         (() => {
-          if (!user.seller_package || !user.package_expiry_date) return 'border-gray-400';
+          if (!user.seller_package || !user.package_expiry_date) return 'border-gray-400 dark:border-gray-600';
           const expiryDate = new Date(user.package_expiry_date);
           const today = new Date();
           const timeDiff = expiryDate.getTime() - today.getTime();
           const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-          if (daysDiff < 0) return 'border-red-500 bg-red-50'; // Expired
-          if (daysDiff <= 7) return 'border-yellow-500 bg-yellow-50'; // Expiring Soon
-          return 'border-green-500 bg-green-50'; // Active
+          if (daysDiff < 0) return 'border-red-500 bg-red-50/50 dark:bg-red-900/20'; // Expired
+          if (daysDiff <= 7) return 'border-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/20'; // Expiring Soon
+          return 'border-green-500 bg-green-50/50 dark:bg-green-900/20'; // Active
         })()
-      }`}>
+      }`} /* Closing the template literal here */>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xl font-semibold"> {/* Enhanced title and responsiveness */}
             <span>{user.seller_package ? `${user.seller_package.charAt(0).toUpperCase() + user.seller_package.slice(1)} Package` : 'No Active Package'}</span>
             {(() => {
               if (!user.seller_package || !user.package_expiry_date) return null;
@@ -124,37 +116,37 @@ const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: Selle
               const timeDiff = expiryDate.getTime() - today.getTime();
               const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-              if (daysDiff < 0) return <span className="text-sm font-bold text-red-600">Expired! Please renew.</span>;
-              if (daysDiff <= 7) return <span className="text-sm font-bold text-yellow-600 animate-pulse">Expiring Soon!</span>;
-              return <span className="text-sm font-normal text-green-600">Active</span>;
+              if (daysDiff < 0) return <span className="text-sm font-bold text-red-600 dark:text-red-400 mt-2 sm:mt-0">Expired! Please renew.</span>;
+              if (daysDiff <= 7) return <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400 animate-pulse mt-2 sm:mt-0">Expiring Soon!</span>;
+              return <span className="text-sm font-normal text-green-600 dark:text-green-400 mt-2 sm:mt-0">Active</span>;
             })()}
           </CardTitle>
           {user.package_expiry_date && user.seller_package && (
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Expires on: {new Date(user.package_expiry_date).toLocaleDateString()}
             </CardDescription>
           )}
         </CardHeader>
         <CardContent>
           {user.seller_package ? (
-            <p>You have <span className="font-bold">{stats?.active_services_count ?? 0}</span> active services.</p>
+            <p className="text-foreground">You have <span className="font-bold">{stats?.active_services_count ?? 0}</span> active services.</p>
           ) : (
-            <p>You need an active package to start selling. Choose a plan to get started!</p>
+            <p className="text-foreground">You need an active package to start selling. Choose a plan to get started!</p>
           )}
         </CardContent>
-        <CardFooter>
-          <Button size="sm" className="w-full" asChild>
+        <CardFooter className="border-t border-border/50 p-4"> {/* Enhanced footer styling */}
+          <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
             <Link to="/dashboard/seller/package-upgrade">
               {user.seller_package ? 'Upgrade / Renew Package' : 'Choose a Package'}
             </Link>
-          </Button>
+          </Button> {/* Enhanced button styling */}
         </CardFooter>
       </Card>
 
-      <Card>
+      <Card className="bg-card border-border shadow-md"> {/* Enhanced card styling */}
         <CardHeader>
-          <CardTitle>Recent Bookings</CardTitle>
-          <CardDescription>Your 5 most recent appointment requests.</CardDescription>
+          <CardTitle className="text-xl font-semibold">Recent Bookings</CardTitle> {/* Enhanced title */}
+          <CardDescription className="text-muted-foreground">Your 5 most recent appointment requests.</CardDescription>
         </CardHeader>
         <CardContent>
           {bookingsLoading ? (
@@ -162,13 +154,17 @@ const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: Selle
           ) : bookingsResponse && bookingsResponse.data.length > 0 ? (
             <div className="space-y-4">
               {bookingsResponse.data.map((booking) => (
-                <div key={booking.id} className="flex items-center">
-                  <Avatar className="h-9 w-9"><AvatarImage src={booking.customer.profile_image || undefined} /><AvatarFallback>{booking.customer.name.charAt(0)}</AvatarFallback></Avatar>
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">{booking.customer.name}</p>
-                    <p className="text-sm text-muted-foreground">{booking.service.title}</p>
+                <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center p-3 hover:bg-muted/50 rounded-lg transition-colors border-b border-border/50 last:border-b-0"> {/* Enhanced item styling and responsiveness */}
+                  <div className="flex items-center mb-2 sm:mb-0 sm:w-1/2">
+                    <Avatar className="h-10 w-10 border border-primary/20"><AvatarImage src={booking.customer.profile_image || undefined} /><AvatarFallback>{booking.customer.name.charAt(0)}</AvatarFallback></Avatar>
+                    <div className="ml-4 space-y-1">
+                      <p className="text-base font-medium leading-none text-foreground">{booking.customer.name}</p> {/* Enhanced text */}
+                      <p className="text-sm text-muted-foreground">{booking.service.title}</p>
+                    </div>
                   </div>
-                  <div className="ml-auto font-medium">{new Date(booking.appointment_date).toLocaleDateString()}</div>
+                  <div className="ml-auto text-sm font-medium text-muted-foreground sm:w-1/2 sm:text-right"> {/* Responsive alignment */}
+                    {new Date(booking.appointment_date).toLocaleDateString()}
+                  </div>
                 </div>
               ))}
             </div>
@@ -176,10 +172,10 @@ const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: Selle
             <p className="text-sm text-muted-foreground text-center">No recent bookings found.</p>
           )}
         </CardContent>
-        <div className="border-t p-4">
-          <Button size="sm" variant="outline" className="w-full" asChild>
+        <div className="border-t border-border/50 p-4"> {/* Enhanced footer styling */}
+          <Button size="sm" variant="outline" className="w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/30" asChild>
             <Link to="/dashboard/bookings">View All Bookings</Link>
-          </Button>
+          </Button> {/* Enhanced button styling */}
         </div>
       </Card>
     </div>
@@ -211,20 +207,22 @@ const Dashboard = () => {
     }
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold mb-6">Welcome back, {user.name}!</h1>
+        <div className="py-6 sm:py-8 lg:py-10"> {/* Added responsive padding */}
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text"> {/* Enhanced title */}
+                Welcome back, {user.name}!
+            </h1>
 
             {user.user_type === 'customer' && user.pending_seller_package && (
-                <Card className="mb-6 border-yellow-500 bg-yellow-50/50">
+                <Card className="mb-6 border-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/20 dark:border-yellow-700"> {/* Added dark mode styles */}
                     <CardHeader>
-                        <CardTitle className="text-yellow-800">Action Required: Complete Seller Registration</CardTitle>
-                        <CardDescription className="text-yellow-700">
+                        <CardTitle className="text-yellow-800 dark:text-yellow-300">Action Required: Complete Seller Registration</CardTitle> {/* Dark mode text */}
+                        <CardDescription className="text-yellow-700 dark:text-yellow-400"> {/* Dark mode text */}
                             You registered as a seller, but your payment for the <span className="font-semibold capitalize">{user.pending_seller_package}</span> package is pending.
                             Please complete the payment to activate your seller account and access all features.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Button className="w-full" asChild>
+                        <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white" asChild> {/* Enhanced button style */}
                             <Link to="/seller-onboarding/payment">Complete Payment Now</Link>
                         </Button>
                     </CardContent>

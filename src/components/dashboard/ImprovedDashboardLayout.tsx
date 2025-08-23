@@ -165,7 +165,7 @@ const ImprovedDashboardLayout = () => {
           </aside>
 
           {/* Main Content */}
-          <main className="lg:col-span-4">
+<main className="lg:col-span-4 pt-24">
             <Outlet />
           </main>
         </div>

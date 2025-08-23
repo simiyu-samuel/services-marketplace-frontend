@@ -18,14 +18,14 @@ interface ServiceFiltersProps {
 }
 
 const subcategories = {
-  Beauty: ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
-  Hair: ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
-  Fashion: ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
-  Photography: ["Event", "Lifestyle", "Portrait"],
-  Bridal: ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
-  Health: ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
+  "Beauty Services": ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
+  "Hair Services": ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
+  "Fashion Services": ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
+  "Photography": ["Event", "Lifestyle", "Portrait"],
+  "Bridal Services": ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
+  "Health Services": ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
   "Celebrate Her": ["Florist", "Decor", "Journey to Motherhood"],
-  Fitness: ["Gym", "Personal Trainers", "Nutritionist"],
+  "Fitness Services": ["Gym", "Personal Trainers", "Nutritionist"],
   "Home & Lifestyles": ["Cleaning Services", "Laundry Services", "Home & Home Decor"],
 };
 
@@ -143,11 +143,11 @@ const ServiceFilters: React.FC<ServiceFiltersProps> = ({ filters, setFilters, ca
           </AccordionTrigger>
           <AccordionContent className="pt-4">
             <ScrollArea className="h-[200px] pr-4">
-              {categories.map(category => (
+              {Object.keys(subcategories).map(category => (
                 <div key={category} className="mb-4">
                   <h3 className="text-sm font-medium mb-2">{category}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {subcategories[category]?.map(subcategory => (
+                    {subcategories[category as keyof typeof subcategories]?.map(subcategory => (
                       <Button
                         key={subcategory}
                         variant={filters.subcategories.includes(subcategory) ? 'secondary' : 'outline'}

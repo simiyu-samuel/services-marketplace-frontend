@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
-import { Menu, LogOut, LayoutDashboard, User as UserIcon, X, Sparkles, Scissors, Shirt, Settings } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, User as UserIcon, X, Sparkles, Scissors, Shirt, Settings, Camera, Heart, HeartPulse, Gift, Dumbbell, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,7 +38,43 @@ const categories = [
     title: "Fashion Services",
     icon: Shirt,
     description: "Unique and stylish African wear, Maasai designs, and crotchet fashion.",
-    subcategories: ["African Wear", "Maasai Wear", "Crotchet/Wear"],
+    subcategories: ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
+  },
+  {
+    title: "Photography",
+    icon: Camera, // Assuming Camera icon is available or needs to be imported
+    description: "Capture your precious moments with professional photography services.",
+    subcategories: ["Event", "Lifestyle", "Portrait"],
+  },
+  {
+    title: "Bridal Services",
+    icon: Heart, // Assuming Heart icon is available or needs to be imported
+    description: "Everything you need for your special day, from makeup to wedding cakes.",
+    subcategories: ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
+  },
+  {
+    title: "Health Services",
+    icon: HeartPulse, // Assuming HeartPulse icon is available or needs to be imported
+    description: "Comprehensive health and wellness services for women.",
+    subcategories: ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
+  },
+  {
+    title: "Celebrate Her",
+    icon: Gift, // Assuming Gift icon is available or needs to be imported
+    description: "Make every occasion special with florists, decor, and unique experiences.",
+    subcategories: ["Florist", "Decor", "Journey to Motherhood"],
+  },
+  {
+    title: "Fitness Services",
+    icon: Dumbbell, // Assuming Dumbbell icon is available or needs to be imported
+    description: "Achieve your fitness goals with expert trainers and nutritionists.",
+    subcategories: ["Gym", "Personal Trainers", "Nutritionist"],
+  },
+  {
+    title: "Home & Lifestyles",
+    icon: Home, // Assuming Home icon is available or needs to be imported
+    description: "Enhance your living space and simplify your daily life.",
+    subcategories: ["Cleaning Services", "Laundry Services", "Home & Home Decor"],
   },
 ];
 
@@ -68,10 +104,11 @@ const ImprovedHeader = () => {
       scrolled ? "border-b shadow-sm h-14" : "h-16"
     )}>
       <div className="container relative flex h-full items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-[hsl(262,55%,50%)] via-[hsl(320,60%,55%)] to-[hsl(340,70%,60%)] text-transparent bg-clip-text bg-[length:200%_auto] animate-gradient-pan transition-transform duration-300 hover:scale-105 [text-shadow:2px_2px_0px_hsl(var(--secondary)/0.4)]">
-            Themabinti
-          </span>
+        {/* <Link to="/" className="flex items-center space-x-2">
+          <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+        </Link> */}
+        <Link to="/" className="flex items-center justify-center font-semibold">
+          <img src="/public/logo.png" alt="Themabinti Logo" className="h-20 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}

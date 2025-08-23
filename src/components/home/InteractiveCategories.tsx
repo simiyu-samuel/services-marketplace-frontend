@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
-import { Sparkles, Scissors, Shirt, ArrowRight } from 'lucide-react';
+import { Sparkles, Scissors, Shirt, ArrowRight, Camera, Heart, HeartPulse, Gift, Dumbbell, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
@@ -9,22 +9,64 @@ const categories = [
     title: "Beauty Services",
     icon: Sparkles,
     description: "Makeup, nails, lashes, and more to enhance your natural beauty.",
-    link: "/services?category=Beauty",
+    link: "/services?category=Beauty Services",
     color: "from-pink-500 to-purple-500",
   },
   {
     title: "Hair Services",
     icon: Scissors,
     description: "From braiding and weaving to cuts and complete hair care.",
-    link: "/services?category=Hair",
+    link: "/services?category=Hair Services",
     color: "from-blue-500 to-teal-500",
   },
   {
     title: "Fashion Services",
     icon: Shirt,
     description: "Unique and stylish African wear, Maasai designs, and crotchet fashion.",
-    link: "/services?category=Fashion",
+    link: "/services?category=Fashion Services",
     color: "from-yellow-500 to-orange-500",
+  },
+  {
+    title: "Photography",
+    icon: Camera,
+    description: "Capture your precious moments with professional photography services.",
+    link: "/services?category=Photography",
+    color: "from-green-500 to-blue-500",
+  },
+  {
+    title: "Bridal Services",
+    icon: Heart,
+    description: "Everything you need for your special day, from makeup to wedding cakes.",
+    link: "/services?category=Bridal Services",
+    color: "from-red-500 to-pink-500",
+  },
+  {
+    title: "Health Services",
+    icon: HeartPulse,
+    description: "Comprehensive health and wellness services for women.",
+    link: "/services?category=Health Services",
+    color: "from-teal-500 to-cyan-500",
+  },
+  {
+    title: "Celebrate Her",
+    icon: Gift,
+    description: "Make every occasion special with florists, decor, and unique experiences.",
+    link: "/services?category=Celebrate Her",
+    color: "from-orange-500 to-red-500",
+  },
+  {
+    title: "Fitness Services",
+    icon: Dumbbell,
+    description: "Achieve your fitness goals with expert trainers and nutritionists.",
+    link: "/services?category=Fitness Services",
+    color: "from-indigo-500 to-purple-500",
+  },
+  {
+    title: "Home & Lifestyles",
+    icon: Home,
+    description: "Enhance your living space and simplify your daily life.",
+    link: "/services?category=Home & Lifestyles",
+    color: "from-gray-500 to-slate-500",
   },
 ];
 

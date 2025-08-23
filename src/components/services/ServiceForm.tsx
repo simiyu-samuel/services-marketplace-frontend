@@ -26,10 +26,29 @@ const formSchema = z.object({
 export type ServiceFormValues = z.infer<typeof formSchema>;
 
 const categories = [
-  "Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", 
+  // Beauty Services
+  "Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena",
   "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub",
-  "Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", 
-  "Complete Hair Care", "African Wear", "Maasai Wear", "Crotchet/Wear"
+  // Hair Services
+  "Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut",
+  "Complete Hair Care",
+  // Fashion Services
+  "African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist",
+  "Made in Kenya",
+  // Photography
+  "Event", "Lifestyle", "Portrait",
+  // Bridal Services
+  "Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire",
+  "Wedding Cakes",
+  // Health Services
+  "Dental", "Skin Consultation", "Reproductive Care", "Maternal Care",
+  "Mental Care",
+  // Celebrate Her
+  "Florist", "Decor", "Journey to Motherhood",
+  // Fitness Services
+  "Gym", "Personal Trainers", "Nutritionist",
+  // Home & Lifestyles
+  "Cleaning Services", "Laundry Services", "Home & Home Decor",
 ];
 
 interface ServiceFormProps {
@@ -98,8 +117,8 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+<Form {...form}>
+      <form onSubmit={form.handleSubmit((values) => onSubmit(values))}>
         <Card>
           <CardHeader>
             <CardTitle>{initialData ? "Edit Service" : "Create a New Service"}</CardTitle>

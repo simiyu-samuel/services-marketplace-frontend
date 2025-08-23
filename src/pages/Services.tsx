@@ -37,8 +37,7 @@ export interface Filters {
   sortBy: string;
 }
 
-export type ServicesProps = {};
-
+export type ServicesProps = Record<string, never>;
 const fetchServices = async () => {
   const { data } = await api.get('/services');
   return (data as PaginatedResponse<Service>).data;
@@ -125,10 +124,38 @@ const Services = () => {
   }, [services, filters]);
 
   useEffect(() => {
-    // You can access the category from the URL like this:
+    const locationFromUrl = searchParams.get('location');
     const categoryFromUrl = searchParams.get('category');
-    console.log("Category from URL:", categoryFromUrl);
-    // You can use this category to filter the services if needed
+    const subcategoryFromUrl = searchParams.get('subcategory'); // Get subcategory from URL
+
+    setFilters(prevFilters => {
+      const newFilters = { ...prevFilters };
+      
+      if (locationFromUrl && newFilters.location !== locationFromUrl) {
+        newFilters.location = locationFromUrl;
+      }
+      
+      // Reset categories and subcategories if a new category/subcategory is selected from the header
+      let updatedCategories = newFilters.categories;
+      let updatedSubcategories = newFilters.subcategories;
+
+      if (categoryFromUrl && !newFilters.categories.includes(categoryFromUrl)) {
+        updatedCategories = [categoryFromUrl]; // Replace existing categories if a new one is selected
+      } else if (!categoryFromUrl) {
+        updatedCategories = []; // Clear categories if no category is in URL
+      }
+
+      if (subcategoryFromUrl && !newFilters.subcategories.includes(subcategoryFromUrl)) {
+        updatedSubcategories = [subcategoryFromUrl]; // Replace existing subcategories if a new one is selected
+      } else if (!subcategoryFromUrl) {
+        updatedSubcategories = []; // Clear subcategories if no subcategory is in URL
+      }
+
+      newFilters.categories = updatedCategories;
+      newFilters.subcategories = updatedSubcategories;
+
+      return newFilters;
+    });
   }, [searchParams]);
 
   const breakpointColumnsObj = {
@@ -138,20 +165,17 @@ const Services = () => {
   };
 
   return (
-    <div className="bg-background min-h-screen pt-20">
-      <div className="container pt-32 pb-16">
-        <div className="text-center mb-12">
+    <div className="bg-background min-h-screen">
+      <div className="container pt-8 pb-16">
+        <div className="text-center mb-8">
           <AnimatedWrapper>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
               Find Your Perfect Service
             </h1>
-            <p className="max-w-2xl mx-auto text-muted-foreground">
-              Discover and book amazing services from verified providers in your area
-            </p>
           </AnimatedWrapper>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+<div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Enhanced Filters Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
@@ -166,7 +190,7 @@ const Services = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             {/* Mobile Filters & View Toggle */}
             <div className="flex justify-between items-center mb-6">
               {isMobile && (

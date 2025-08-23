@@ -7,24 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RevenueChart from "@/components/admin/RevenueChart";
 import AppointmentsChart from "@/components/admin/AppointmentsChart";
 import { motion } from "framer-motion";
+import StatCard from "@/components/dashboard/StatCard"; // Changed to default import
 
 const fetchAdminDashboardData = async () => {
   const { data } = await api.get('/admin/dashboard');
   return data as AdminDashboardData;
 };
-
-const StatCard = ({ icon: Icon, title, value, subtext, isLoading }: { icon: React.ElementType, title: string, value: string | number, subtext: string, isLoading: boolean }) => (
-  <Card className="bg-muted/40 border-border/40 shadow-lg hover:border-primary transition-colors duration-300">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className="h-5 w-5 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      {isLoading ? <Skeleton className="h-8 w-3/4 mt-1" /> : <div className="text-2xl font-bold">{value}</div>}
-      <p className="text-xs text-muted-foreground">{subtext}</p>
-    </CardContent>
-  </Card>
-);
 
 const AdminDashboard = () => {
   const { data, isLoading } = useQuery({
@@ -54,7 +42,13 @@ const AdminDashboard = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card, index) => (
           <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-            <StatCard {...card} isLoading={isLoading} />
+            <StatCard 
+              title={card.title}
+              value={card.value}
+              icon={card.icon}
+              description={card.subtext}
+              isLoading={isLoading}
+            />
           </motion.div>
         ))}
       </div>

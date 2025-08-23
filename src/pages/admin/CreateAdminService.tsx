@@ -13,16 +13,14 @@ const CreateAdminService = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const isAdmin = user?.user_type === 'admin';
 
   const onSubmit = async (values: ServiceFormValues) => { // Use ServiceFormValues
     setIsLoading(true);
     try {
       // Replace 'YOUR_ADMIN_USER_ID' with the actual admin ID
       const adminId = user?.id?.toString();
-      const response = await api.post('/services', {
+const response = await api.post('/services', {
         ...values,
-        user_id: adminId,
       });
       if (response.status === 201) {
         showSuccess("Service created successfully.");

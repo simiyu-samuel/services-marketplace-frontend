@@ -16,7 +16,7 @@
     --primary: 262.1 83.3% 60%; /* Brighter Purple */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 320 85% 60%; /* Vibrant Pink/Magenta */
+    --secondary: 320 85% 40%; /* Vibrant Pink/Magenta - Adjusted for contrast */
     --secondary-foreground: 0 0% 100%;
  
     --muted: 262 80% 92%;
@@ -45,10 +45,10 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
  
-    --primary: 263.4 95.2% 66.3%;
+    --primary: 263.4 95.2% 50%; /* Adjusted for contrast */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 320 85% 65%;
+    --secondary: 320 85% 50%; /* Adjusted for contrast */
     --secondary-foreground: 0 0% 100%;
  
     --muted: 262 20% 10%;

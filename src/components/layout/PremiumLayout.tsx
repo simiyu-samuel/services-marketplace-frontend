@@ -5,9 +5,9 @@ import Footer from './Footer';
 
 const PremiumLayout: React.FC = () => {
   return (
-    <div className="bg-background text-foreground">
+    <div className="flex flex-col min-h-screen">
       <PremiumHeader />
-      <main className="min-h-screen">
+      <main className="flex-grow pt-10 min-h-screen">
         <Outlet />
       </main>
       <Footer />
