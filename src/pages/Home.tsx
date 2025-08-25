@@ -31,15 +31,9 @@ const Home: React.FC = () => {
       <QuickServicePreview />
 
       {/* Latest Blog Posts */}
-      <RecentBlogPosts />
 
-      {/* Testimonials */}
-      <section className="py-24 bg-muted/40">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12 tracking-tight">What Our Clients Say</h2>
-          <Testimonials />
-        </div>
-      </section>
+
+
 
       {/* Call-to-action sections */}
       <section className="py-24">

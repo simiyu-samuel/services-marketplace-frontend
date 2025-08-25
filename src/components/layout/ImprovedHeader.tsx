@@ -16,8 +16,8 @@ import NotificationBell from '../ui/NotificationBell';
 
 const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/services", label: "Services" },
-  { to: "/blog", label: "Blog" },
+  // { to: "/services", label: "Services" },
+  // { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
 ];
 
