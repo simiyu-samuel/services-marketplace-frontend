@@ -34,6 +34,7 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 const PremiumHeader = React.lazy(() => import("./components/layout/PremiumHeader"));
+const AboutUs = React.lazy(() => import("./pages/AboutUs"));
 const RegisterCustomer = React.lazy(() => import("./pages/RegisterCustomer"));
 const RegisterSeller = React.lazy(() => import("./pages/RegisterSeller"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
@@ -104,6 +105,7 @@ const AppContent = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/seller-onboarding/payment" element={<SellerOnboardingPayment />} /> {/* New route */}
+              <Route path="/about-us" element={<AboutUs />} />
               <Route path="*" element={<NotFound />} />
             </Route>
 

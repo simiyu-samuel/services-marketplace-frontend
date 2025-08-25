@@ -17,19 +17,18 @@ const Footer: React.FC = () => {
     {
       title: "Services",
       links: [
-        { label: "Branding", href: "#" },
-        { label: "Design", href: "#" },
-        { label: "Marketing", href: "#" },
-        { label: "Advertisement", href: "#" },
+        { label: "Beauty", href: "/services?category=beauty" },
+        { label: "Wellness", href: "/services?category=wellness" },
+        { label: "Health", href: "/services?category=health" },
+        { label: "Home Services", href: "/services?category=home-services" },
+        { label: "Events", href: "/services?category=events" },
       ],
     },
     {
       title: "Company",
       links: [
-        { label: "About us", href: "#" },
-        { label: "Contact", href: "#" },
-        { label: "Jobs", href: "#" },
-        { label: "Press kit", href: "#" },
+        { label: "About us", href: "/about-us" },
+        { label: "Contact", href: "/contact" },
       ],
     },
     {

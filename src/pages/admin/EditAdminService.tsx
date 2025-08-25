@@ -25,10 +25,15 @@ const EditAdminService = () => {
         } else {
           showError("Failed to fetch service.");
         }
-      } catch (error: unknown) { // Use unknown
+      } catch (error: unknown) {
         console.error("Error fetching service:", error);
         if (error instanceof AxiosError) {
+          console.error("Backend error response:", error.response); // Log backend error response
           showError(error.response?.data?.message || "Failed to fetch service.");
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            // If unauthorized or forbidden, redirect to login
+            navigate('/login');
+          }
         } else {
           showError("Failed to fetch service.");
         }
@@ -45,7 +50,7 @@ const EditAdminService = () => {
   const onSubmit = async (values: ServiceFormValues) => { // Use ServiceFormValues
     setIsLoading(true);
     try {
-      const response = await api.put(`/services/${id}`, values);
+      const response = await api.put(`admin/services/${id}`, values);
       if (response.status === 200) {
         showSuccess("Service updated successfully.");
         navigate('/admin/my-services');

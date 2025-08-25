@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'; // Removed useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { Service } from '@/types';
@@ -15,10 +15,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 
 const fetchAdminServices = async (adminId: string) => {
-  const { data } = await api.get('/services', {
+  const { data } = await api.get('admin/services', {
     params: { 'user_id': adminId }
   });
-  return data.services as Service[];
+  console.log("services data:", data); // Log the full data object for inspection
+  // The API returns a pagination object, with the services array inside the 'data' property
+  return data.data as Service[];
 };
 
 const deleteService = async (id: number) => {
@@ -30,8 +32,7 @@ const updateServiceStatus = async ({ id, is_active }: { id: number, is_active: b
 };
 
 const MyServices = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Removed services state and loading state, directly using useQuery's data and isLoading
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -86,14 +87,6 @@ const MyServices = () => {
     }
   };
 
-  useEffect(() => {
-    if (adminServices) {
-      setServices(adminServices);
-    }
-  }, [adminServices]);
-
-  console.log("User:", user); // Add console.log
-  console.log("Is Admin:", isAdmin); // Add console.log
 
   return (
     <div>
@@ -113,36 +106,38 @@ const MyServices = () => {
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead><span className="sr-only">Actions</span></TableHead>
+              {/* <TableHead><span className="sr-only">Actions</span></TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell className="font-medium">{service.title}</TableCell>
-                <TableCell>{service.category}</TableCell>
-                <TableCell>Ksh {parseFloat(service.price).toLocaleString()}</TableCell>
-                <TableCell>
-                  <Switch
-                    checked={service.is_active}
-                    onCheckedChange={(checked) => statusMutation.mutate({ id: service.id, is_active: checked })}
-                    disabled={statusMutation.isPending}
-                    aria-label="Toggle service status"
-                  />
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Actions</span></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>Edit</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(service)}>Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+            {adminServices && Array.isArray(adminServices) && adminServices
+              .filter(service => service.user_id === parseInt(adminId!)) // Filter services by adminId
+              .map((service) => (
+                <TableRow key={service.id}>
+                  <TableCell className="font-medium">{service.title}</TableCell>
+                  <TableCell>{service.category}</TableCell>
+                  <TableCell>Ksh {parseFloat(service.price).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={service.is_active}
+                      onCheckedChange={(checked) => statusMutation.mutate({ id: service.id, is_active: checked })}
+                      disabled={statusMutation.isPending}
+                      aria-label="Toggle service status"
+                    />
+                  </TableCell>
+                  {/* <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Actions</span></Button></DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>Edit</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(service)}>Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell> */}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       )}
