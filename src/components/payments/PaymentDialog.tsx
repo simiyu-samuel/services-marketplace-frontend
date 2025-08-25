@@ -1,3 +1,4 @@
+import { useEffect } from "react"; // Import useEffect
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,14 +41,15 @@ const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType,
     });
   };
 
-  // Call onPaymentSuccess when status is completed
-  if (status === 'completed') {
-    if (onPaymentSuccess) {
-      onPaymentSuccess();
+  useEffect(() => {
+    if (status === 'completed') {
+      if (onPaymentSuccess) {
+        console.log("Payment successful, calling onPaymentSuccess and closing dialog.");
+        onPaymentSuccess();
+      }
+      onOpenChange(false);
     }
-    // Close the dialog after a successful payment
-    onOpenChange(false);
-  }
+  }, [status, onOpenChange, onPaymentSuccess]);
 
   const isLoading = status === 'initiating' || status === 'polling';
 

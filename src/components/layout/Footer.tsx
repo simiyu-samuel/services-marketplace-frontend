@@ -47,7 +47,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
             <Link to="/">
-              <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+              <img src="/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
             </Link>
             <p className="text-muted-foreground text-base mt-4 max-w-md">
               Your modern, inclusive hub for the best beauty, health, and lifestyle services across Kenya. Discover and book with ease.

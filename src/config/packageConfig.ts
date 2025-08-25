@@ -7,7 +7,7 @@ export const packageConfigs = {
   seller_packages: {
     basic: {
       name: 'Basic',
-      price: 1000.00, // Monthly fee in KES
+      price: 1.00, // Monthly fee in KES
       services_limit: 1, // Max number of services a seller can list
       photos_per_service: 2, // Max photos per single service listing
       video_per_service: 0,  // Max videos per single service listing

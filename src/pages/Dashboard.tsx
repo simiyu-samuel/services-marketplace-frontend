@@ -8,7 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import StatCard from "@/components/dashboard/StatCard"; // Changed to default import
+import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Assuming LoadingSpinner is available
+import React, { lazy, Suspense } from "react";
+
+// Dynamically import StatCard
+const StatCard = lazy(() => import("@/components/dashboard/StatCard"));
 
 const fetchDashboardStats = async (userType: 'customer' | 'seller') => {
   const endpoint = userType === 'seller' ? '/seller/dashboard/insights' : '/customer/dashboard/insights';
@@ -21,7 +25,8 @@ const fetchRecentBookings = async () => {
   return data as PaginatedResponse<Booking>;
 };
 
-const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => {
+// CustomerDashboardComponent definition
+const CustomerDashboardComponent = ({ stats, isLoading }: { stats?: CustomerDashboardStats, isLoading: boolean }) => {
   const recentAppointments = stats?.recent_appointments || [];
 
   return (
@@ -29,10 +34,10 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
       <div>
         <h2 className="text-2xl font-bold mb-4 text-foreground">Your Activity</h2> {/* Added text-foreground */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
-          <StatCard title="Upcoming Bookings" value={stats?.upcoming_appointments_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} />
-          <StatCard title="Completed Bookings" value={stats?.completed_appointments_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} />
-          <StatCard title="Total Bookings" value={stats?.total_appointments_count ?? 0} icon={Briefcase} description="All your appointments" isLoading={isLoading} />
-          <StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} />
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Upcoming Bookings" value={stats?.upcoming_appointments_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Completed Bookings" value={stats?.completed_appointments_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Bookings" value={stats?.total_appointments_count ?? 0} icon={Briefcase} description="All your appointments" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} /></Suspense>
         </div>
       </div>
       <Card className="bg-card border-border shadow-md"> {/* Enhanced card styling */}
@@ -74,7 +79,8 @@ const CustomerDashboard = ({ stats, isLoading }: { stats?: CustomerDashboardStat
   );
 };
 
-const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: SellerDashboardStats, isLoading: boolean }) => {
+// SellerDashboardComponent definition
+const SellerDashboardComponent = ({ user, stats, isLoading }: { user: User, stats?: SellerDashboardStats, isLoading: boolean }) => {
   const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
     queryKey: ['recentBookings'],
     queryFn: fetchRecentBookings,
@@ -85,10 +91,10 @@ const SellerDashboard = ({ user, stats, isLoading }: { user: User, stats?: Selle
       <div>
         <h2 className="text-2xl font-bold mb-4 text-foreground">Your Business</h2> {/* Added text-foreground */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
-          <StatCard title="Active Services" value={stats?.active_services_count ?? 0} icon={Briefcase} description="Manage your service listings" isLoading={isLoading} />
-          <StatCard title="Pending Bookings" value={stats?.pending_bookings_count ?? 0} icon={Calendar} description="Respond to new clients" isLoading={isLoading} />
-          <StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments fulfilled" isLoading={isLoading} />
-          <StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} />
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Active Services" value={stats?.active_services_count ?? 0} icon={Briefcase} description="Manage your service listings" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Pending Bookings" value={stats?.pending_bookings_count ?? 0} icon={Calendar} description="Respond to new clients" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments fulfilled" isLoading={isLoading} /></Suspense>
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} /></Suspense>
         </div>
       </div>
 
@@ -191,7 +197,11 @@ const Dashboard = () => {
     });
 
     if (!user) {
-        return <p>Loading...</p>;
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <LoadingSpinner size="lg" text="Loading dashboard..." />
+            </div>
+        );
     }
 
     if (isError) {
@@ -230,8 +240,8 @@ const Dashboard = () => {
             )}
 
             {user.user_type === 'seller'
-                ? <SellerDashboard user={user} stats={stats} isLoading={isLoading} />
-                : <CustomerDashboard stats={stats} isLoading={isLoading} />}
+                ? <SellerDashboardComponent user={user} stats={stats} isLoading={isLoading} />
+                : <CustomerDashboardComponent stats={stats} isLoading={isLoading} />}
         </div>
     );
 };

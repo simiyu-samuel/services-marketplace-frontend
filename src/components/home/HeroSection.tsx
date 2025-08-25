@@ -17,7 +17,7 @@ const HeroSection: React.FC = () => {
     setParallax({ x, y });
   };
 
-  const imageUrl = '/public/beauty.png'; // beauty.png image URL
+  const imageUrl = '/beauty.png'; // beauty.png image URL, corrected path
 
   return (
     <section className="relative h-screen w-full bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 flex items-center">
@@ -72,18 +72,22 @@ const HeroSection: React.FC = () => {
 
         {/* Right Side: Parallax Image */}
         <motion.div
-          className="w-full h-full md:h-[400px] shadow-2xl rounded-lg overflow-hidden"
-          style={{
-            backgroundImage: `url(${imageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `scale(${isHovered ? 1.1 : 1}) translate(${parallax.x}px, ${parallax.y}px)`,
-            transition: 'transform 0.2s ease-out',
-          }}
+          className="w-full h-full md:h-[400px] shadow-2xl rounded-lg overflow-hidden relative" // Added relative for absolute positioning of img
           onMouseMove={handleMouseMove}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
-        />
+          style={{
+            transform: `scale(${isHovered ? 1.1 : 1}) translate(${parallax.x}px, ${parallax.y}px)`,
+            transition: 'transform 0.2s ease-out',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt="Beauty and Lifestyle Services"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager" // Eager loading for above-the-fold hero image
+          />
+        </motion.div>
       </div>
     </section>
   );

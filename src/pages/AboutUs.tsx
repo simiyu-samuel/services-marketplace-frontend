@@ -72,6 +72,7 @@ const AboutUs: React.FC = () => {
               src="https://images.pexels.com/photos/1000445/pexels-photo-1000445.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
               alt="Our Story"
               className="rounded-lg shadow-xl w-full h-auto object-cover"
+              loading="lazy" // Lazy load for images below the fold
             />
           </motion.div>
           <motion.div variants={fadeIn} className="space-y-6 text-lg text-muted-foreground">

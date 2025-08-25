@@ -105,10 +105,10 @@ const ImprovedHeader = () => {
     )}>
       <div className="container relative flex h-full items-center">
         {/* <Link to="/" className="flex items-center space-x-2">
-          <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+          <img src="/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
         </Link> */}
         <Link to="/" className="flex items-center justify-center font-semibold">
-          <img src="/public/logo.png" alt="Themabinti Logo" className="h-20 w-auto" />
+          <img src="/logo.png" alt="Themabinti Logo" className="h-20 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}

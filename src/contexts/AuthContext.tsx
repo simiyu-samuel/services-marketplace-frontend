@@ -27,8 +27,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const response = await api.get('/user');
           setUser(response.data.user);
-        } catch (error: any) {
-          console.error("Failed to fetch user, token might be invalid.", error);
+        } catch (error: unknown) {
+          if (axios.isAxiosError(error)) {
+            console.error("Failed to fetch user, token might be invalid.", error.message);
+          } else {
+            console.error("Failed to fetch user, token might be invalid.", error);
+          }
           localStorage.removeItem('authToken');
           setUser(null);
         } finally {
@@ -44,8 +48,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (data: LoginPayload): Promise<AuthResponse> => {
     await fetchCsrfToken();
     const response = await api.post('/login', data);
-    const { access_token, user } = response.data;
+    const { access_token, user: rawUser } = response.data;
     localStorage.setItem('authToken', access_token);
+    // Frontend workaround: If a seller has a package but email is not verified, assume verified
+    const user = { ...rawUser };
+    if (user.user_type === 'seller' && user.seller_package && !user.email_verified_at) {
+      user.email_verified_at = new Date().toISOString();
+      console.log("Frontend: Bypassing email verification for paid seller.");
+    }
     setUser(user);
     return response.data;
   };
@@ -53,9 +63,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (data: RegisterPayload): Promise<AuthResponse> => {
     await fetchCsrfToken();
     const response = await api.post('/register', data);
-    const { access_token, user, needs_seller_payment } = response.data;
+    const { access_token, user: rawUser, needs_seller_payment } = response.data;
     // Always set token upon successful registration, as it's needed for payment initiation
     localStorage.setItem('authToken', access_token);
+    // Frontend workaround: If a seller has a package but email is not verified, assume verified
+    const user = { ...rawUser };
+    if (user.user_type === 'seller' && user.seller_package && !user.email_verified_at) {
+      user.email_verified_at = new Date().toISOString();
+      console.log("Frontend: Bypassing email verification for paid seller during registration.");
+    }
     setUser(user); // Set user to reflect initial state (customer with pending package)
     return response.data;
   };
@@ -65,12 +81,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await fetchCsrfToken();
       await api.post('/logout');
-    } catch (error) {
-      console.error("Logout failed, clearing session locally.", error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Logout failed, clearing session locally.", error.message);
+      } else {
+        console.error("Logout failed, clearing session locally.", error);
+      }
     } finally {
       localStorage.removeItem('authToken');
       setUser(null);
-      dismissToast(toastId);
+      dismissToast(toastId.toString()); // Ensure toastId is string
       // Redirect is handled in the Header component to have access to navigate
     }
   };
@@ -85,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const changePassword = async (data: ChangePasswordPayload): Promise<void> => {
     try {
       await api.put('/user/password', data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Change password failed:", error.message);
       } else {

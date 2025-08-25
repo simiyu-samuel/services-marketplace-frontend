@@ -9,30 +9,32 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import CreateAdminService from "./pages/admin/CreateAdminService";
-import EditAdminService from "./pages/admin/EditAdminService";
+const CreateAdminService = React.lazy(() => import("./pages/admin/CreateAdminService"));
+const EditAdminService = React.lazy(() => import("./pages/admin/EditAdminService"));
 
 // Layouts
-import MainLayout from "./components/layout/MainLayout";
-import PremiumLayout from "./components/layout/PremiumLayout";
-import ImprovedLayout from "./components/layout/ImprovedLayout";
-import ImprovedDashboardLayout from "./components/dashboard/ImprovedDashboardLayout";
-import AdminLayout from "./components/layout/AdminLayout";
+const MainLayout = React.lazy(() => import("./components/layout/MainLayout"));
+const PremiumLayout = React.lazy(() => import("./components/layout/PremiumLayout"));
+const ImprovedLayout = React.lazy(() => import("./components/layout/ImprovedLayout"));
+const ImprovedDashboardLayout = React.lazy(() => import("./components/dashboard/ImprovedDashboardLayout"));
+const AdminLayout = React.lazy(() => import("./components/layout/AdminLayout"));
 
 // Auth
-import AdminRoute from "./components/auth/AdminRoute";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+const AdminRoute = React.lazy(() => import("./components/auth/AdminRoute"));
+const ProtectedRoute = React.lazy(() => import("./components/auth/ProtectedRoute"));
+const AuthGuard = React.lazy(() => import("./components/auth/AuthGuard"));
+
 
 // Public Pages
-import Home from "./pages/Home";
-import Services from "./pages/Services";
-import ServiceDetails from "./pages/ServiceDetails";
-import SellerProfile from "./pages/SellerProfile";
-import Blog from "./pages/Blog";
-import BlogDetails from "./pages/BlogDetails";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+const Home = React.lazy(() => import("./pages/Home"));
+const Services = React.lazy(() => import("./pages/Services"));
+const ServiceDetails = React.lazy(() => import("./pages/ServiceDetails"));
+const SellerProfile = React.lazy(() => import("./pages/SellerProfile"));
+const Blog = React.lazy(() => import("./pages/Blog"));
+const BlogDetails = React.lazy(() => import("./pages/BlogDetails"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Register"));
 const PremiumHeader = React.lazy(() => import("./components/layout/PremiumHeader"));
 const AboutUs = React.lazy(() => import("./pages/AboutUs"));
 const RegisterCustomer = React.lazy(() => import("./pages/RegisterCustomer"));

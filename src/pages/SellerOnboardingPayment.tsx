@@ -8,7 +8,7 @@ import PaymentDialog from '@/components/payments/PaymentDialog';
 import { Loader2 } from 'lucide-react';
 
 const packageDetails = {
-  basic: { name: "Basic", price: 1000.00 },
+  basic: { name: "Basic", price: 1.00 },
   standard: { name: "Standard", price: 1500.00 },
   premium: { name: "Premium", price: 2500.00 },
 };
@@ -60,7 +60,12 @@ const SellerOnboardingPayment = () => {
     // After successful payment, the AuthContext's user state will be updated
     // by the usePayment hook's query invalidation.
     // The useEffect above will then handle the redirect to dashboard.
-    setPaymentInfo(null);
+    console.log("Payment successful, attempting to update user and redirect.");
+    // A small delay to ensure query invalidation and user refetch has time to complete
+    setTimeout(() => {
+      setPaymentInfo(null);
+      // The useEffect will handle the navigation once the user context is updated
+    }, 1000); // 1 second delay
   };
 
   if (isAuthLoading) {

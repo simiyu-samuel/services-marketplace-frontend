@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import api from "@/lib/api";
-import ServiceCard from "@/components/services/ServiceCard";
-import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
+import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Assuming LoadingSpinner is available
 import { PaginatedResponse, Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SearchX, SlidersHorizontal, Grid, List } from "lucide-react";
 import AnimatedWrapper from "@/components/ui/AnimatedWrapper";
-import Masonry from 'react-masonry-css';
-import EnhancedServiceFilters from "@/components/services/EnhancedServiceFilters";
-import ServiceListView from "@/components/services/ServiceListView";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Dynamically import components
+const ServiceCard = lazy(() => import("@/components/services/ServiceCard"));
+const ServiceCardSkeleton = lazy(() => import("@/components/services/ServiceCardSkeleton"));
+const Masonry = lazy(() => import('react-masonry-css')); // Corrected import path
+const EnhancedServiceFilters = lazy(() => import("@/components/services/EnhancedServiceFilters"));
+const ServiceListView = lazy(() => import("@/components/services/ServiceListView"));
 
 const categories = [
   "Beauty",
@@ -57,7 +60,6 @@ const Services = () => {
   });
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const isMobile = useIsMobile();
-  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const {
     data: services,
     error,
@@ -67,60 +69,60 @@ const Services = () => {
     queryFn: fetchServices,
   });
 
-  useEffect(() => {
-    if (services) {
-      let tempServices = [...services];
+  const filteredServices = React.useMemo(() => {
+    if (!services) return [];
 
-      // Filter by search
-      if (filters.search) {
-        tempServices = tempServices.filter(service =>
-          service.title.toLowerCase().includes(filters.search.toLowerCase())
-        );
-      }
+    let tempServices = [...services];
 
-      // Filter by location
-      if (filters.location) {
-        tempServices = tempServices.filter(service =>
-          service.location.toLowerCase().includes(filters.location.toLowerCase())
-        );
-      }
-
-      // Filter by category and subcategory (case-insensitive)
-      if (filters.categories.length > 0 || filters.subcategories.length > 0) {
-        tempServices = tempServices.filter(service => {
-          const matchesCategory = filters.categories.some(filterCategory =>
-            service.category.toLowerCase() === filterCategory.toLowerCase()
-          );
-          const matchesSubcategory = filters.subcategories.some(filterSubcategory =>
-            service.subcategory.toLowerCase() === filterSubcategory.toLowerCase()
-          );
-          return matchesCategory || matchesSubcategory;
-        });
-      }
-
-      // Filter by price range
-      if (filters.priceRange) {
-        tempServices = tempServices.filter(service =>
-          parseInt(service.price) >= filters.priceRange[0] && parseInt(service.price) <= filters.priceRange[1]
-        );
-      }
-
-      // Filter by mobile service
-      if (filters.isMobile) {
-        tempServices = tempServices.filter(service => service.is_mobile);
-      }
-
-      // Sort
-      if (filters.sortBy === 'rating') {
-        tempServices.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      } else if (filters.sortBy === 'price-asc') {
-        tempServices.sort((a, b) => parseInt(a.price) - parseInt(b.price));
-      } else if (filters.sortBy === 'price-desc') {
-        tempServices.sort((a, b) => parseInt(b.price) - parseInt(a.price));
-      }
-
-      setFilteredServices(tempServices);
+    // Filter by search
+    if (filters.search) {
+      tempServices = tempServices.filter(service =>
+        service.title.toLowerCase().includes(filters.search.toLowerCase())
+      );
     }
+
+    // Filter by location
+    if (filters.location) {
+      tempServices = tempServices.filter(service =>
+        service.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    // Filter by category and subcategory (case-insensitive)
+    if (filters.categories.length > 0 || filters.subcategories.length > 0) {
+      tempServices = tempServices.filter(service => {
+        const matchesCategory = filters.categories.some(filterCategory =>
+          service.category.toLowerCase() === filterCategory.toLowerCase()
+        );
+        const matchesSubcategory = filters.subcategories.some(filterSubcategory =>
+          service.subcategory.toLowerCase() === filterSubcategory.toLowerCase()
+        );
+        return matchesCategory || matchesSubcategory;
+      });
+    }
+
+    // Filter by price range
+    if (filters.priceRange) {
+      tempServices = tempServices.filter(service =>
+        parseInt(service.price) >= filters.priceRange[0] && parseInt(service.price) <= filters.priceRange[1]
+      );
+    }
+
+    // Filter by mobile service
+    if (filters.isMobile) {
+      tempServices = tempServices.filter(service => service.is_mobile);
+    }
+
+    // Sort
+    if (filters.sortBy === 'rating') {
+      tempServices.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (filters.sortBy === 'price-asc') {
+      tempServices.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+    } else if (filters.sortBy === 'price-desc') {
+      tempServices.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+    }
+
+    return tempServices;
   }, [services, filters]);
 
   useEffect(() => {
@@ -180,11 +182,13 @@ const Services = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               {!isMobile ? (
-                <EnhancedServiceFilters 
-                  filters={filters} 
-                  setFilters={setFilters} 
-                  categories={categories} 
-                />
+                <Suspense fallback={<LoadingSpinner size="sm" />}>
+                  <EnhancedServiceFilters 
+                    filters={filters} 
+                    setFilters={setFilters} 
+                    categories={categories} 
+                  />
+                </Suspense>
               ) : null}
             </div>
           </div>
@@ -206,11 +210,13 @@ const Services = () => {
                       <SheetTitle>Filter Services</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
-                      <EnhancedServiceFilters 
-                        filters={filters} 
-                        setFilters={setFilters} 
-                        categories={categories} 
-                      />
+                      <Suspense fallback={<LoadingSpinner size="sm" />}>
+                        <EnhancedServiceFilters 
+                          filters={filters} 
+                          setFilters={setFilters} 
+                          categories={categories} 
+                        />
+                      </Suspense>
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -243,31 +249,37 @@ const Services = () => {
 
             <main>
               {viewMode === 'grid' ? (
-                <Masonry
-                  breakpointCols={breakpointColumnsObj}
-                  className="my-masonry-grid"
-                  columnClassName="my-masonry-grid_column"
-                >
-                  {status === 'pending' ? (
-                    Array.from({ length: 9 }).map((_, index) => <ServiceCardSkeleton key={index} />)
-                  ) : status === 'error' ? (
-                    <div className="col-span-full text-center py-16 text-destructive">
-                      <p>Error: {error.message}</p>
-                    </div>
-                  ) : filteredServices.length > 0 ? (
-                    filteredServices.map((service, index) => (
-                      <AnimatedWrapper key={`${service.id}-${index}`} delay={index * 0.05}>
-                        <ServiceCard service={service} />
-                      </AnimatedWrapper>
-                    ))
-                  ) : (
-                    <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
-                      <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
-                      <h3 className="text-2xl font-semibold">No Services Found</h3>
-                      <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>
-                    </div>
-                  )}
-                </Masonry>
+                <Suspense fallback={
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {Array.from({ length: 9 }).map((_, index) => <ServiceCardSkeleton key={index} />)}
+                  </div>
+                }>
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="my-masonry-grid"
+                    columnClassName="my-masonry-grid_column"
+                  >
+                    {status === 'pending' ? (
+                      Array.from({ length: 9 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+                    ) : status === 'error' ? (
+                      <div className="col-span-full text-center py-16 text-destructive">
+                        <p>Error: {error.message}</p>
+                      </div>
+                    ) : filteredServices.length > 0 ? (
+                      filteredServices.map((service, index) => (
+                        <AnimatedWrapper key={`${service.id}-${index}`} delay={index * 0.05}>
+                          <ServiceCard service={service} />
+                        </AnimatedWrapper>
+                      ))
+                    ) : (
+                      <div className="col-span-full flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">
+                        <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
+                        <h3 className="text-2xl font-semibold">No Services Found</h3>
+                        <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>
+                      </div>
+                    )}
+                  </Masonry>
+                </Suspense>
               ) : (
                 <div className="space-y-4">
                   {status === 'pending' ? (
@@ -278,7 +290,9 @@ const Services = () => {
                     </div>
                   ) : filteredServices.length > 0 ? (
                     filteredServices.map((service, index) => (
-                      <ServiceListView key={`${service.id}-${index}`} service={service} index={index} />
+                      <AnimatedWrapper key={`${service.id}-${index}`} delay={index * 0.05}> {/* Added AnimatedWrapper */}
+                        <ServiceListView key={`${service.id}-${index}`} service={service} index={index} />
+                      </AnimatedWrapper>
                     ))
                   ) : (
                     <div className="flex flex-col items-center justify-center text-center py-16 bg-muted rounded-lg">

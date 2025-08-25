@@ -104,7 +104,7 @@ const Header = () => {
     )}>
       <div className="container relative flex h-full items-center">
         <Link to="/" className="flex items-center space-x-2">
-          <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+          <img src="/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
         </Link>
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -228,7 +228,7 @@ const Header = () => {
               <SheetContent side="left" className="flex flex-col w-full sm:w-[340px]">
                 <div className="flex items-center justify-between">
                    <Link to="/" className="flex items-center space-x-2" onClick={() => setIsSheetOpen(false)}>
-                      <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+                      <img src="/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
                     </Link>
                     <SheetClose asChild>
                        <Button variant="ghost" size="icon">

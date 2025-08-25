@@ -141,7 +141,7 @@ const PremiumHeader: React.FC = () => {
             {/* Desktop Logo */}
             <Link to="/" className="hidden md:flex items-center space-x-2">
               {/* <img src="/logo.png" alt="Themabinti Logo" className="h-8 w-auto" /> */}
-              <img src="/public/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
+              <img src="/logo.png" alt="Themabinti Logo" className="h-32 w-auto" />
             </Link>
 
             {/* Mobile Logo - Compact version in center when menu is closed */}
