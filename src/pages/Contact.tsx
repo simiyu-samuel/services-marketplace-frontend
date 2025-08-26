@@ -37,8 +37,8 @@ const Contact = () => {
   }
 
   const contactInfo = [
-    { icon: Mail, title: "Email", value: "support@themabinti.com" },
-    { icon: Phone, title: "Phone", value: "+254 712 345 678" },
+    { icon: Mail, title: "Email", value: "mabintionline@gmail.com" },
+    { icon: Phone, title: "Phone", value: "0712 316 960" },
     { icon: MapPin, title: "Office", value: "123 Glamour Lane, Nairobi, Kenya" },
   ];
 
