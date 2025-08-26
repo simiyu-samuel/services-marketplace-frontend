@@ -86,7 +86,10 @@ const Header = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    // Add a small delay to ensure the toast has time to dismiss before navigation
+    setTimeout(() => {
+      navigate('/login');
+    }, 5000); // Increased delay to allow toast to dismiss fully
   }
 
   const handleDashboardClick = () => {

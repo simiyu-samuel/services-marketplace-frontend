@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User, AuthResponse, LoginPayload, RegisterPayload, ChangePasswordPayload } from '@/types';
 import api, { fetchCsrfToken } from '@/lib/api';
-import { showLoading, dismissToast } from '@/utils/toast';
+import { showLoading, dismissToast, updateToast } from '@/utils/toast';
 import axios, { AxiosError } from 'axios';
 
 interface AuthContextType {
@@ -81,16 +81,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await fetchCsrfToken();
       await api.post('/logout');
+      updateToast(toastId, { type: 'success', message: "Logged out successfully." });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Logout failed, clearing session locally.", error.message);
+        updateToast(toastId, { type: 'error', message: error.response?.data?.message || "Logout failed." });
       } else {
         console.error("Logout failed, clearing session locally.", error);
+        updateToast(toastId, { type: 'error', message: "Logout failed." });
       }
     } finally {
       localStorage.removeItem('authToken');
       setUser(null);
-      dismissToast(toastId.toString()); // Ensure toastId is string
       // Redirect is handled in the Header component to have access to navigate
     }
   };

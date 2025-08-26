@@ -65,15 +65,15 @@ const RegisterSeller = () => {
           name: seller_package,
           price: packagePrices[seller_package as keyof typeof packagePrices],
         }));
-        showSuccess("Account created! Please complete the payment to proceed.");
-        navigate("/seller-onboarding/payment"); // Redirect to the dedicated payment page
+        showSuccess("Account created! Please verify your email and complete the payment to proceed.");
+        navigate("/email-verification-prompt"); // Redirect to email verification prompt
       } else {
         showSuccess("Registration successful!");
         navigate("/dashboard"); // Redirect to dashboard if no payment needed (e.g., if user_type was customer)
       }
-    } catch (error: any) {
-      if (error.response?.status === 422) {
-        const apiErrors = error.response.data.errors;
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 422) {
+        const apiErrors = error.response.data.errors as Record<string, string[]>;
         Object.keys(apiErrors).forEach((field) => {
           form.setError(field as keyof z.infer<typeof formSchema>, {
             type: "server",

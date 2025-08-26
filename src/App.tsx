@@ -4,7 +4,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import RouteTransitions from "./components/ui/RouteTransitions";
-import AuthGuard from "./components/auth/AuthGuard";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,7 +21,7 @@ const AdminLayout = React.lazy(() => import("./components/layout/AdminLayout"));
 // Auth
 const AdminRoute = React.lazy(() => import("./components/auth/AdminRoute"));
 const ProtectedRoute = React.lazy(() => import("./components/auth/ProtectedRoute"));
-const AuthGuard = React.lazy(() => import("./components/auth/AuthGuard"));
+const AuthGuardComponent = React.lazy(() => import("./components/auth/AuthGuard")); // Renamed to avoid conflict
 
 
 // Public Pages
@@ -45,6 +44,7 @@ const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
 const SellerOnboardingPayment = React.lazy(() => import("./pages/SellerOnboardingPayment")); // New import
+const EmailVerificationPrompt = React.lazy(() => import("./pages/EmailVerificationPrompt")); // New import
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Dashboard Pages
@@ -90,6 +90,7 @@ const AppContent = () => {
             <Routes location={location}>
             {/* Public Routes */}
             <Route element={<PremiumLayout />}>
+              <Route path="/resend-verification" element={<AuthGuardComponent><p>Resend Verification Page (TODO)</p></AuthGuardComponent>} /> {/* Wrap with AuthGuardComponent */}
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:id" element={<ServiceDetails />} />
@@ -107,6 +108,8 @@ const AppContent = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/seller-onboarding/payment" element={<SellerOnboardingPayment />} /> {/* New route */}
+              <Route path="/email-verification-prompt" element={<EmailVerificationPrompt />} /> {/* New route */}
+              <Route path="/resend-verification" element={<div>Resend Verification Page (TODO)</div>} /> {/* Placeholder for resend verification */}
               <Route path="/about-us" element={<AboutUs />} />
               <Route path="*" element={<NotFound />} />
             </Route>

@@ -12,6 +12,14 @@ export const showLoading = (message: string) => {
   return toast.loading(message);
 };
 
-export const dismissToast = (toastId: string) => {
+export const updateToast = (toastId: string | number, options: { type: 'success' | 'error', message: string }) => {
+  if (options.type === 'success') {
+    toast.success(options.message, { id: toastId });
+  } else {
+    toast.error(options.message, { id: toastId });
+  }
+};
+
+export const dismissToast = (toastId: string | number) => {
   toast.dismiss(toastId);
 };

@@ -125,17 +125,17 @@ const MyServices = () => {
                       aria-label="Toggle service status"
                     />
                   </TableCell>
-                  {/* <TableCell>
+                  <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Actions</span></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>Edit</DropdownMenuItem>
+                        {/* <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>Edit</DropdownMenuItem> */}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(service)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableCell> */}
+                  </TableCell>
                 </TableRow>
               ))}
           </TableBody>
