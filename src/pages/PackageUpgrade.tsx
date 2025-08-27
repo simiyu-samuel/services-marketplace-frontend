@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DollarSign, CheckCircle, X } from 'lucide-react';
 import { packageConfigs } from '@/config/packageConfig';
 import PaymentDialog from '@/components/payments/PaymentDialog'; // Import PaymentDialog
+import { usePackagePrices } from '@/hooks/usePackagePrices'; // Import usePackagePrices hook
 
 import { UserPackageInfo } from '@/types';
 
@@ -22,6 +23,9 @@ const PackageUpgrade = () => {
   const [selectedPackageKey, setSelectedPackageKey] = useState<string | null>(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [currentPackageStats, setCurrentPackageStats] = useState<UserPackageInfo | null>(null); // To store user's current package info
+
+  // Fetch dynamic package prices
+  const { data: packagePrices, isLoading: pricesLoading, isError: pricesError } = usePackagePrices();
 
   // Fetch user data to get current package and expiry date
   const { data: userData, isLoading: isUserLoading, isError: isUserError, refetch: refetchUser } = useQuery<UserPackageInfo | undefined>({
@@ -53,9 +57,19 @@ const PackageUpgrade = () => {
     navigate('/dashboard'); // Redirect to dashboard
   };
 
-  const selectedPackageInfo = selectedPackageKey ? packageConfigs.seller_packages[selectedPackageKey as keyof typeof packageConfigs.seller_packages] : null;
+  // Combine hardcoded package details with fetched prices
+  const getPackageDisplayInfo = (pkgKey: string) => {
+    const hardcodedConfig = packageConfigs.seller_packages[pkgKey as keyof typeof packageConfigs.seller_packages];
+    const fetchedPrice = packagePrices?.[pkgKey as keyof typeof packagePrices];
+    return {
+      ...hardcodedConfig,
+      price: fetchedPrice !== undefined ? fetchedPrice : hardcodedConfig.price, // Use fetched price if available, otherwise hardcoded
+    };
+  };
 
-  if (isUserLoading) {
+  const selectedPackageDisplayInfo = selectedPackageKey ? getPackageDisplayInfo(selectedPackageKey) : null;
+
+  if (isUserLoading || pricesLoading) {
     return (
       <div className="container mx-auto p-8">
         <h1 className="text-3xl font-bold mb-6">Upgrade Your Package</h1>
@@ -69,20 +83,20 @@ const PackageUpgrade = () => {
     );
   }
 
-  if (isUserError || !user) {
+  if (isUserError || pricesError || !user || !packagePrices) {
     return (
       <div className="container mx-auto p-8">
         <h1 className="text-3xl font-bold mb-6">Upgrade Your Package</h1>
         <Card className="border-destructive">
           <CardHeader><CardTitle>Error</CardTitle></CardHeader>
-          <CardContent><p>Could not load your package information. Please try again later.</p></CardContent>
+          <CardContent><p>Could not load package information. Please try again later.</p></CardContent>
         </Card>
       </div>
     );
   }
 
   const currentPackageKey = userData?.seller_package;
-  const currentPackageConfig = currentPackageKey ? packageConfigs.seller_packages[currentPackageKey as keyof typeof packageConfigs.seller_packages] : null;
+  const currentPackageConfig = currentPackageKey ? getPackageDisplayInfo(currentPackageKey) : null;
 
   return (
     <div className="container mx-auto p-8">
@@ -90,10 +104,11 @@ const PackageUpgrade = () => {
 
       {/* Package Comparison Grid */}
       <div className="grid gap-6 md:grid-cols-3">
-        {Object.entries(packageConfigs.seller_packages).map(([pkgKey, pkgConfig]) => {
+        {Object.entries(packageConfigs.seller_packages).map(([pkgKey, hardcodedPkgConfig]) => {
+          const pkgDisplayInfo = getPackageDisplayInfo(pkgKey);
           const isCurrentPackage = currentPackageKey === pkgKey;
           const isLowerTier = currentPackageKey && 
-                              packageConfigs.seller_packages[currentPackageKey as keyof typeof packageConfigs.seller_packages].price > pkgConfig.price;
+                              (currentPackageConfig?.price || 0) > pkgDisplayInfo.price; // Compare with fetched prices
 
           let buttonText = 'Select Plan';
           const buttonAction = () => handleSelectPackage(pkgKey);
@@ -115,12 +130,12 @@ const PackageUpgrade = () => {
               )}
               <div>
                 <CardHeader className="p-0 mb-4">
-                  <CardTitle className="text-2xl font-bold capitalize">{pkgConfig.name}</CardTitle>
-                  <CardDescription className="text-lg">Ksh {pkgConfig.price.toLocaleString()}</CardDescription>
+                  <CardTitle className="text-2xl font-bold capitalize">{pkgDisplayInfo.name}</CardTitle>
+                  <CardDescription className="text-lg">Ksh {pkgDisplayInfo.price.toLocaleString()}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   <ul className="space-y-2">
-                    {pkgConfig.features.map(feature => (
+                    {pkgDisplayInfo.features.map(feature => (
                       <li key={feature} className="flex items-center text-sm">
                         <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                         {feature}
@@ -145,11 +160,11 @@ const PackageUpgrade = () => {
       </div>
 
       {/* Payment Modal Trigger */}
-      {selectedPackageInfo && (
+      {selectedPackageDisplayInfo && (
         <PaymentDialog
           isOpen={isPaymentDialogOpen}
           onOpenChange={setIsPaymentDialogOpen}
-          amount={selectedPackageInfo.price}
+          amount={selectedPackageDisplayInfo.price}
           paymentType="package_upgrade"
           packageType={selectedPackageKey as 'basic' | 'standard' | 'premium'}
           onPaymentSuccess={handlePaymentSuccess}

@@ -132,15 +132,15 @@ const RegisterSeller = () => {
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl><RadioGroupItem value="basic" /></FormControl>
-                            <FormLabel className="font-normal">Basic (Ksh {packagePrices.basic.toLocaleString()})</FormLabel>
+                            <FormLabel className="font-normal">{packageDetails.basic.name} (Ksh {packagePrices?.basic.toLocaleString()})</FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl><RadioGroupItem value="standard" /></FormControl>
-                            <FormLabel className="font-normal">Standard (Ksh {packagePrices.standard.toLocaleString()})</FormLabel>
+                            <FormLabel className="font-normal">{packageDetails.standard.name} (Ksh {packagePrices?.standard.toLocaleString()})</FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl><RadioGroupItem value="premium" /></FormControl>
-                            <FormLabel className="font-normal">Premium (Ksh {packagePrices.premium.toLocaleString()})</FormLabel>
+                            <FormLabel className="font-normal">{packageDetails.premium.name} (Ksh {packagePrices?.premium.toLocaleString()})</FormLabel>
                           </FormItem>
                         </RadioGroup>
                       ) : null}

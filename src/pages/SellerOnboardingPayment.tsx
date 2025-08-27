@@ -5,10 +5,11 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import PaymentDialog from '@/components/payments/PaymentDialog';
+import { usePackagePrices } from "@/hooks/usePackagePrices"; // Import usePackagePrices
 import { Loader2 } from 'lucide-react';
 
 const packageDetails = {
-  basic: { name: "Basic", price: 1.00 },
+  basic: { name: "Basic", price: 1000.00 },
   standard: { name: "Standard", price: 1500.00 },
   premium: { name: "Premium", price: 2500.00 },
 };
@@ -16,6 +17,7 @@ const packageDetails = {
 const SellerOnboardingPayment = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
+  const { data: packagePrices, isLoading: pricesLoading, isError: pricesError } = usePackagePrices(); // Fetch prices
   const [paymentInfo, setPaymentInfo] = useState<{
     open: boolean;
     amount: number;
@@ -26,7 +28,7 @@ const SellerOnboardingPayment = () => {
   } | null>(null);
 
   useEffect(() => {
-    if (!isAuthLoading) {
+    if (!isAuthLoading && !pricesLoading) { // Wait for both auth and prices to load
       // If user is already a seller, redirect to dashboard
       if (user?.user_type === 'seller' && user?.seller_package) {
         showSuccess("Your seller account is active!");
@@ -37,21 +39,26 @@ const SellerOnboardingPayment = () => {
         navigate('/login');
       }
     }
-  }, [user, isAuthLoading, navigate]);
+  }, [user, isAuthLoading, pricesLoading, navigate]);
 
   const handleInitiatePayment = () => {
-    if (user && user.pending_seller_package) {
-      const selectedPackage = packageDetails[user.pending_seller_package];
-      setPaymentInfo({
-        open: true,
-        amount: selectedPackage.price,
-        packageType: user.pending_seller_package,
-        email: user.email,
-        userId: user.id,
-        phoneNumber: user.phone_number,
-      });
+    if (user && user.pending_seller_package && packagePrices) {
+      const selectedPackageType = user.pending_seller_package;
+      const selectedPackagePrice = packagePrices[selectedPackageType];
+      if (selectedPackagePrice !== undefined) {
+        setPaymentInfo({
+          open: true,
+          amount: selectedPackagePrice,
+          packageType: selectedPackageType,
+          email: user.email,
+          userId: user.id,
+          phoneNumber: user.phone_number,
+        });
+      } else {
+        showError("Selected package price not found. Please try again.");
+      }
     } else {
-      showError("No pending seller package found for your account. Please register as a seller first.");
+      showError("No pending seller package found for your account or prices not loaded. Please register as a seller first.");
       navigate('/register-seller');
     }
   };
@@ -68,11 +75,11 @@ const SellerOnboardingPayment = () => {
     }, 1000); // 1 second delay
   };
 
-  if (isAuthLoading) {
+  if (isAuthLoading || pricesLoading) {
     return (
       <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4 text-lg">Loading user data...</p>
+        <p className="ml-4 text-lg">Loading data...</p>
       </div>
     );
   }
@@ -81,6 +88,20 @@ const SellerOnboardingPayment = () => {
     // This case is handled by useEffect redirect, but good to have a fallback UI
     return null;
   }
+
+  // If prices failed to load, display an error
+  if (pricesError || !packagePrices) {
+    return (
+      <div className="min-h-[calc(100vh-128px)] flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
+        <p className="text-lg text-red-500">Error loading package prices. Please try again later.</p>
+      </div>
+    );
+  }
+
+  const pendingPackageType = user?.pending_seller_package;
+  const pendingPackagePrice = pendingPackageType ? packagePrices[pendingPackageType] : undefined;
+  const pendingPackageName = pendingPackageType ? packageDetails[pendingPackageType].name : undefined;
+
 
   return (
     <>
@@ -94,10 +115,10 @@ const SellerOnboardingPayment = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            {user?.pending_seller_package ? (
+            {pendingPackageType && pendingPackagePrice !== undefined && pendingPackageName ? (
               <>
                 <p className="text-lg font-semibold">
-                  Pending Package: <span className="capitalize">{user.pending_seller_package}</span> (Ksh {packageDetails[user.pending_seller_package].price.toLocaleString()})
+                  Pending Package: <span className="capitalize">{pendingPackageName}</span> (Ksh {pendingPackagePrice.toLocaleString()})
                 </p>
                 <Button onClick={handleInitiatePayment} className="w-full">
                   Initiate Payment
