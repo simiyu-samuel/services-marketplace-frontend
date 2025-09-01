@@ -16,39 +16,48 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required").max(5000),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().max(255).optional(),
-  price: z.coerce.number().min(0, "Price must be positive").max(1000000),
+  min_price: z.coerce.number().min(0, "Min price must be positive").max(1000000),
+  max_price: z.coerce.number().min(0, "Max price must be positive").max(1000000).optional().nullable(),
   duration: z.coerce.number().int().min(5, "Duration must be at least 5 minutes").max(1440, "Duration cannot exceed 24 hours"),
-  location: z.string().min(1, "Location is required").max(255),
+  county: z.string().min(1, "County is required"),
+  specific_location: z.string().min(1, "Specific location is required").max(200),
   is_mobile: z.boolean().default(false),
   media_files: z.instanceof(FileList).optional(),
+}).refine((data) => {
+  if (data.max_price !== null && data.max_price !== undefined && data.max_price <= data.min_price) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Max price must be greater than min price",
+  path: ["max_price"],
 });
 
 export type ServiceFormValues = z.infer<typeof formSchema>;
 
-const categories = [
-  // Beauty Services
-  "Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena",
-  "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub",
-  // Hair Services
-  "Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut",
-  "Complete Hair Care",
-  // Fashion Services
-  "African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist",
-  "Made in Kenya",
-  // Photography
-  "Event", "Lifestyle", "Portrait",
-  // Bridal Services
-  "Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire",
-  "Wedding Cakes",
-  // Health Services
-  "Dental", "Skin Consultation", "Reproductive Care", "Maternal Care",
-  "Mental Care",
-  // Celebrate Her
-  "Florist", "Decor", "Journey to Motherhood",
-  // Fitness Services
-  "Gym", "Personal Trainers", "Nutritionist",
-  // Home & Lifestyles
-  "Cleaning Services", "Laundry Services", "Home & Home Decor",
+// Main categories and their subcategories
+const categorySubcategoryMap = {
+  "Beauty Services": ["Makeup", "Nails", "Eyebrows & Lashes", "Microblading", "Heena", "Tattoo & Piercings", "Waxing", "ASMR & Massage", "Beauty Hub"],
+  "Hair Services": ["Braiding", "Weaving", "Locs", "Wig Makeovers", "Ladies Haircut", "Complete Hair Care"],
+  "Fashion Services": ["African Wear", "Maasai Wear", "Crotchet/Weaving", "Personal Stylist", "Made in Kenya"],
+  "Photography": ["Event", "Lifestyle", "Portrait"],
+  "Bridal Services": ["Bridal Makeup", "Bridal Hair", "Bridesmaids for Hire", "Gowns for Hire", "Wedding Cakes"],
+  "Health Services": ["Dental", "Skin Consultation", "Reproductive Care", "Maternal Care", "Mental Care"],
+  "Celebrate Her": ["Florist", "Decor", "Journey to Motherhood"],
+  "Fitness Services": ["Gym", "Personal Trainers", "Nutritionist"],
+  "Home & Lifestyles": ["Cleaning Services", "Laundry Services", "Home & Home Decor"],
+};
+
+// Extract main categories
+const mainCategories = Object.keys(categorySubcategoryMap);
+
+// All 47 Counties in Kenya
+const counties = [
+  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
+  "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia",
+  "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi",
+  "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya", "Taita-Taveta", "Tana River",
+  "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"
 ];
 
 interface ServiceFormProps {
@@ -64,6 +73,25 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
   const [previews, setPreviews] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category || "");
+  
+  // Helper function to parse existing location into county and specific location
+  const parseLocation = (location?: string) => {
+    if (!location) return { county: "", specific_location: "" };
+    const parts = location.split(", ");
+    if (parts.length === 2) {
+      return { county: parts[0].trim(), specific_location: parts[1].trim() };
+    }
+    // If it doesn't match the expected format, try to match county from the list
+    const foundCounty = counties.find(county => location.toLowerCase().includes(county.toLowerCase()));
+    if (foundCounty) {
+      const specific = location.replace(foundCounty, "").replace(/,\s*/, "").trim();
+      return { county: foundCounty, specific_location: specific || "CBD" };
+    }
+    return { county: "", specific_location: location };
+  };
+  
+  const { county: initialCounty, specific_location: initialSpecificLocation } = parseLocation(initialData?.location);
   
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(formSchema),
@@ -72,12 +100,27 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
       description: initialData?.description || "",
       category: initialData?.category || "",
       subcategory: initialData?.subcategory || "",
-      price: initialData ? parseFloat(initialData.price) : 0,
+      min_price: initialData?.min_price || 0,
+      max_price: initialData?.max_price || null,
       duration: initialData?.duration || 30,
-      location: initialData?.location || "",
+      county: initialCounty,
+      specific_location: initialSpecificLocation,
       is_mobile: initialData?.is_mobile || false,
     },
   });
+
+  // Get available subcategories based on selected category
+  const availableSubcategories = selectedCategory 
+    ? (categorySubcategoryMap as any)[selectedCategory] || []
+    : [];
+
+  // Handle category change
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    form.setValue('category', value);
+    // Clear subcategory when category changes - use undefined to avoid empty string
+    form.setValue('subcategory', undefined);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (files: FileList | null) => void, photosPerService?: number, videosPerService?: number) => {
     const files = e.target.files;
@@ -132,19 +175,77 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
               <FormItem className="md:col-span-2"><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe your service in detail..." rows={5} {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="category" render={({ field }) => (
-              <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={handleCategoryChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {mainCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )} />
             <FormField control={form.control} name="subcategory" render={({ field }) => (
-              <FormItem><FormLabel>Subcategory (Optional)</FormLabel><FormControl><Input placeholder="e.g., Nails, Skin Care" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Subcategory (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedCategory ? "Select a subcategory" : "Select category first"} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {availableSubcategories.map(subcategory => (
+                      <SelectItem key={subcategory} value={subcategory}>{subcategory}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )} />
-            <FormField control={form.control} name="price" render={({ field }) => (
-              <FormItem><FormLabel>Price (Ksh)</FormLabel><FormControl><Input type="number" placeholder="1500" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormField control={form.control} name="min_price" render={({ field }) => (
+              <FormItem><FormLabel>Min Price (KES)</FormLabel><FormControl><Input type="number" placeholder="1500" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="max_price" render={({ field }) => (
+              <FormItem><FormLabel>Max Price (Optional)</FormLabel><FormControl><Input type="number" placeholder="3000" {...field} value={field.value || ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)} /></FormControl><FormMessage /><p className="text-sm text-muted-foreground">Leave empty if you have a fixed price</p></FormItem>
             )} />
             <FormField control={form.control} name="duration" render={({ field }) => (
               <FormItem><FormLabel>Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="60" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-            <FormField control={form.control} name="location" render={({ field }) => (
-              <FormItem className="md:col-span-2"><FormLabel>Location</FormLabel><FormControl><Input placeholder="e.g., Westlands, Nairobi" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormField control={form.control} name="county" render={({ field }) => (
+              <FormItem>
+                <FormLabel>County</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select county" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {counties.map(county => (
+                      <SelectItem key={county} value={county}>{county}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="specific_location" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Specific Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., CBD, Town Center, Mall Name..." {...field} />
+                </FormControl>
+                <FormMessage />
+                <p className="text-sm text-muted-foreground">Enter the specific area, neighborhood, or landmark</p>
+              </FormItem>
             )} />
             {!initialData && (
               <FormField control={form.control} name="media_files" render={({ field }) => (

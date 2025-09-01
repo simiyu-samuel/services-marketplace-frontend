@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Calendar, Briefcase, Star, DollarSign, CheckCircle } from "lucide-react";
+import { Calendar, Briefcase, Star, DollarSign, CheckCircle, TrendingUp, Users, ArrowUpRight, Clock, Plus, Eye } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { SellerDashboardStats, CustomerDashboardStats, PaginatedResponse, Booking, User } from "@/types";
@@ -8,10 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Assuming LoadingSpinner is available
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import React, { lazy, Suspense } from "react";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import ModernStatCard from "@/components/dashboard/ModernStatCard";
+import { cn } from "@/lib/utils";
 
-// Dynamically import StatCard
+// Dynamically import StatCard for backward compatibility
 const StatCard = lazy(() => import("@/components/dashboard/StatCard"));
 
 const fetchDashboardStats = async (userType: 'customer' | 'seller') => {
@@ -33,13 +37,123 @@ const CustomerDashboardComponent = ({ stats, isLoading }: { stats?: CustomerDash
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold mb-4 text-foreground">Your Activity</h2> {/* Added text-foreground */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Upcoming Bookings" value={stats?.upcoming_appointments_count ?? 0} icon={Calendar} description="View your upcoming appointments" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Completed Bookings" value={stats?.completed_appointments_count ?? 0} icon={CheckCircle} description="Total appointments completed" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Bookings" value={stats?.total_appointments_count ?? 0} icon={Briefcase} description="All your appointments" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Spent" value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} icon={DollarSign} description="Your lifetime spending" isLoading={isLoading} /></Suspense>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ModernStatCard 
+            title="Upcoming Bookings" 
+            value={stats?.upcoming_appointments_count ?? 0} 
+            icon={Calendar} 
+            description="View your upcoming appointments" 
+            trend="up"
+            trendValue="+12%"
+            color="blue"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Completed Bookings" 
+            value={stats?.completed_appointments_count ?? 0} 
+            icon={CheckCircle} 
+            description="Total appointments completed" 
+            trend="up"
+            trendValue="+8%"
+            color="green"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Total Bookings" 
+            value={stats?.total_appointments_count ?? 0} 
+            icon={Briefcase} 
+            description="All your appointments" 
+            color="purple"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Total Spent" 
+            value={`Ksh ${parseFloat(stats?.total_amount_spent?.toString() ?? '0').toLocaleString()}`} 
+            icon={DollarSign} 
+            description="Your lifetime spending" 
+            trend="up"
+            trendValue="+5%"
+            color="orange"
+            isLoading={isLoading} 
+          />
         </div>
       </div>
+
+      {/* Quick Actions Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-8"
+      >
+        <h3 className="text-lg font-semibold mb-4 text-foreground">Quick Actions</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/bookings" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-blue-500 p-2 rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-blue-900 dark:text-blue-100">View Bookings</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-300">Manage appointments</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/services" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-500 p-2 rounded-lg">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-900 dark:text-green-100">Book Service</p>
+                    <p className="text-sm text-green-600 dark:text-green-300">Find new services</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/profile" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-purple-500 p-2 rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-purple-900 dark:text-purple-100">Edit Profile</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-300">Update your info</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/services/favorites" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-orange-500 p-2 rounded-lg">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-orange-900 dark:text-orange-100">Favorites</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-300">Saved services</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
+
       <Card className="bg-card border-border shadow-md"> {/* Enhanced card styling */}
         <CardHeader>
           <CardTitle className="text-xl font-semibold">Recent Appointments</CardTitle> {/* Enhanced title */}
@@ -90,13 +204,124 @@ const SellerDashboardComponent = ({ user, stats, isLoading }: { user: User, stat
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold mb-4 text-foreground">Your Business</h2> {/* Added text-foreground */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"> {/* Enhanced responsiveness */}
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Active Services" value={stats?.active_services_count ?? 0} icon={Briefcase} description="Manage your service listings" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Pending Bookings" value={stats?.pending_bookings_count ?? 0} icon={Calendar} description="Respond to new clients" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Completed Bookings" value={stats?.completed_bookings_count ?? 0} icon={CheckCircle} description="Total appointments fulfilled" isLoading={isLoading} /></Suspense>
-          <Suspense fallback={<Skeleton className="h-24 w-full" />}><StatCard title="Total Revenue" value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} icon={DollarSign} description="Your all-time earnings" isLoading={isLoading} /></Suspense>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ModernStatCard 
+            title="Active Services" 
+            value={stats?.active_services_count ?? 0} 
+            icon={Briefcase} 
+            description="Manage your service listings" 
+            trend="up"
+            trendValue="+3 this week"
+            color="blue"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Pending Bookings" 
+            value={stats?.pending_bookings_count ?? 0} 
+            icon={Clock} 
+            description="Respond to new clients" 
+            trend={stats?.pending_bookings_count && stats.pending_bookings_count > 0 ? "up" : undefined}
+            trendValue={stats?.pending_bookings_count && stats.pending_bookings_count > 0 ? "Needs attention" : "All caught up"}
+            color="yellow"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Completed Bookings" 
+            value={stats?.completed_bookings_count ?? 0} 
+            icon={CheckCircle} 
+            description="Total appointments fulfilled" 
+            trend="up"
+            trendValue="+15%"
+            color="green"
+            isLoading={isLoading} 
+          />
+          <ModernStatCard 
+            title="Total Revenue" 
+            value={`Ksh ${parseFloat((stats?.all_time_earnings ?? 0).toString()).toLocaleString()}`} 
+            icon={DollarSign} 
+            description="Your all-time earnings" 
+            trend="up"
+            trendValue="+22%"
+            color="emerald"
+            isLoading={isLoading} 
+          />
         </div>
       </div>
+
+      {/* Quick Actions Section for Sellers */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-8"
+      >
+        <h3 className="text-lg font-semibold mb-4 text-foreground">Quick Actions</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/seller/services/create" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-blue-500 p-2 rounded-lg">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-blue-900 dark:text-blue-100">Add Service</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-300">Create new listing</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/seller/services" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-500 p-2 rounded-lg">
+                    <Eye className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-900 dark:text-green-100">View Services</p>
+                    <p className="text-sm text-green-600 dark:text-green-300">Manage listings</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/bookings" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-purple-500 p-2 rounded-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-purple-900 dark:text-purple-100">Bookings</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-300">Manage appointments</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <Link to="/dashboard/seller/analytics" className="block p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-orange-500 p-2 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-orange-900 dark:text-orange-100">Analytics</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-300">View insights</p>
+                  </div>
+                </div>
+              </Link>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* Package Overview Section */}
       <Card className={`mb-6 bg-card border-border shadow-md ${ /* Enhanced card styling */

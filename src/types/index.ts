@@ -63,7 +63,8 @@ export interface Service {
   description: string;
   category: string;
   subcategory:string;
-  price: string;
+  min_price: number | null;
+  max_price: number | null;
   duration: number;
   location: string;
   is_mobile: boolean;

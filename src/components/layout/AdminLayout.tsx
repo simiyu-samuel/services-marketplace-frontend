@@ -133,7 +133,7 @@ const AdminLayout = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 p-4 sm:p-6 pt-0 sm:pt-6"> {/* Adjusted pt for mobile */}
+        <main className="flex-1 p-4 sm:p-6"> {/* Adjusted pt for mobile */}
           <Outlet />
         </main>
       </div>

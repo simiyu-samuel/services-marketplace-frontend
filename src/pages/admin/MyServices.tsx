@@ -8,15 +8,17 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { formatServicePrice } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const fetchAdminServices = async (adminId: string) => {
-  const { data } = await api.get('admin/services', {
-    params: { 'user_id': adminId }
+  const { data } = await api.get('/services', {
+    params: { 'filter[user_id]': adminId }
   });
   console.log("services data:", data); // Log the full data object for inspection
   // The API returns a pagination object, with the services array inside the 'data' property
@@ -88,35 +90,45 @@ const MyServices = () => {
   };
 
 
+  const filteredServices = adminServices?.filter(service => service.user_id === parseInt(adminId!)) || [];
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">My Admin Services</h1>
-      <Link to="/admin/my-services/create" className="mb-4 inline-block">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Add New Admin Service
-        </button>
-      </Link>
-      {isLoading ? (
-        <Skeleton className="h-10 w-full" />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Status</TableHead>
-              {/* <TableHead><span className="sr-only">Actions</span></TableHead> */}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {adminServices && Array.isArray(adminServices) && adminServices
-              .filter(service => service.user_id === parseInt(adminId!)) // Filter services by adminId
-              .map((service) => (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>My Admin Services</CardTitle>
+          <CardDescription>Manage your admin service listings.</CardDescription>
+        </div>
+        <Button asChild>
+          <Link to="/admin/my-services/create" className="gap-2">
+            <PlusCircle className="h-4 w-4" />
+            Create New Service
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : filteredServices.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead><span className="sr-only">Actions</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredServices.map((service) => (
                 <TableRow key={service.id}>
                   <TableCell className="font-medium">{service.title}</TableCell>
                   <TableCell>{service.category}</TableCell>
-                  <TableCell>Ksh {parseFloat(service.price).toLocaleString()}</TableCell>
+                  <TableCell>{formatServicePrice(service.min_price, service.max_price)}</TableCell>
                   <TableCell>
                     <Switch
                       checked={service.is_active}
@@ -127,20 +139,42 @@ const MyServices = () => {
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Actions</span></Button></DropdownMenuTrigger>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        {/* <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>Edit</DropdownMenuItem> */}
+                        <DropdownMenuItem onClick={() => navigate(`/admin/my-services/${service.id}/edit`)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(service)}>Delete</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(service)}>
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
-          </TableBody>
-        </Table>
-      )}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">You haven't created any admin services yet.</p>
+            <Button asChild className="mt-4">
+              <Link to="/admin/my-services/create">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Your First Service
+              </Link>
+            </Button>
+          </div>
+        )}
+      </CardContent>
+      
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -157,7 +191,7 @@ const MyServices = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 };
 

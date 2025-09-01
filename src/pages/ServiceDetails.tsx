@@ -19,6 +19,7 @@ import ImageGallery from "@/components/services/ImageGallery";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { showError } from "@/utils/toast";
+import { formatServicePrice } from "@/lib/utils";
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
@@ -65,8 +66,15 @@ const ServiceDetails = () => {
     return <NotFound />;
   }
 
-const otherServices = allServices?.filter(s => s.user && service.user && s.user.id === service.user.id && s.id !== service.id) || [];
-const whatsappNumber = service.user?.phone_number;
+// Filter services to show only those belonging to the current service's seller (excluding the current service)
+  const otherServices = allServices?.filter(s => {
+    // Ensure both services have valid user data
+    if (!s?.user?.id || !service?.user?.id) return false;
+    // Only include services from the same seller, excluding the current service
+    return s.user.id === service.user.id && s.id !== service.id;
+  }) || [];
+  
+  const whatsappNumber = service.user?.phone_number;
   const message = `Hello, I'm interested in booking the "${service.title}" service.`;
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodedMessage}` : "";
@@ -96,8 +104,11 @@ const whatsappNumber = service.user?.phone_number;
 <ImageGallery mediaFiles={service.media_files} serviceTitle={service.title} />
             <Card className="mt-6 md:hidden block">
                 <CardHeader>
-                  <CardTitle className="text-center text-2xl font-bold text-primary">
-                    Ksh {parseFloat(service.price).toLocaleString()}
+                  <CardTitle className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">
+                      {formatServicePrice(service.min_price, service.max_price)}
+                    </div>
+                    <p className="text-sm text-gray-500">Actual price may vary based on customization.</p>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -109,16 +120,16 @@ const whatsappNumber = service.user?.phone_number;
                   <div className="grid grid-cols-1 gap-2">
                     <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
                       <CalendarPlus className="h-5 w-5" />
-                      Book Appointment
+                      Book Now {service.min_price ? `(Starts from KES ${service.min_price.toLocaleString()})` : ''}
                     </Button>
-{whatsappUrl && (
-                    <Button size="lg" variant="outline" className="w-full gap-2" asChild>
-                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                        <MessageSquare className="h-5 w-5" />
-                        Contact via WhatsApp
-                      </a>
-                    </Button>
-                  )}
+                    {whatsappUrl && (
+                      <Button size="lg" variant="outline" className="w-full gap-2" asChild>
+                        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageSquare className="h-5 w-5" />
+                          Contact via WhatsApp
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -167,8 +178,11 @@ const whatsappNumber = service.user?.phone_number;
             <div className="sticky top-20 space-y-6">
               <Card className="hidden md:block">
                 <CardHeader>
-                  <CardTitle className="text-center text-2xl font-bold text-primary">
-                    Ksh {parseFloat(service.price).toLocaleString()}
+                  <CardTitle className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">
+                      {formatServicePrice(service.min_price, service.max_price)}
+                    </div>
+                    <p className="text-sm text-gray-500">Actual price may vary based on customization.</p>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -180,16 +194,16 @@ const whatsappNumber = service.user?.phone_number;
                   <div className="grid grid-cols-1 gap-2">
                     <Button size="lg" className="w-full gap-2" onClick={() => setIsBookingOpen(true)}>
                       <CalendarPlus className="h-5 w-5" />
-                      Book Appointment
+                      Book Now {service.min_price ? `(Starts from KES ${service.min_price.toLocaleString()})` : ''}
                     </Button>
-{whatsappUrl && (
-                    <Button size="lg" variant="outline" className="w-full gap-2" asChild>
-                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                        <MessageSquare className="h-5 w-5" />
-                        Contact via WhatsApp
-                      </a>
-                    </Button>
-                  )}
+                    {whatsappUrl && (
+                      <Button size="lg" variant="outline" className="w-full gap-2" asChild>
+                        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageSquare className="h-5 w-5" />
+                          Contact via WhatsApp
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

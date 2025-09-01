@@ -7,28 +7,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showSuccess, showError } from "@/utils/toast";
 import { Upload } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ServiceMediaManagerProps {
   service: Service;
+  isAdminMode?: boolean;
 }
 
-const uploadMedia = async ({ id, formData }: { id: number, formData: FormData }) => {
-  const { data } = await api.post(`/services/${id}/media`, formData, {
+const uploadMedia = async ({ id, formData, isAdminMode }: { id: number, formData: FormData, isAdminMode?: boolean }) => {
+  const endpoint = isAdminMode ? `/admin/services/${id}/media` : `/services/${id}/media`;
+  const { data } = await api.post(endpoint, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data.service;
 };
 
-const ServiceMediaManager = ({ service }: ServiceMediaManagerProps) => {
+const ServiceMediaManager = ({ service, isAdminMode = false }: ServiceMediaManagerProps) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Auto-detect admin mode if not explicitly provided
+  const effectiveAdminMode = isAdminMode || user?.user_type === 'admin';
 
   const mutation = useMutation({
-    mutationFn: uploadMedia,
+    mutationFn: (params: { id: number, formData: FormData }) => 
+      uploadMedia({ ...params, isAdminMode: effectiveAdminMode }),
     onSuccess: () => {
       showSuccess("Media uploaded successfully!");
+      // Invalidate appropriate queries based on mode
       queryClient.invalidateQueries({ queryKey: ['service', service.id] });
+      if (effectiveAdminMode) {
+        queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['my-services'] });
+      }
       setSelectedFiles(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";

@@ -1,14 +1,15 @@
-import { Service } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin } from "lucide-react";
+import { Service } from "@/types";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import React, { useRef, useState } from "react";
 import ImageGalleryModal from "./ImageGalleryModal";
+import { formatServicePrice } from "@/lib/utils";
 
 interface ServiceCardProps {
   service: Service;
@@ -71,7 +72,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
           }}
         >
           <div className="relative">
-            <Badge className="absolute top-2 left-2 z-10">{service.category}</Badge>
+            <Badge className="absolute top-2 left-2 z-10" variant="default">{service.category}</Badge>
             <Carousel className="w-full">
               <CarouselContent>
                 {service.media_files && service.media_files.length > 0 ? (
@@ -136,7 +137,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
             </div>
             <div className="flex items-end justify-between pt-2">
               <p className="text-2xl font-extrabold text-primary">
-                Ksh {parseFloat(service.price).toLocaleString()}
+                {formatServicePrice(service.min_price, service.max_price)}
               </p>
               <Button asChild size="sm">
                 <Link to={`/services/${service.id}`}>Book Now</Link>

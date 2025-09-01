@@ -50,7 +50,20 @@ const EditAdminService = () => {
   const onSubmit = async (values: ServiceFormValues) => { // Use ServiceFormValues
     setIsLoading(true);
     try {
-      const response = await api.put(`admin/services/${id}`, values);
+      // Ensure proper data formatting
+      const formattedData = {
+        ...values,
+        // Ensure booleans are properly formatted
+        is_mobile: Boolean(values.is_mobile),
+        // Preserve is_active from existing service
+        is_active: service?.is_active || true,
+        // Ensure max_price is null if empty
+        max_price: values.max_price || null,
+      };
+      
+      console.log('Sending update data:', formattedData); // Debug log
+      
+      const response = await api.put(`/admin/services/${id}`, formattedData);
       if (response.status === 200) {
         showSuccess("Service updated successfully.");
         navigate('/admin/my-services');
@@ -60,6 +73,7 @@ const EditAdminService = () => {
     } catch (error: unknown) { // Use unknown
       console.error("Error updating service:", error);
       if (error instanceof AxiosError) {
+        console.error("Backend error response:", error.response?.data); // Debug log
         showError(error.response?.data?.message || "Failed to update service.");
       } else {
         showError("Failed to update service.");

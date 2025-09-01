@@ -34,11 +34,12 @@ const ServiceFilters: React.FC<ServiceFiltersProps> = ({ filters, setFilters, ca
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    const parsedValue = name === 'min_price' || name === 'max_price' ? (value ? parseFloat(value) : null) : value;
+    setFilters(prev => ({ ...prev, [name]: parsedValue }));
   };
 
   const handleCollapsibleChange = (category: string, isOpen: boolean) => {
-    setOpenCategories(prev => ({ ...prev, [category]: isOpen }));
+    setOpenCategories(prev => ({ ...prev, [category]: isOpen });
   };
 
   const handleCategoryChange = (category: string) => {
@@ -73,6 +74,8 @@ const ServiceFilters: React.FC<ServiceFiltersProps> = ({ filters, setFilters, ca
       location: '',
       categories: [],
       subcategories: [],
+      min_price: null,
+      max_price: null,
       priceRange: [0, 20000],
       isMobile: false,
       sortBy: 'recommended',
@@ -165,22 +168,31 @@ const ServiceFilters: React.FC<ServiceFiltersProps> = ({ filters, setFilters, ca
           </AccordionContent>
         </AccordionItem>
 
-        {/* Price Range Slider */}
+        {/* Price Range Inputs */}
         <AccordionItem value="price-range">
           <AccordionTrigger className="flex items-center justify-between p-3 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-secondary data-[state=closed]:bg-muted">
             Price Range
           </AccordionTrigger>
-          <AccordionContent className="pt-4">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">Ksh {filters.priceRange[0]}</span>
-              <Slider
-                min={0}
-                max={20000}
-                step={500}
-                value={filters.priceRange}
-                onValueChange={handlePriceChange}
+          <AccordionContent className="grid grid-cols-2 gap-4 pt-4">
+            <div>
+              <Input
+                type="number"
+                name="min_price"
+                placeholder="Min Price"
+                value={filters.min_price ?? ''}
+                onChange={handleInputChange}
+                className="h-12 text-base bg-background"
               />
-              <span className="text-sm font-medium">Ksh {filters.priceRange[1]}</span>
+            </div>
+            <div>
+              <Input
+                type="number"
+                name="max_price"
+                placeholder="Max Price"
+                value={filters.max_price ?? ''}
+                onChange={handleInputChange}
+                className="h-12 text-base bg-background"
+              />
             </div>
           </AccordionContent>
         </AccordionItem>

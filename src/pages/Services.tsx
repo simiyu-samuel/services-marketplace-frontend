@@ -19,14 +19,14 @@ const EnhancedServiceFilters = lazy(() => import("@/components/services/Enhanced
 const ServiceListView = lazy(() => import("@/components/services/ServiceListView"));
 
 const categories = [
-  "Beauty",
-  "Hair",
-  "Fashion",
+  "Beauty Services",
+  "Hair Services", 
+  "Fashion Services",
   "Photography",
-  "Bridal",
-  "Health",
+  "Bridal Services",
+  "Health Services",
   "Celebrate Her",
-  "Fitness",
+  "Fitness Services",
   "Home & Lifestyles"
 ];
 
@@ -35,6 +35,8 @@ export interface Filters {
   location: string;
   categories: string[];
   subcategories: string[];
+  min_price?: number | null;
+  max_price?: number | null;
   priceRange: [number, number];
   isMobile: boolean;
   sortBy: string;
@@ -54,6 +56,8 @@ const Services = () => {
     location: '',
     categories: [],
     subcategories: [],
+    min_price: null,
+    max_price: null,
     priceRange: [0, 20000],
     isMobile: false,
     sortBy: 'recommended',
@@ -65,8 +69,26 @@ const Services = () => {
     error,
     status,
   } = useQuery<Service[]>({
-    queryKey: ['services'],
-    queryFn: fetchServices,
+    queryKey: ['services', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.location) params.append('location', filters.location);
+      if (filters.categories.length > 0) {
+        filters.categories.forEach(category => params.append('category', category));
+      }
+      if (filters.subcategories.length > 0) {
+        filters.subcategories.forEach(subcategory => params.append('subcategory', subcategory));
+      }
+      // Use priceRange for filtering instead of min_price/max_price
+      if (filters.priceRange[0] > 0) params.append('min_price', filters.priceRange[0].toString());
+      if (filters.priceRange[1] < 20000) params.append('max_price', filters.priceRange[1].toString());
+      if (filters.isMobile) params.append('is_mobile', 'true');
+      if (filters.sortBy) params.append('sort_by', filters.sortBy);
+
+      const { data } = await api.get('/services', { params });
+      return (data as PaginatedResponse<Service>).data;
+    },
   });
 
   const filteredServices = React.useMemo(() => {
@@ -74,56 +96,22 @@ const Services = () => {
 
     let tempServices = [...services];
 
-    // Filter by search
-    if (filters.search) {
-      tempServices = tempServices.filter(service =>
-        service.title.toLowerCase().includes(filters.search.toLowerCase())
-      );
-    }
+    // Only do client-side filtering for features not handled by the server
+    // The server already handles: search, location, category, subcategory, price range, mobile service
+    // We only need to do client-side sorting since the server doesn't handle all sort options
 
-    // Filter by location
-    if (filters.location) {
-      tempServices = tempServices.filter(service =>
-        service.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    // Filter by category and subcategory (case-insensitive)
-    if (filters.categories.length > 0 || filters.subcategories.length > 0) {
-      tempServices = tempServices.filter(service => {
-        const matchesCategory = filters.categories.some(filterCategory =>
-          service.category.toLowerCase() === filterCategory.toLowerCase()
-        );
-        const matchesSubcategory = filters.subcategories.some(filterSubcategory =>
-          service.subcategory.toLowerCase() === filterSubcategory.toLowerCase()
-        );
-        return matchesCategory || matchesSubcategory;
-      });
-    }
-
-    // Filter by price range
-    if (filters.priceRange) {
-      tempServices = tempServices.filter(service =>
-        parseInt(service.price) >= filters.priceRange[0] && parseInt(service.price) <= filters.priceRange[1]
-      );
-    }
-
-    // Filter by mobile service
-    if (filters.isMobile) {
-      tempServices = tempServices.filter(service => service.is_mobile);
-    }
-
-    // Sort
+    // Sort (client-side sorting since server might not handle all options)
     if (filters.sortBy === 'rating') {
       tempServices.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (filters.sortBy === 'price-asc') {
-      tempServices.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+      tempServices.sort((a, b) => (a.min_price || 0) - (b.min_price || 0));
     } else if (filters.sortBy === 'price-desc') {
-      tempServices.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+      tempServices.sort((a, b) => (b.min_price || 0) - (a.min_price || 0));
     }
+    // 'recommended' is default, no sorting needed
 
     return tempServices;
-  }, [services, filters]);
+  }, [services, filters.sortBy]);
 
   useEffect(() => {
     const locationFromUrl = searchParams.get('location');

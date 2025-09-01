@@ -12,16 +12,19 @@ import {
   LucideProps,
   BarChart3,
   Heart,
-  Menu, // Import Menu icon
-  X // Import X icon
+  Menu,
+  X,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import ImprovedHeader from "../layout/ImprovedHeader";
 import Footer from "../layout/Footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"; // Import Sheet components
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { motion } from "framer-motion";
 
 interface NavLinkType {
   to: string;
@@ -71,94 +74,165 @@ const ImprovedDashboardLayout = () => {
   const packageStatus = getPackageStatus();
 
   const SidebarContent = () => (
-    <div className="space-y-6">
-      {/* User Profile Card */}
-      <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-border/40">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Avatar className="h-12 w-12 border-2 border-primary/20">
-              <AvatarImage src={user?.profile_image || undefined} />
-              <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate">{user?.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user?.user_type}</p>
-            </div>
-          </div>
-          
-          {/* Package Status for Sellers */}
-          {user?.user_type === 'seller' && packageStatus && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Package</span>
-                <Badge variant={packageStatus.variant} className="text-xs">
-                  {packageStatus.text}
-                </Badge>
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Modern User Profile Card */}
+      <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+        <Card className="bg-gradient-to-br from-primary/8 via-primary/4 to-secondary/8 border-border/30 shadow-lg backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <motion.div whileHover={{ scale: 1.05 }} className="relative">
+                <Avatar className="h-14 w-14 border-2 border-primary/30 shadow-md">
+                  <AvatarImage src={user?.profile_image || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-semibold">
+                    {user?.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-base truncate text-foreground">{user?.name}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs capitalize bg-background/50">
+                    {user?.user_type}
+                  </Badge>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground capitalize">
-                {user.seller_package} Plan
-              </p>
-              {packageStatus.status !== 'active' && (
-                <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                  <Link to="/dashboard/seller/package-upgrade">
-                    {packageStatus.status === 'expired' ? 'Renew' : 'Upgrade'}
-                  </Link>
-                </Button>
-              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Navigation */}
-      <nav className="space-y-1">
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.end}
-            onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu on navigation
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all hover:bg-muted/50 hover:text-primary group",
-                isActive && "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-              )
-            }
-          >
-            <link.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
-            <span className="flex-1">{link.label}</span>
-            {link.badge && (
-              <Badge variant="secondary" className="text-xs">
-                {link.badge}
-              </Badge>
+            
+            {/* Enhanced Package Status for Sellers */}
+            {user?.user_type === 'seller' && packageStatus && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3 mt-4 pt-4 border-t border-border/30"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-medium text-foreground">Package</span>
+                  </div>
+                  <Badge 
+                    variant={packageStatus.variant} 
+                    className={cn(
+                      "text-xs font-medium",
+                      packageStatus.status === 'active' && "bg-green-100 text-green-800 border-green-200",
+                      packageStatus.status === 'expiring' && "bg-yellow-100 text-yellow-800 border-yellow-200",
+                      packageStatus.status === 'expired' && "bg-red-100 text-red-800 border-red-200"
+                    )}
+                  >
+                    {packageStatus.text}
+                  </Badge>
+                </div>
+                <p className="text-sm font-medium text-foreground capitalize">
+                  {user.seller_package} Plan
+                </p>
+                {packageStatus.status !== 'active' && (
+                  <motion.div whileHover={{ scale: 1.02 }}>
+                    <Button size="sm" className="w-full text-xs bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90" asChild>
+                      <Link to="/dashboard/seller/package-upgrade" className="flex items-center gap-2">
+                        {packageStatus.status === 'expired' ? 'Renew Now' : 'Upgrade Plan'}
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </motion.div>
+                )}
+              </motion.div>
             )}
-          </NavLink>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Modern Navigation */}
+      <nav className="space-y-2">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-3">Navigation</h3>
+        {navLinks.map((link, index) => (
+          <motion.div
+            key={link.to}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+          >
+            <NavLink
+              to={link.to}
+              end={link.end}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/60 hover:text-primary group relative overflow-hidden",
+                  isActive ? "bg-gradient-to-r from-primary/15 to-secondary/15 text-primary border border-primary/20 shadow-md" : "text-muted-foreground"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                  <link.icon className={cn(
+                    "h-4 w-4 transition-all duration-200 group-hover:scale-110 relative z-10",
+                    isActive && "text-primary"
+                  )} />
+                  <span className="flex-1 relative z-10">{link.label}</span>
+                  {link.badge && (
+                    <Badge variant="secondary" className="text-xs relative z-10">
+                      {link.badge}
+                    </Badge>
+                  )}
+                  {isActive && <div className="h-2 w-2 bg-primary rounded-full relative z-10" />}
+                </>
+              )}
+            </NavLink>
+          </motion.div>
         ))}
       </nav>
 
-      {/* Quick Actions */}
-      <Card className="bg-muted/30">
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-sm mb-3">Quick Actions</h3>
-          <div className="space-y-2">
-            {user?.user_type === 'seller' && (
-              <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-                <Link to="/dashboard/services/new" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Briefcase className="mr-2 h-3 w-3" />
-                  Add Service
-                </Link>
-              </Button>
-            )}
-            <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-              <Link to="/services" onClick={() => setIsMobileMenuOpen(false)}>
-                <Heart className="mr-2 h-3 w-3" />
-                Browse Services
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      {/* Enhanced Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <Card className="bg-gradient-to-br from-muted/40 to-muted/20 border-border/30">
+          <CardHeader className="pb-3">
+            <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Quick Actions
+            </h3>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {user?.user_type === 'seller' && (
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button size="sm" variant="ghost" className="w-full justify-start hover:bg-primary/10 hover:text-primary" asChild>
+                    <Link to="/dashboard/services/new" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Add New Service
+                    </Link>
+                  </Button>
+                </motion.div>
+              )}
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button size="sm" variant="ghost" className="w-full justify-start hover:bg-secondary/10 hover:text-secondary" asChild>
+                  <Link to="/services" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Heart className="mr-2 h-4 w-4" />
+                    Browse Services
+                  </Link>
+                </Button>
+              </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 
   return (

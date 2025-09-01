@@ -39,7 +39,13 @@ api.interceptors.response.use(
 if (error.response) {
       const { status, config } = error.response;
       if (status === 401 || status === 403) {
-        if (!(config.url === '/services' && config.method === 'post')) {
+        // Don't logout for service operations (both regular and admin routes)
+        const isServiceOperation = config.url?.startsWith('/services') || 
+                                  config.url?.includes('/services/') ||
+                                  config.url?.startsWith('/admin/services') ||
+                                  config.url?.includes('/admin/services/');
+        
+        if (!isServiceOperation) {
           localStorage.removeItem('authToken'); // Clear token
           showError('Session expired. Please log in again.'); // Display toast
           window.location.href = '/login'; // Navigate to login page

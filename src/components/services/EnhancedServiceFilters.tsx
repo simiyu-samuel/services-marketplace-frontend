@@ -30,9 +30,20 @@ const subcategories = {
 };
 
 const locations = [
-  "Nairobi CBD", "Westlands", "Kilimani", "Karen", "Lavington", "Kileleshwa",
-  "Parklands", "Eastleigh", "South B", "South C", "Langata", "Kasarani",
-  "Thika", "Kikuyu", "Ruiru", "Kiambu", "Machakos", "Kajiado"
+  // Major Cities and Popular Areas
+  "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika", "Malindi", "Kitale", "Garissa", "Kakamega",
+  
+  // All 47 Counties in Kenya
+  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado",
+  "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia",
+  "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi",
+  "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya", "Taita-Taveta", "Tana River",
+  "Tharaka-Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir", "West Pokot",
+  
+  // Popular Nairobi Areas
+  "Nairobi CBD", "Westlands", "Kilimani", "Karen", "Lavington", "Kileleshwa", "Parklands", "Eastleigh", 
+  "South B", "South C", "Langata", "Kasarani", "Runda", "Muthaiga", "Spring Valley", "Riverside",
+  "Hurlingham", "Kilimani", "Dagoretti", "Ngong", "Rongai", "Ruaka", "Kikuyu", "Ruiru"
 ];
 
 const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({ 
@@ -76,6 +87,8 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
       location: '',
       categories: [],
       subcategories: [],
+      min_price: null,
+      max_price: null,
       priceRange: [0, 20000],
       isMobile: false,
       sortBy: 'recommended',
@@ -141,10 +154,13 @@ const EnhancedServiceFilters: React.FC<EnhancedServiceFiltersProps> = ({
                       {category}
                       <X 
                         className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                        onClick={() => setFilters(prev => ({ 
-                          ...prev, 
-                          categories: prev.categories.filter(c => c !== category) 
-                        }))} 
+                        onClick={() => {
+                          setFilters(prev => ({ 
+                            ...prev, 
+                            categories: prev.categories.filter(c => c !== category) 
+                          }));
+                          setSelectedMainCategory('');
+                        }} 
                       />
                     </Badge>
                   ))}

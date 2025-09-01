@@ -36,87 +36,88 @@ const DashboardLayout = () => {
   return (
     <>
       <PremiumHeader />
-      <div className="container py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <aside className="md:col-span-1">
-            <Card className="sticky top-24 p-4">
-              <CardHeader className="pb-4">
+      <div className="container py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <aside className="lg:col-span-1">
+            <Card className="sticky top-20">
+              <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.profile_image || undefined} alt={user?.name} />
                     <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{user?.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground capitalize">{user?.user_type}</p>
+                  <div className="min-w-0">
+                    <CardTitle className="text-base truncate">{user?.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground capitalize">{user?.user_type}</p>
                   </div>
                 </div>
               </CardHeader>
-              <Separator className="my-4" />
-              <nav className="flex flex-col space-y-1">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2">General</h3>
-                {baseNavLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.end}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                        isActive && "bg-muted text-primary font-semibold"
-                      )
-                    }
-                  >
-                    <link.icon className="h-4 w-4" />
-                    {link.label}
-                  </NavLink>
-                ))}
+              <CardContent className="p-4 pt-0">
+                <nav className="flex flex-col space-y-1">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">General</h3>
+                  {baseNavLinks.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-all hover:text-primary hover:bg-muted/50",
+                          isActive && "bg-muted text-primary font-medium"
+                        )
+                      }
+                    >
+                      <link.icon className="h-4 w-4 flex-shrink-0" />
+                      {link.label}
+                    </NavLink>
+                  ))}
 
-                {user?.user_type === 'seller' && (
-                  <>
-                    <Separator className="my-4" />
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Services</h3>
-                    {sellerNavLinks.map((link) => (
-                      <NavLink
-                        key={link.to}
-                        to={link.to}
-                        end={link.end}
-                        className={({ isActive }) =>
-                          cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                            isActive && "bg-muted text-primary font-semibold"
-                          )
-                        }
-                      >
-                        <link.icon className="h-4 w-4" />
-                        {link.label}
-                      </NavLink>
-                    ))}
-                  </>
-                )}
+                  {user?.user_type === 'seller' && (
+                    <>
+                      <Separator className="my-3" />
+                      <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Services</h3>
+                      {sellerNavLinks.map((link) => (
+                        <NavLink
+                          key={link.to}
+                          to={link.to}
+                          end={link.end}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-all hover:text-primary hover:bg-muted/50",
+                              isActive && "bg-muted text-primary font-medium"
+                            )
+                          }
+                        >
+                          <link.icon className="h-4 w-4 flex-shrink-0" />
+                          {link.label}
+                        </NavLink>
+                      ))}
+                    </>
+                  )}
 
-                <Separator className="my-4" />
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Account</h3>
-                {accountNavLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.end}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                        isActive && "bg-muted text-primary font-semibold"
-                      )
-                    }
-                  >
-                    <link.icon className="h-4 w-4" />
-                    {link.label}
-                  </NavLink>
-                ))}
-              </nav>
+                  <Separator className="my-3" />
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Account</h3>
+                  {accountNavLinks.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-all hover:text-primary hover:bg-muted/50",
+                          isActive && "bg-muted text-primary font-medium"
+                        )
+                      }
+                    >
+                      <link.icon className="h-4 w-4 flex-shrink-0" />
+                      {link.label}
+                    </NavLink>
+                  ))}
+                </nav>
+              </CardContent>
             </Card>
           </aside>
-          <main className="md:col-span-3 mt-16">
+          <main className="lg:col-span-4">
             <Outlet />
           </main>
         </div>

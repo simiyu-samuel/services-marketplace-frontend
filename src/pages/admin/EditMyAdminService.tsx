@@ -1,18 +1,20 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import ServiceForm, { ServiceFormValues } from "@/components/services/ServiceForm";
-import { showSuccess, showError } from "@/utils/toast";
-import { Service } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
-import ServiceMediaManager from "@/components/services/ServiceMediaManager";
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Service } from '@/types';
+import ServiceForm, { ServiceFormValues } from '@/components/services/ServiceForm';
+import api from '@/lib/api';
+import { showSuccess, showError } from '@/utils/toast';
+import { AxiosError } from 'axios';
+import { Skeleton } from '@/components/ui/skeleton';
+import ServiceMediaManager from '@/components/services/ServiceMediaManager';
 
 const fetchService = async (id: string) => {
   const { data } = await api.get(`/services/${id}`);
   return data as Service;
 };
 
-const updateService = async ({ id, data }: { id: string, data: ServiceFormValues & { is_active: boolean } }) => {
+const updateAdminService = async ({ id, data }: { id: string, data: ServiceFormValues & { is_active: boolean } }) => {
   // Construct location from county and specific location
   const constructedLocation = `${data.county.trim()}, ${data.specific_location.trim()}`;
   
@@ -39,27 +41,27 @@ const updateService = async ({ id, data }: { id: string, data: ServiceFormValues
   return response.data;
 };
 
-const EditService = () => {
+const EditMyAdminService = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: service, isLoading: isQueryLoading } = useQuery({
+  const { data: service, isLoading: isQueryLoading, error } = useQuery({
     queryKey: ['service', id],
     queryFn: () => fetchService(id!),
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: updateService,
+    mutationFn: updateAdminService,
     onSuccess: () => {
-      showSuccess("Service updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ['my-services'] });
+      showSuccess('Admin service updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
       queryClient.invalidateQueries({ queryKey: ['service', id] });
-      navigate("/dashboard/services");
+      navigate('/admin/my-services');
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || "Failed to update service.";
+    onError: (error: AxiosError<any>) => {
+      const errorMessage = error.response?.data?.message || 'Failed to update service.';
       showError(errorMessage);
     },
   });
@@ -84,21 +86,43 @@ const EditService = () => {
     );
   }
 
-  if (!service) {
-    return <p>Service not found.</p>;
+  if (error || !service) {
+    return (
+      <div className="text-center py-8">
+        <h2 className="text-2xl font-semibold text-destructive">Service not found</h2>
+        <p className="text-muted-foreground mt-2">The service you're trying to edit doesn't exist or you don't have permission to edit it.</p>
+        <button 
+          onClick={() => navigate('/admin/my-services')}
+          className="mt-4 bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
+        >
+          Back to My Services
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Edit Admin Service</h1>
+        <button 
+          onClick={() => navigate('/admin/my-services')}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          ← Back to My Services
+        </button>
+      </div>
+      
       <ServiceForm 
         onSubmit={handleFormSubmit} 
         isLoading={mutation.isPending}
         initialData={service}
         submitButtonText="Update Service"
       />
-      <ServiceMediaManager service={service} />
+      
+      <ServiceMediaManager service={service} isAdminMode={true} />
     </div>
   );
 };
 
-export default EditService;
+export default EditMyAdminService;

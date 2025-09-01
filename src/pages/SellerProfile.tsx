@@ -7,8 +7,7 @@ import NotFound from "./NotFound";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceCard from "@/components/services/ServiceCard";
 import ReviewCard from "@/components/sellers/ReviewCard";
-import { Button } from "@/components/ui/button";
-import { Star, MapPin, MessageSquare } from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 
@@ -56,10 +55,6 @@ const SellerProfile = () => {
     ? (sellerReviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews).toFixed(1)
     : "N/A";
 
-  const whatsappNumber = seller.phone_number;
-  const message = `Hello ${seller.name}, I'm interested in your services.`;
-  const encodedMessage = encodeURIComponent(message);
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
   return (
     <div className="bg-muted/20">
@@ -84,12 +79,6 @@ const SellerProfile = () => {
                   <span>{sellerServices && sellerServices.length > 0 ? sellerServices[0].location : 'N/A'}</span>
                 </div>
               </div>
-              <Button className="mt-4 gap-2" asChild>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <MessageSquare className="h-5 w-5" />
-                  Contact Seller
-                </a>
-              </Button>
             </div>
           </CardContent>
         </Card>

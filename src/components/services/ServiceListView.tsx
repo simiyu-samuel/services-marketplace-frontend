@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Star, MapPin, Clock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { formatServicePrice } from "@/lib/utils";
 
 interface ServiceListViewProps {
   service: Service;
@@ -82,7 +83,7 @@ const ServiceListView: React.FC<ServiceListViewProps> = ({ service, index }) => 
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-primary">
-                      Ksh {parseFloat(service.price).toLocaleString()}
+                      {formatServicePrice(service.min_price, service.max_price)}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
