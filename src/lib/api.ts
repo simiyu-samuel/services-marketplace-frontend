@@ -65,7 +65,7 @@ const processImagePaths = (data: unknown): unknown => {
         const newData = { ...data }; 
         for (const key in newData) {
             if (Object.prototype.hasOwnProperty.call(newData, key)) {
-                if ((key === 'profile_image' || key === 'featured_image_url') && newData[key] && typeof newData[key] === 'string' && !newData[key].startsWith('http')) {
+                if ((key === 'profile_image' || key === 'featured_image_url' || key === 'featured_image') && newData[key] && typeof newData[key] === 'string' && !newData[key].startsWith('http')) {
                     newData[key] = `${BACKEND_URL}${newData[key]}`;
                 } else if (key === 'media_files' && Array.isArray(newData[key])) {
                     newData[key] = newData[key].map(file => {

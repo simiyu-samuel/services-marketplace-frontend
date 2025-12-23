@@ -59,6 +59,7 @@ export interface ChangePasswordPayload {
 
 export interface Service {
   id: number;
+  user_id: string | number; // Updated to handle both string and number from API
   title: string;
   description: string;
   category: string;
@@ -69,10 +70,11 @@ export interface Service {
   location: string;
   is_mobile: boolean;
   media_files: string[];
-  user: Pick<User, 'id' | 'name' | 'profile_image' | 'phone_number'>;
+  user: Pick<User, 'id' | 'name' | 'email' | 'profile_image' | 'phone_number'>;
   rating?: number;
   review_count?: number;
   is_active: boolean;
+  is_featured?: boolean; // New field for featured services
   created_at?: string;
   updated_at?: string;
 }
@@ -83,16 +85,26 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
-  featured_image_url: string;
-  category: string;
+  featured_image: string; // Backend field name
+  featured_image_url?: string; // For compatibility with mock data
+  category?: string; // Optional as backend doesn't have this field
+  admin?: {
+    id: number;
+    name: string;
+    profile_image?: string | null;
+    bio?: string;
+  };
   author?: {
     name: string;
     profile_image?: string | null;
     bio?: string;
   };
   published_at: string;
-  reading_time: number; // in minutes
+  reading_time?: number; // in minutes - optional as backend doesn't have this
   status?: 'draft' | 'published';
+  admin_id?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Booking {
@@ -233,3 +245,30 @@ export interface UserPackageInfo {
     support_level: string;
   } | null;
 }
+
+// Type guards and utility functions for Service type safety
+export const isValidUserId = (userId: unknown): userId is string | number => {
+  return typeof userId === 'string' || typeof userId === 'number';
+};
+
+export const normalizeUserId = (userId: string | number): string => {
+  return String(userId);
+};
+
+export const compareUserIds = (userId1: string | number, userId2: string | number): boolean => {
+  return normalizeUserId(userId1) === normalizeUserId(userId2);
+};
+
+// Type guard to ensure Service has valid user_id
+export const isValidService = (service: any): service is Service => {
+  return (
+    service &&
+    typeof service === 'object' &&
+    typeof service.id === 'number' &&
+    isValidUserId(service.user_id) &&
+    typeof service.title === 'string' &&
+    typeof service.description === 'string' &&
+    typeof service.category === 'string' &&
+    typeof service.subcategory === 'string'
+  );
+};

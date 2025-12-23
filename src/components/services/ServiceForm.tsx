@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Service } from "@/types";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
@@ -22,6 +23,7 @@ const formSchema = z.object({
   county: z.string().min(1, "County is required"),
   specific_location: z.string().min(1, "Specific location is required").max(200),
   is_mobile: z.boolean().default(false),
+  is_featured: z.boolean().default(false),
   media_files: z.instanceof(FileList).optional(),
 }).refine((data) => {
   if (data.max_price !== null && data.max_price !== undefined && data.max_price <= data.min_price) {
@@ -74,6 +76,8 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category || "");
+  const { user } = useAuth();
+  const isAdmin = user?.user_type === 'admin';
   
   // Helper function to parse existing location into county and specific location
   const parseLocation = (location?: string) => {
@@ -106,6 +110,7 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
       county: initialCounty,
       specific_location: initialSpecificLocation,
       is_mobile: initialData?.is_mobile || false,
+      is_featured: initialData?.is_featured || false,
     },
   });
 
@@ -278,8 +283,13 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
               )} />
             )}
             <FormField control={form.control} name="is_mobile" render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2"><div className="space-y-0.5"><FormLabel>Mobile Service</FormLabel><p className="text-sm text-muted-foreground">Do you offer this service at the client's location?</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Mobile Service</FormLabel><p className="text-sm text-muted-foreground">Do you offer this service at the client's location?</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
             )} />
+            {isAdmin && (
+              <FormField control={form.control} name="is_featured" render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Featured Service</FormLabel><p className="text-sm text-muted-foreground">Mark this service as featured to display it prominently on the homepage</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+              )} />
+            )}
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isLoading}>

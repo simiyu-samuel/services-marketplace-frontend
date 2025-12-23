@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, Crown } from "lucide-react";
 import { Service } from "@/types";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
@@ -72,7 +72,15 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
           }}
         >
           <div className="relative">
-            <Badge className="absolute top-2 left-2 z-10" variant="default">{service.category}</Badge>
+            <div className="absolute top-1 sm:top-2 left-1 sm:left-2 z-10 flex gap-1 sm:gap-2">
+              <Badge className="text-xs sm:text-sm px-1 sm:px-2 py-0.5 sm:py-1" variant="default">{service.category}</Badge>
+              {service.is_featured && (
+                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs sm:text-sm px-1 sm:px-2 py-0.5 sm:py-1" variant="default">
+                  <Crown className="h-2 sm:h-3 w-2 sm:w-3 mr-0.5 sm:mr-1" />
+                  Featured
+                </Badge>
+              )}
+            </div>
             <Carousel className="w-full">
               <CarouselContent>
                 {service.media_files && service.media_files.length > 0 ? (
@@ -110,37 +118,38 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
               )}
             </Carousel>
           </div>
-          <CardContent className="p-4 space-y-2 bg-background">
+          <CardContent className="p-2 sm:p-4 space-y-1 sm:space-y-2 bg-background">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Avatar className="h-4 sm:h-6 w-4 sm:w-6">
                   <AvatarImage src={service.user?.profile_image || undefined} />
-                  <AvatarFallback>{service.user?.name?.charAt(0) || '?'}</AvatarFallback>
+                  <AvatarFallback className="text-xs sm:text-sm">{service.user?.name?.charAt(0) || '?'}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium text-muted-foreground">{service.user?.name || 'Unknown User'}</span>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{service.user?.name || 'Unknown User'}</span>
               </div>
-              {service.is_mobile && <Badge variant="secondary">Mobile</Badge>}
+              {service.is_mobile && <Badge variant="secondary" className="text-xs px-1 py-0.5">Mobile</Badge>}
             </div>
-            <h3 className="font-bold text-lg truncate">
+            <h3 className="font-bold text-sm sm:text-lg truncate">
               <Link to={`/services/${service.id}`}>{service.title}</Link>
             </h3>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <div className="flex items-center text-muted-foreground">
-                <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
-                <span className="font-semibold text-foreground mr-1">{rating.toFixed(1)}</span>
-                <span>({reviewCount} reviews)</span>
+                <Star className="h-3 sm:h-4 w-3 sm:w-4 mr-0.5 sm:mr-1 text-yellow-400 fill-yellow-400" />
+                <span className="font-semibold text-foreground mr-0.5 sm:mr-1">{rating.toFixed(1)}</span>
+                <span className="hidden sm:inline">({reviewCount} reviews)</span>
+                <span className="sm:hidden">({reviewCount})</span>
               </div>
-              <div className="flex items-center text-muted-foreground">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span>{service.location}</span>
+              <div className="flex items-center text-muted-foreground truncate ml-2">
+                <MapPin className="h-3 sm:h-4 w-3 sm:w-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+                <span className="truncate">{service.location}</span>
               </div>
             </div>
-            <div className="flex items-end justify-between pt-2">
-              <p className="text-2xl font-extrabold text-primary">
+            <div className="flex items-end justify-between pt-1 sm:pt-2">
+              <p className="text-lg sm:text-2xl font-extrabold text-primary">
                 {formatServicePrice(service.min_price, service.max_price)}
               </p>
-              <Button asChild size="sm">
-                <Link to={`/services/${service.id}`}>Book Now</Link>
+              <Button asChild size="sm" className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2">
+                <Link to={`/services/${service.id}`}>Book</Link>
               </Button>
             </div>
           </CardContent>

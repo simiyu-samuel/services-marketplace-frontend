@@ -2,44 +2,45 @@ import React, { lazy, Suspense } from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner'; // Assuming LoadingSpinner is available
 
 // Dynamically import components
-const HeroSection = lazy(() => import('@/components/home/HeroSection'));
 const BookAppointmentCTA = lazy(() => import('@/components/home/BookAppointmentCTA'));
-const AdvancedServiceFilters = lazy(() => import('@/components/home/AdvancedServiceFilters'));
 const QuickServicePreview = lazy(() => import('@/components/home/QuickServicePreview'));
-const FeaturedServices = lazy(() => import('@/components/home/FeaturedServices'));
 const RecentBlogPosts = lazy(() => import('@/components/home/RecentBlogPosts'));
-const InteractiveCategories = lazy(() => import('@/components/home/InteractiveCategories'));
-const Testimonials = lazy(() => import('@/components/home/Testimonials'));
 const CallToAction = lazy(() => import('@/components/home/CallToAction'));
 const StatsCounter = lazy(() => import('@/components/home/StatsCounter'));
 const NewsletterSignup = lazy(() => import('@/components/home/NewsletterSignup'));
-const GeneralBookingSection = lazy(() => import('@/components/home/GeneralBookingSection'));
 
 const Home: React.FC = () => {
   return (
-    <div className="bg-background text-foreground font-sans overflow-x-hidden">
+    <div className="bg-background text-foreground font-sans overflow-x-hidden min-h-screen">
       {/* Book Appointment CTA */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="py-1 sm:py-2 bg-background">
+        <div className="container mx-auto px-2 sm:px-4">
           <Suspense fallback={<LoadingSpinner size="sm" />}>
             <BookAppointmentCTA />
           </Suspense>
         </div>
       </section>
 
-      {/* Advanced Service Filters */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight">Find Your Perfect Service</h2>
-      </div>
-      {/* Quick Service Preview */}
+      {/* Quick Service Preview - Now shows Featured Services */}
       <QuickServicePreview />
 
       {/* Latest Blog Posts */}
+        <section className="py-1 sm:py-2 bg-gradient-to-b from-background to-muted/10">
+        <div className="container mx-auto px-2 sm:px-4">
+          <Suspense fallback={
+            <div className="flex justify-center py-2">
+              <LoadingSpinner size="lg" />
+            </div>
+          }>
+            <RecentBlogPosts />
+          </Suspense>
+        </div>
+      </section>
       {/* Removed empty sections */}
 
       {/* Call-to-action sections */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-24">
+        <div className="container mx-auto px-2 sm:px-4">
           <Suspense fallback={<LoadingSpinner size="sm" />}>
             <CallToAction />
           </Suspense>
@@ -47,8 +48,8 @@ const Home: React.FC = () => {
       </section>
 
       {/* Stats Counter Animation */}
-      <section className="py-24 bg-muted/40">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-24 bg-muted/40">
+        <div className="container mx-auto px-2 sm:px-4">
           <Suspense fallback={<LoadingSpinner size="sm" />}>
             <StatsCounter />
           </Suspense>
@@ -56,8 +57,8 @@ const Home: React.FC = () => {
       </section>
 
       {/* Newsletter Signup */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-24">
+        <div className="container mx-auto px-2 sm:px-4">
           <Suspense fallback={<LoadingSpinner size="sm" />}>
             <NewsletterSignup />
           </Suspense>
@@ -65,24 +66,6 @@ const Home: React.FC = () => {
       </section>
 
       {/* Placeholder for other components that might be loaded */}
-      {/* <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <HeroSection />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <FeaturedServices />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <RecentBlogPosts />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <InteractiveCategories />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <Testimonials />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner size="sm" />}>
-        <GeneralBookingSection />
-      </Suspense> */}
     </div>
   );
 };

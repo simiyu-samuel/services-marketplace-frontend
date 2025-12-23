@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { BlogPost } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -16,7 +16,7 @@ const formSchema = z.object({
   excerpt: z.string().min(1, "Excerpt is required"),
   content: z.string().min(1, "Content is required"),
   category: z.string().min(1, "Category is required"),
-  featured_image: z.instanceof(FileList).optional(),
+  featured_image: z.union([z.instanceof(FileList), z.string()]).optional(),
   status: z.enum(["draft", "published"]),
 });
 
@@ -41,6 +41,10 @@ const slugify = (text: string) =>
     .replace(/--+/g, '-');
 
 const BlogPostForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Save Post" }: BlogPostFormProps) => {
+  const [existingImage, setExistingImage] = useState<string | undefined>(
+    initialData?.featured_image || initialData?.featured_image_url
+  );
+
   const form = useForm<BlogPostFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,8 +54,27 @@ const BlogPostForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sa
       content: initialData?.content || "",
       category: initialData?.category || "",
       status: initialData?.status || "draft",
+      featured_image: undefined, // Always start as undefined
     },
   });
+
+  const handleFormSubmit = (values: BlogPostFormValues) => {
+    const formData = { ...values };
+    
+    // Handle the featured_image logic properly
+    if (values.featured_image instanceof FileList && values.featured_image.length > 0) {
+      // New file uploaded - pass it along
+      formData.featured_image = values.featured_image;
+    } else if (existingImage) {
+      // No new file, but we have an existing image URL
+      formData.featured_image = existingImage;
+    } else {
+      // No image at all
+      formData.featured_image = undefined;
+    }
+    
+    onSubmit(formData);
+  };
 
   const title = form.watch("title");
   useEffect(() => {
@@ -60,9 +83,18 @@ const BlogPostForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sa
     }
   }, [title, form, initialData?.slug]);
 
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
+    if (e.target.files && e.target.files.length > 0) {
+      onChange(e.target.files);
+    } else {
+      onChange(undefined);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>{initialData?.title ? "Edit Blog Post" : "Create New Blog Post"}</CardTitle>
@@ -70,36 +102,133 @@ const BlogPostForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sa
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
-              <FormField control={form.control} name="title" render={({ field }) => (
-                <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="Post title" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="slug" render={({ field }) => (
-                <FormItem><FormLabel>Slug</FormLabel><FormControl><Input placeholder="post-title-slug" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <FormField 
+                control={form.control} 
+                name="title" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Post title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              <FormField 
+                control={form.control} 
+                name="slug" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <Input placeholder="post-title-slug" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
             </div>
-            <FormField control={form.control} name="excerpt" render={({ field }) => (
-              <FormItem><FormLabel>Excerpt</FormLabel><FormControl><Textarea placeholder="A short summary of the post" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="content" render={({ field }) => (
-              <FormItem><FormLabel>Content (HTML supported)</FormLabel><FormControl><Textarea placeholder="The full content of the blog post..." rows={10} {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField control={form.control} name="category" render={({ field }) => (
-                <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="e.g., Skincare" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="featured_image" render={({ field: { onChange, ...fieldProps } }) => (
+            
+            <FormField 
+              control={form.control} 
+              name="excerpt" 
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Featured Image</FormLabel>
+                  <FormLabel>Excerpt</FormLabel>
                   <FormControl>
-                    <Input type="file" accept="image/*" {...fieldProps} onChange={e => onChange(e.target.files)} />
+                    <Textarea placeholder="A short summary of the post" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )} />
+              )} 
+            />
+            
+            <FormField 
+              control={form.control} 
+              name="content" 
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content (HTML supported)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="The full content of the blog post..." rows={10} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} 
+            />
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <FormField 
+                control={form.control} 
+                name="category" 
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Skincare" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
+              
+              <FormField 
+                control={form.control} 
+                name="featured_image" 
+                render={({ field: { value, onChange, ...fieldProps } }) => (
+                  <FormItem>
+                    <FormLabel>Featured Image</FormLabel>
+                    {existingImage && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium mb-1">Current Image:</p>
+                        <div className="flex items-center space-x-3">
+                          <img 
+                            src={existingImage} 
+                            alt="Current featured" 
+                            className="w-32 h-32 object-cover rounded border" 
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Upload a new image to replace the current one
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input 
+                        type="file" 
+                        accept="image/*" 
+                        {...fieldProps}
+                        onChange={(e) => handleFileChange(e, onChange)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} 
+              />
             </div>
-            <FormField control={form.control} name="status" render={({ field }) => (
-              <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="published">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-            )} />
+            
+            <FormField 
+              control={form.control} 
+              name="status" 
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} 
+            />
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isLoading}>

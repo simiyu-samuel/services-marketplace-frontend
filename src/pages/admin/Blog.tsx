@@ -95,16 +95,44 @@ const AdminBlog = () => {
                 response?.data.map(post => (
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
-                    <TableCell>{post.category}</TableCell>
-                    <TableCell>{post.author?.name || 'N/A'}</TableCell>
-                    <TableCell><Badge variant={post.status === 'published' ? 'default' : 'outline'} className="capitalize">{post.status || 'draft'}</Badge></TableCell>
+                    <TableCell>
+                      {post.category ? (
+                        <Badge variant="secondary" className="capitalize">
+                          {post.category}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm italic">Not set</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{post.admin?.name || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={post.status === 'published' ? 'default' : 'outline'} 
+                        className="capitalize"
+                      >
+                        {post.status || 'draft'}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/blog/edit/${post.id}`)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>View</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(post)}>Delete</DropdownMenuItem>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/admin/blog/edit/${post.id}`)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDeleteClick(post)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -117,9 +145,29 @@ const AdminBlog = () => {
             <div className="mt-4">
               <Pagination>
                 <PaginationContent>
-                  <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }} className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''} /></PaginationItem>
-                  <PaginationItem><PaginationLink>Page {response.current_page} of {response.last_page}</PaginationLink></PaginationItem>
-                  <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); setPage(p => Math.min(response.last_page, p + 1)); }} className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''} /></PaginationItem>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      href="#" 
+                      onClick={(e) => { 
+                        e.preventDefault(); 
+                        setPage(p => Math.max(1, p - 1)); 
+                      }} 
+                      className={response.current_page === 1 ? 'pointer-events-none opacity-50' : ''} 
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink>Page {response.current_page} of {response.last_page}</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext 
+                      href="#" 
+                      onClick={(e) => { 
+                        e.preventDefault(); 
+                        setPage(p => Math.min(response.last_page, p + 1)); 
+                      }} 
+                      className={response.current_page === response.last_page ? 'pointer-events-none opacity-50' : ''} 
+                    />
+                  </PaginationItem>
                 </PaginationContent>
               </Pagination>
             </div>
@@ -130,11 +178,17 @@ const AdminBlog = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete the post "{selectedPost?.title}".</AlertDialogDescription>
+            <AlertDialogDescription>
+              This will permanently delete the post "{selectedPost?.title}".
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={deleteMutation.isPending}>
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>

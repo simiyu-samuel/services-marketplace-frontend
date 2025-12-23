@@ -120,7 +120,7 @@ const PremiumHeader: React.FC = () => {
   const navLinks = [
     { to: "/", text: "Home" },
     // { to: "/services", text: "Services" },
-    // { to: "/blog", text: "Blog" },
+    { to: "/blog", text: "Blog" },
     { to: "/contact", text: "Contact" },
   ];
 

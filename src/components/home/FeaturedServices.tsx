@@ -6,10 +6,16 @@ import ServiceCardSkeleton from "@/components/services/ServiceCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const fetchFeaturedServices = async () => {
-  const { data } = await api.get('/services', { params: { per_page: 3 } });
+  const { data } = await api.get('/services', { 
+    params: { 
+      per_page: 6,
+      'filter[is_featured]': true,
+      'filter[is_active]': true
+    } 
+  });
   return (data as PaginatedResponse<Service>).data;
 };
 
@@ -19,7 +25,7 @@ const FeaturedServices = () => {
     queryFn: fetchFeaturedServices,
   });
 
-  const cardVariants: motion.Variants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: (i: number) => ({
       opacity: 1,
@@ -49,8 +55,8 @@ const FeaturedServices = () => {
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, index) => <ServiceCardSkeleton key={index} />)
-          ) : (
+            Array.from({ length: 6 }).map((_, index) => <ServiceCardSkeleton key={index} />)
+          ) : featured && featured.length > 0 ? (
             featured?.map((service, index) => (
               <motion.div
                 key={service.id}
@@ -63,6 +69,13 @@ const FeaturedServices = () => {
                 <ServiceCard service={service} />
               </motion.div>
             ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">No featured services available at the moment.</p>
+              <Button size="lg" asChild className="mt-4">
+                <Link to="/services">Browse All Services</Link>
+              </Button>
+            </div>
           )}
         </div>
         <div className="text-center mt-16">

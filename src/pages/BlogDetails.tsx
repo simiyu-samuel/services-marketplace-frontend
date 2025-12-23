@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { mockBlogPosts } from "@/data/mock";
+import { useQuery } from "@tanstack/react-query";
 import NotFound from "./NotFound";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock } from "lucide-react";
@@ -8,14 +8,39 @@ import AuthorBio from "@/components/blog/AuthorBio";
 import SocialShare from "@/components/blog/SocialShare";
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import { motion } from "framer-motion";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import api from "@/lib/api";
+import { BlogPost } from "@/types";
+
+const fetchBlogPost = async (slug: string): Promise<BlogPost> => {
+  const { data } = await api.get(`/blog/${slug}`);
+  return data;
+};
 
 const BlogDetails = () => {
   const { slug } = useParams();
-  const post = mockBlogPosts.find(p => p.slug === slug);
+  
+  const { data: post, isLoading, error } = useQuery({
+    queryKey: ['blog', slug],
+    queryFn: () => fetchBlogPost(slug!),
+    enabled: !!slug,
+  });
 
-  if (!post) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading blog post..." />
+      </div>
+    );
+  }
+
+  if (error || !post) {
     return <NotFound />;
   }
+
+  // Use admin or author, whichever is available
+  const author = post.admin || post.author;
+  const imageUrl = post.featured_image_url || post.featured_image;
 
   return (
     <div className="bg-background text-foreground">
@@ -32,19 +57,21 @@ const BlogDetails = () => {
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-muted-foreground">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={post.author.profile_image || undefined} />
-                <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={author?.profile_image || undefined} />
+                <AvatarFallback>{author?.name?.charAt(0) || 'A'}</AvatarFallback>
               </Avatar>
-              <span className="font-semibold text-foreground">By {post.author.name}</span>
+              <span className="font-semibold text-foreground">By {author?.name || 'Admin'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              <span>{post.reading_time} min read</span>
-            </div>
+            {post.reading_time && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                <span>{post.reading_time} min read</span>
+              </div>
+            )}
           </div>
         </motion.header>
         
@@ -55,7 +82,7 @@ const BlogDetails = () => {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           className="overflow-hidden rounded-3xl mb-12 shadow-2xl aspect-video max-w-6xl mx-auto"
         >
-          <img src={post.featured_image_url} alt={post.title} className="object-cover w-full h-full" />
+          <img src={imageUrl} alt={post.title} className="object-cover w-full h-full" />
         </motion.div>
 
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 max-w-7xl mx-auto">
@@ -80,7 +107,7 @@ const BlogDetails = () => {
           className="lg:col-span-4"
         >
           <div className="lg:sticky lg:top-28 space-y-10">
-            <AuthorBio author={post.author} />
+            {author && <AuthorBio author={author} />}
             <SocialShare title={post.title} slug={post.slug} />
           </div>
         </motion.aside>

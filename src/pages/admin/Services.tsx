@@ -80,7 +80,7 @@ const updateServiceAction = async ({ id, action, value }: { id: number, action: 
       await api.put(`/admin/services/${id}`, { is_active: false });
       break;
     case 'toggleFeatured':
-      await api.put(`/admin/services/${id}`, { featured: value });
+      await api.put(`/admin/services/${id}`, { is_featured: value });
       break;
     default:
       throw new Error('Invalid action');
@@ -160,7 +160,7 @@ const AdminServices = () => {
     let value;
 
     if (action === 'toggleFeatured') {
-      value = !service.featured;
+      value = !service.is_featured;
     }
 
     actionMutation.mutate({ id: serviceId, action, value });
@@ -225,7 +225,7 @@ const AdminServices = () => {
                       <h3 className="font-semibold text-lg text-foreground line-clamp-1">
                         {service.title}
                       </h3>
-                      {service.featured && (
+                      {service.is_featured && (
                         <Badge variant="secondary" className="gap-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700">
                           <Star className="h-3 w-3" />
                           Featured
@@ -315,7 +315,7 @@ const AdminServices = () => {
                         className="gap-2"
                       >
                         <Star className="h-4 w-4" />
-                        {service.featured ? 'Remove Featured' : 'Make Featured'}
+                        {service.is_featured ? 'Remove Featured' : 'Make Featured'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -337,7 +337,7 @@ const AdminServices = () => {
           description="Manage platform services, approvals, and moderation"
           icon={Settings}
           badge={{
-            text: `${response?.meta?.total || response?.data?.length || 0} Services`,
+            text: `${response?.total || response?.data?.length || 0} Services`,
             variant: "secondary"
           }}
           actions={[
@@ -434,7 +434,7 @@ const AdminServices = () => {
         </motion.div>
 
         {/* Pagination */}
-        {response?.meta && response.meta.last_page > 1 && (
+        {response && response.last_page > 1 && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -454,12 +454,12 @@ const AdminServices = () => {
                   </Button>
                   <div className="bg-primary/10 px-4 py-2 rounded-lg">
                     <span className="text-sm font-medium text-primary">
-                      Page {response.meta.current_page} of {response.meta.last_page}
+                      Page {response.current_page} of {response.last_page}
                     </span>
                   </div>
                   <Button 
                     onClick={() => handlePageChange(filters.page + 1)} 
-                    disabled={filters.page >= response.meta.last_page}
+                    disabled={filters.page >= response.last_page}
                     variant="outline"
                     size="sm"
                   >
@@ -468,7 +468,7 @@ const AdminServices = () => {
                 </div>
                 <div className="text-center mt-2">
                   <span className="text-xs text-muted-foreground">
-                    Showing {response.meta.per_page * (response.meta.current_page - 1) + 1} to {Math.min(response.meta.per_page * response.meta.current_page, response.meta.total)} of {response.meta.total} services
+                    Showing {response.per_page * (response.current_page - 1) + 1} to {Math.min(response.per_page * response.current_page, response.total)} of {response.total} services
                   </span>
                 </div>
               </CardContent>

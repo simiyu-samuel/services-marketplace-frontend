@@ -14,7 +14,7 @@ const fetchService = async (id: string) => {
   return data as Service;
 };
 
-const updateAdminService = async ({ id, data }: { id: string, data: ServiceFormValues & { is_active: boolean } }) => {
+const updateAdminService = async ({ id, data }: { id: string, data: ServiceFormValues & { is_active: boolean; is_featured?: boolean } }) => {
   // Construct location from county and specific location
   const constructedLocation = `${data.county.trim()}, ${data.specific_location.trim()}`;
   
@@ -24,6 +24,7 @@ const updateAdminService = async ({ id, data }: { id: string, data: ServiceFormV
     // Ensure booleans are properly formatted
     is_mobile: Boolean(data.is_mobile),
     is_active: Boolean(data.is_active),
+    is_featured: Boolean(data.is_featured),
     // Ensure max_price is null if empty
     max_price: data.max_price || null,
     // Ensure category is properly trimmed string
@@ -68,10 +69,11 @@ const EditMyAdminService = () => {
 
   const handleFormSubmit = (values: ServiceFormValues) => {
     if (!id || !service) return;
-    // Preserve the is_active field from the existing service
+    // Preserve the is_active and is_featured fields from the existing service
     const dataWithActiveStatus = {
       ...values,
-      is_active: service.is_active
+      is_active: service.is_active,
+      is_featured: values.is_featured // Use the form value for is_featured
     };
     mutation.mutate({ id, data: dataWithActiveStatus });
   };
