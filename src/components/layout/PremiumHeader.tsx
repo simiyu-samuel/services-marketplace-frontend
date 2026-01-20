@@ -326,7 +326,7 @@ const PremiumHeader: React.FC = () => {
                 {/* Additional mobile actions */}
                 <div className="border-t border-purple-600/30 pt-4 mt-4">
                   <Button variant="outline" asChild className="w-full mb-2 bg-purple-600/20 border-purple-400/30 text-purple-100 hover:bg-purple-500/30 hover:text-white hover:border-purple-300/50">
-                    <Link to="/register">Join as Provider</Link>
+                    <Link to="/register">List as Provider</Link>
                   </Button>
                   
                   {!user && (
