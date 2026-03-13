@@ -1,0 +1,5 @@
+[26-Aug-2025 06:08:47 UTC] PHP Warning:  require(/home/themabinti/api.themabinti.com/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/themabinti/api.themabinti.com/link_storage.php on line 6
+[26-Aug-2025 06:08:47 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/themabinti/api.themabinti.com/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/themabinti/api.themabinti.com/link_storage.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/themabinti/api.themabinti.com/link_storage.php on line 6
