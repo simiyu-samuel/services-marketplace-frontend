@@ -223,8 +223,15 @@ const AdminBookings = () => {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
+                    {/*
+                      Some bookings may reference a service that has been deleted.
+                      In that case booking.service can be null, so we guard access here.
+                    */}
                     <h3 className="font-semibold text-lg text-foreground line-clamp-1 mb-2">
-                      {booking.service.title}
+                      {booking.service ? booking.service.title : "Service no longer available"}
+                    </h3>
+                    <h3 className="font-semibold text-lg text-foreground line-clamp-1 mb-2">
+                      {/* Kept for layout spacing; main title handled above */}
                     </h3>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
@@ -289,7 +296,7 @@ const AdminBookings = () => {
                   <div className="space-y-2">
                     {getStatusBadge(booking.status)}
                     <Badge variant="outline" className="gap-1 text-xs capitalize">
-                      {booking.service.category}
+                      {booking.service ? booking.service.category : "Unknown category"}
                     </Badge>
                   </div>
                   <div className="text-right">
