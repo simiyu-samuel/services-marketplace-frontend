@@ -69,9 +69,20 @@ interface ServiceFormProps {
   submitButtonText?: string;
   photosPerService?: number;
   videosPerService?: number;
+  showMobileToggle?: boolean;
+  showFeaturedToggle?: boolean;
 }
 
-const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Save Service", photosPerService, videosPerService }: ServiceFormProps) => {
+const ServiceForm = ({
+  onSubmit,
+  initialData,
+  isLoading,
+  submitButtonText = "Save Service",
+  photosPerService,
+  videosPerService,
+  showMobileToggle = true,
+  showFeaturedToggle = true,
+}: ServiceFormProps) => {
   const [previews, setPreviews] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
@@ -282,12 +293,30 @@ const ServiceForm = ({ onSubmit, initialData, isLoading, submitButtonText = "Sav
                 </FormItem>
               )} />
             )}
-            <FormField control={form.control} name="is_mobile" render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Mobile Service</FormLabel><p className="text-sm text-muted-foreground">Do you offer this service at the client's location?</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
-            )} />
-            {isAdmin && (
+            {showMobileToggle && (
+              <FormField control={form.control} name="is_mobile" render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Mobile Service</FormLabel>
+                    <p className="text-sm text-muted-foreground">Do you offer this service at the client's location?</p>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )} />
+            )}
+            {isAdmin && showFeaturedToggle && (
               <FormField control={form.control} name="is_featured" render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Featured Service</FormLabel><p className="text-sm text-muted-foreground">Mark this service as featured to display it prominently on the homepage</p></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Featured Service</FormLabel>
+                    <p className="text-sm text-muted-foreground">Mark this service as featured to display it prominently on the homepage</p>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
               )} />
             )}
           </CardContent>

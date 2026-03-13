@@ -22,14 +22,21 @@ class StoreServiceRequest extends FormRequest
         //     return [];
         // }
 
-        $packageLimits = config('themabinti.seller_packages.' . $user->seller_package);
-        
-        if($user->isAdmin()){
+        // Derive package limits either from the active seller_package or,
+        // during onboarding, from the pending_seller_package.
+        $packageKey = $user?->seller_package ?? $user?->pending_seller_package;
+        $packageLimits = $packageKey ? config('themabinti.seller_packages.' . $packageKey) : null;
+
+        if ($user && $user->isAdmin()) {
             $photosLimit = null;
             $videoLimit = null;
-        } else{
-            $photosLimit = $packageLimits['photos_per_service'];
-            $videoLimit = $packageLimits['video_per_service'];
+        } elseif ($packageLimits) {
+            $photosLimit = $packageLimits['photos_per_service'] ?? null;
+            $videoLimit = $packageLimits['video_per_service'] ?? null;
+        } else {
+            // Fallback: no strict media count limits if we cannot resolve a package
+            $photosLimit = null;
+            $videoLimit = null;
         }
 
         $rules = [

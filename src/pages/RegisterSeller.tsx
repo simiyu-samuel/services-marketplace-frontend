@@ -16,6 +16,8 @@ import { CheckCircle, Camera, List, Star, Calendar, Sparkles, Zap, Shield, Chevr
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ServiceForm, { ServiceFormValues } from "@/components/services/ServiceForm";
+import api from "@/lib/api";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -86,8 +88,9 @@ const RegisterSeller = () => {
   const { data: packagePrices, isLoading: pricesLoading, isError } = usePackagePrices();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'premium'>('standard');
-  const [currentStep, setCurrentStep] = useState<'package' | 'form'>('package');
+  const [currentStep, setCurrentStep] = useState<"listing" | "package" | "form">("listing");
   const [isMobile, setIsMobile] = useState(false);
+  const [listingValues, setListingValues] = useState<ServiceFormValues | null>(null);
 
   // Check screen size on mount and resize
   useEffect(() => {
@@ -105,13 +108,6 @@ const RegisterSeller = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Auto-switch to package view on desktop
-  useEffect(() => {
-    if (!isMobile) {
-      setCurrentStep('package');
-    }
-  }, [isMobile]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { 
@@ -124,11 +120,93 @@ const RegisterSeller = () => {
     },
   });
 
+  const getMaxPhotosForPackage = (pkg: "basic" | "standard" | "premium") => {
+    if (pkg === "basic") return 2;
+    if (pkg === "standard") return 3;
+    return 5;
+  };
+
+  const createOnboardingService = async (serviceValues: ServiceFormValues, pkg: "basic" | "standard" | "premium") => {
+    const formData = new FormData();
+
+    // Construct location from county and specific location
+    const constructedLocation = `${serviceValues.county.trim()}, ${serviceValues.specific_location.trim()}`;
+
+    (Object.keys(serviceValues) as Array<keyof ServiceFormValues>).forEach((key) => {
+      const value = serviceValues[key];
+
+      if (key === "media_files" && value instanceof FileList) {
+        for (let i = 0; i < value.length; i++) {
+          formData.append("media_files[]", value[i]);
+        }
+        return;
+      }
+
+      if (key === "county" || key === "specific_location") {
+        return;
+      }
+
+      if (typeof value === "boolean") {
+        formData.append(key, value ? "1" : "0");
+        return;
+      }
+
+      if (value !== undefined && value !== null) {
+        if (key === "subcategory" && value === "") {
+          return;
+        }
+        if (key === "category") {
+          const trimmed = String(value).trim();
+          if (trimmed) {
+            formData.append(key, trimmed);
+          }
+          return;
+        }
+        formData.append(key, String(value));
+      }
+    });
+
+    formData.append("location", constructedLocation);
+    formData.append("is_active", "0");
+
+    try {
+      await api.post("/onboarding/services", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } catch (error) {
+      // Best-effort: log in console, but don't block registration flow.
+      console.error("Failed to create onboarding service:", error);
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      // Ensure we have listing data
+      if (!listingValues) {
+        showError("Please provide your service listing details before registering.");
+        setIsLoading(false);
+        return;
+      }
+
+      const pkg = values.seller_package;
+      const maxPhotos = getMaxPhotosForPackage(pkg);
+      const mediaFiles = listingValues.media_files;
+      if (mediaFiles instanceof FileList) {
+        const imageCount = Array.from(mediaFiles).filter((file) => file.type.startsWith("image/")).length;
+        if (imageCount > maxPhotos) {
+          showError(`For the ${pkg} package you can upload up to ${maxPhotos} photos. You currently have ${imageCount}.`);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const response = await register({ ...values, user_type: 'seller' } as RegisterPayload);
       const { user, needs_seller_payment } = response;
+
+      // After successful registration as seller (or pending seller),
+      // create a draft onboarding service in the backend.
+      await createOnboardingService(listingValues, pkg);
 
       if (needs_seller_payment) {
         const { seller_package, email } = values;
@@ -176,8 +254,36 @@ const RegisterSeller = () => {
     return packageDetails[pkg].price;
   };
 
-  // Mobile View - Step-by-Step Flow
-  if (isMobile) {
+  // Step 1: Listing details (common for mobile & desktop)
+  if (currentStep === "listing") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-6 px-4 pb-10">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Create Your First Service Listing
+            </h1>
+            <p className="text-gray-600">
+              Add the details of the main service you want to list on Themabinti.
+            </p>
+          </div>
+          <ServiceForm
+            onSubmit={(values) => {
+              setListingValues(values);
+              setCurrentStep("package");
+            }}
+            isLoading={false}
+            submitButtonText="Continue to Package Selection"
+            showMobileToggle={false}
+            showFeaturedToggle={false}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile View - Step-by-Step Flow (Package -> Register)
+  if (isMobile && currentStep !== "listing") {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-6 px-4 pb-24">
         {/* Progress Steps */}

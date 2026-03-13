@@ -106,7 +106,6 @@ class ServiceController extends Controller
      */
     public function store(StoreServiceRequest $request) // Use Form Request
     {
-        // Policy 'create' method has already authorized based on seller status and package limits.
         $user = $request->user();
 
         $serviceData = $request->validated();
@@ -141,6 +140,59 @@ class ServiceController extends Controller
 
         return response()->json([
             'message' => 'Service created successfully.',
+            'service' => $service,
+        ], 201);
+    }
+
+    /**
+     * Store a draft service during seller onboarding.
+     *
+     * This allows a newly registered user with a pending_seller_package to
+     * create a non-active service before payment. Public listing is still
+     * protected because index() only returns is_active = true.
+     */
+    public function storeOnboarding(StoreServiceRequest $request)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->pending_seller_package) {
+            return response()->json([
+                'message' => 'You must have a pending seller package to create an onboarding service.',
+            ], 403);
+        }
+
+        $serviceData = $request->validated();
+        $serviceData['user_id'] = $user->id;
+        $serviceData['is_active'] = false;
+
+        // Only admins can set is_featured to true
+        if (isset($serviceData['is_featured']) && $serviceData['is_featured'] && !$user->isAdmin()) {
+            return response()->json([
+                'message' => 'Only administrators can mark services as featured.',
+            ], 403);
+        }
+
+        // Ensure max_price is explicitly null if not provided or empty
+        if (!isset($serviceData['max_price']) || $serviceData['max_price'] === null || $serviceData['max_price'] === '') {
+            $serviceData['max_price'] = null;
+        }
+
+        // Handle media files if present
+        $mediaPaths = [];
+        if ($request->hasFile('media_files')) {
+            foreach ($request->file('media_files') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('service_media', 'public'); // Store in 'public' disk
+                    $mediaPaths[] = Storage::url($path); // Get public URL
+                }
+            }
+        }
+        $serviceData['media_files'] = $mediaPaths;
+
+        $service = Service::create($serviceData);
+
+        return response()->json([
+            'message' => 'Onboarding service created successfully.',
             'service' => $service,
         ], 201);
     }

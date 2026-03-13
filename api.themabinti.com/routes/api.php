@@ -101,6 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::post('/phone/verify/request', [VerificationController::class, 'requestPhoneVerification']);
     // Route::post('/phone/verify/check', [VerificationController::class, 'checkPhoneVerification']);
 
+    // Seller onboarding: allow a user with a pending_seller_package to create a draft service
+    Route::post('/onboarding/services', [ServiceController::class, 'storeOnboarding']);
+
     // Payments & Seller Packages
     Route::post('/payments/initiate', [PaymentController::class, 'initiateStkPush']);
     Route::get('/payments/status/{checkoutRequestId}', [PaymentController::class, 'getPaymentStatus']);

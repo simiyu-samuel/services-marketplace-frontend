@@ -51,10 +51,12 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'phone_number' => $request->phone_number,
                 'password' => Hash::make($request->password),
-                'user_type' => 'customer', // <<< ALWAYS REGISTER AS CUSTOMER INITIALLY
-                'seller_package' => null,   // <<< NULL until payment
-                'package_expiry_date' => null, // <<< NULL until payment
-                'pending_seller_package' => $isSellerRegistration ? $sellerPackageChoice : null, // <<< STORE PENDING CHOICE
+                // If registering as a seller, mark them as seller immediately but
+                // keep package fields null so policies block publishing until payment.
+                'user_type' => $isSellerRegistration ? 'seller' : 'customer',
+                'seller_package' => null,   // NULL until package payment
+                'package_expiry_date' => null, // NULL until payment
+                'pending_seller_package' => $isSellerRegistration ? $sellerPackageChoice : null,
                 'is_active' => true,
             ];
 
