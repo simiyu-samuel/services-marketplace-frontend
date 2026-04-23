@@ -1,4 +1,4 @@
-import { useEffect } from "react"; // Import useEffect
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePayment } from "@/hooks/use-payment";
 import { Loader2 } from "lucide-react";
 
@@ -20,12 +19,13 @@ interface PaymentDialogProps {
   amount: number;
   paymentType: 'seller_registration' | 'package_upgrade' | 'service_payment';
   packageType?: 'basic' | 'standard' | 'premium';
+  serviceId?: number;
   onPaymentSuccess?: () => void;
-  initialPhoneNumber: string; // Added initialPhoneNumber
+  initialPhoneNumber: string;
 }
 
-const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType, onPaymentSuccess, initialPhoneNumber }: PaymentDialogProps) => {
-  const { status, error, initiatePayment } = usePayment(); // Destructure error here
+const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType, serviceId, onPaymentSuccess, initialPhoneNumber }: PaymentDialogProps) => {
+  const { status, error, initiatePayment, resetPayment } = usePayment();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,7 +38,12 @@ const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType,
       phone_number: values.phone_number,
       payment_type: paymentType,
       package_type: packageType,
+      service_id: serviceId,
     });
+  };
+
+  const handleRetry = () => {
+    resetPayment();
   };
 
   useEffect(() => {
@@ -77,10 +82,13 @@ const PaymentDialog = ({ isOpen, onOpenChange, amount, paymentType, packageType,
             <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
           </div>
         ) : status === 'failed' ? (
-          <div className="flex flex-col items-center justify-center py-8">
+          <div className="flex flex-col items-center justify-center py-8 gap-4">
             <p className="font-semibold text-red-500">Payment Failed</p>
-            <p className="text-sm text-muted-foreground text-center mt-2">{error || 'An error occurred during payment.'}</p> {/* Use the error state here */}
-            <Button onClick={() => onOpenChange(false)} className="mt-4">Close</Button>
+            <p className="text-sm text-muted-foreground text-center mt-2">{error || 'An error occurred during payment.'}</p>
+            <div className="flex flex-col gap-3 w-full">
+              <Button onClick={handleRetry} className="w-full">Retry Payment</Button>
+              <Button variant="secondary" onClick={() => onOpenChange(false)} className="w-full">Close</Button>
+            </div>
           </div>
         ) : status === 'cancelled' ? (
           <div className="flex flex-col items-center justify-center py-8">

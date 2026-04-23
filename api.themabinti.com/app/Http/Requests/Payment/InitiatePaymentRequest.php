@@ -19,7 +19,7 @@ class InitiatePaymentRequest extends FormRequest
             'phone_number' => 'required|string|regex:/^2547[0-9]{8}$/', // Kenyan Safaricom number
             'payment_type' => ['required', Rule::in(['seller_registration', 'package_upgrade', 'service_payment'])],
             'package_type' => ['nullable', 'required_if:payment_type,seller_registration,package_upgrade', Rule::in(['basic', 'standard', 'premium'])],
-            'service_id' => 'nullable|required_if:payment_type,service_payment|exists:services,id',
+            'service_id' => 'nullable|exists:services,id',
             'appointment_id' => 'nullable|required_if:payment_type,service_payment|exists:appointments,id', // Link payment to appointment if applicable
         ];
     }

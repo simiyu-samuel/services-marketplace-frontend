@@ -170,12 +170,14 @@ const RegisterSeller = () => {
     formData.append("is_active", "0");
 
     try {
-      await api.post("/onboarding/services", formData, {
+      const response = await api.post("/onboarding/services", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      return response.data.service;
     } catch (error) {
       // Best-effort: log in console, but don't block registration flow.
       console.error("Failed to create onboarding service:", error);
+      return null;
     }
   };
 
@@ -206,7 +208,10 @@ const RegisterSeller = () => {
 
       // After successful registration as seller (or pending seller),
       // create a draft onboarding service in the backend.
-      await createOnboardingService(listingValues, pkg);
+      const onboardingService = await createOnboardingService(listingValues, pkg);
+      if (onboardingService?.id) {
+        localStorage.setItem('pendingOnboardingServiceId', onboardingService.id.toString());
+      }
 
       if (needs_seller_payment) {
         const { seller_package, email } = values;

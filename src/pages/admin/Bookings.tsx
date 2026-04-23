@@ -36,9 +36,7 @@ import {
   MoreVertical,
   RefreshCw,
   DollarSign,
-  User,
   MapPin,
-  Phone,
   Mail
 } from 'lucide-react';
 import ModernPageHeader from '@/components/dashboard/ModernPageHeader';
@@ -68,7 +66,7 @@ const fetchBookings = async (filters?: Partial<BookingFilters>) => {
 };
 
 const updateBookingStatus = async ({ id, status }: { id: number, status: string }) => {
-  await api.put(`/admin/bookings/${id}`, { status });
+  await api.put(`/admin/appointments/${id}`, { status });
 };
 
 const AdminBookings = () => {
@@ -102,6 +100,24 @@ const AdminBookings = () => {
       closeConfirmationDialog();
     },
   });
+
+  const getUserDisplay = (user: Booking['customer'] | Booking['seller'] | undefined | null, fallbackLabel: string) => {
+    const safeName = user?.name?.trim() || fallbackLabel;
+    const initials = safeName
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+
+    return {
+      name: safeName,
+      email: user?.email || 'No email available',
+      profileImage: user?.profile_image || undefined,
+      initials: initials || fallbackLabel.slice(0, 2).toUpperCase(),
+    };
+  };
 
   // --- Event Handlers ---
   const handleFilterChange = (key: keyof Omit<BookingFilters, 'page'>, value: string) => {
@@ -212,7 +228,11 @@ const AdminBookings = () => {
 
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {response.data.map((booking, index) => (
+        {response.data.map((booking, index) => {
+          const customer = getUserDisplay(booking.customer, 'Unknown Customer');
+          const seller = getUserDisplay(booking.seller ?? booking.service?.user ?? null, 'Unknown Provider');
+
+          return (
           <motion.div
             key={booking.id}
             initial={{ opacity: 0, y: 20 }}
@@ -230,9 +250,6 @@ const AdminBookings = () => {
                     <h3 className="font-semibold text-lg text-foreground line-clamp-1 mb-2">
                       {booking.service ? booking.service.title : "Service no longer available"}
                     </h3>
-                    <h3 className="font-semibold text-lg text-foreground line-clamp-1 mb-2">
-                      {/* Kept for layout spacing; main title handled above */}
-                    </h3>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
@@ -243,10 +260,10 @@ const AdminBookings = () => {
                         {booking.appointment_time || 'TBD'}
                       </span>
                     </div>
-                    {booking.location && (
+                    {booking.service?.location && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                         <MapPin className="h-3 w-3" />
-                        <span className="line-clamp-1">{booking.location}</span>
+                        <span className="line-clamp-1">{booking.service.location}</span>
                       </div>
                     )}
                   </div>
@@ -257,16 +274,16 @@ const AdminBookings = () => {
                   <p className="text-xs font-medium text-muted-foreground mb-2">Customer</p>
                   <div className="flex items-center space-x-2">
                     <Avatar className="h-8 w-8 border border-background">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${booking.customer.name}`} />
+                      <AvatarImage src={customer.profileImage || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(customer.name)}`} />
                       <AvatarFallback className="bg-blue-500/10 text-blue-500 text-xs">
-                        {booking.customer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        {customer.initials}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{booking.customer.name}</p>
+                      <p className="text-sm font-medium">{customer.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Mail className="h-3 w-3" />
-                        {booking.customer.email}
+                        {customer.email}
                       </div>
                     </div>
                   </div>
@@ -277,16 +294,16 @@ const AdminBookings = () => {
                   <p className="text-xs font-medium text-muted-foreground mb-2">Service Provider</p>
                   <div className="flex items-center space-x-2">
                     <Avatar className="h-8 w-8 border border-background">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${booking.seller.name}`} />
+                      <AvatarImage src={seller.profileImage || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seller.name)}`} />
                       <AvatarFallback className="bg-purple-500/10 text-purple-500 text-xs">
-                        {booking.seller.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        {seller.initials}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{booking.seller.name}</p>
+                      <p className="text-sm font-medium">{seller.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Mail className="h-3 w-3" />
-                        {booking.seller.email}
+                        {seller.email}
                       </div>
                     </div>
                   </div>
@@ -314,7 +331,7 @@ const AdminBookings = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="text-xs text-muted-foreground">
-                    Booked: {new Date(booking.created_at).toLocaleDateString()}
+                    Booked: {booking.created_at ? new Date(booking.created_at).toLocaleDateString() : 'N/A'}
                   </div>
                   
                   <DropdownMenu>
@@ -364,7 +381,8 @@ const AdminBookings = () => {
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -378,7 +396,7 @@ const AdminBookings = () => {
           description="Monitor and manage all platform bookings and transactions"
           icon={Calendar}
           badge={{
-            text: `${response?.meta?.total || response?.data?.length || 0} Bookings`,
+            text: `${response?.total || response?.data?.length || 0} Bookings`,
             variant: "secondary"
           }}
           actions={[
@@ -481,7 +499,7 @@ const AdminBookings = () => {
         </motion.div>
 
         {/* Pagination */}
-        {response?.meta && response.meta.last_page > 1 && (
+        {response && response.last_page > 1 && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -501,12 +519,12 @@ const AdminBookings = () => {
                   </Button>
                   <div className="bg-primary/10 px-4 py-2 rounded-lg">
                     <span className="text-sm font-medium text-primary">
-                      Page {response.meta.current_page} of {response.meta.last_page}
+                      Page {response.current_page} of {response.last_page}
                     </span>
                   </div>
                   <Button 
                     onClick={() => handlePageChange(filters.page + 1)} 
-                    disabled={filters.page >= response.meta.last_page}
+                    disabled={filters.page >= response.last_page}
                     variant="outline"
                     size="sm"
                   >
@@ -515,7 +533,7 @@ const AdminBookings = () => {
                 </div>
                 <div className="text-center mt-2">
                   <span className="text-xs text-muted-foreground">
-                    Showing {response.meta.per_page * (response.meta.current_page - 1) + 1} to {Math.min(response.meta.per_page * response.meta.current_page, response.meta.total)} of {response.meta.total} bookings
+                    Showing {response.from || 0} to {response.to || 0} of {response.total} bookings
                   </span>
                 </div>
               </CardContent>

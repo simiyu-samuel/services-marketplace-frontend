@@ -26,9 +26,16 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Service::query()->where('is_active', true); // Only active services by default
-        
+        $includeInactive = $request->boolean('include_inactive', false);
         $filterUserId = $request->input('filter.user_id'); // Accesses filter[user_id]
+
+        // Only allow an authenticated seller to view their own inactive services
+        if ($includeInactive && $filterUserId && auth()->check() && auth()->id() == $filterUserId) {
+            $query = Service::query();
+        } else {
+            $query = Service::query()->where('is_active', true); // Only active services by default
+        }
+
         if ($filterUserId) { // If it exists and is not empty
             $query->where('user_id', $filterUserId);
         }
@@ -69,13 +76,23 @@ class ServiceController extends Controller
         if ($request->has('is_mobile')) {
             $query->where('is_mobile', $request->boolean('is_mobile'));
         }
-        if ($request->has('search')) {
-            $searchTerm = $request->input('search');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('title', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('category', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('subcategory', 'like', '%' . $searchTerm . '%');
+        if ($request->filled('search')) {
+            $searchTerm = trim((string) $request->input('search'));
+            $terms = preg_split('/\s+/', $searchTerm, -1, PREG_SPLIT_NO_EMPTY);
+
+            $query->where(function ($outerQuery) use ($terms) {
+                foreach ($terms as $term) {
+                    $outerQuery->where(function ($q) use ($term) {
+                        $q->where('title', 'like', '%' . $term . '%')
+                            ->orWhere('description', 'like', '%' . $term . '%')
+                            ->orWhere('category', 'like', '%' . $term . '%')
+                            ->orWhere('subcategory', 'like', '%' . $term . '%')
+                            ->orWhere('location', 'like', '%' . $term . '%')
+                            ->orWhereHas('user', function ($userQuery) use ($term) {
+                                $userQuery->where('name', 'like', '%' . $term . '%');
+                            });
+                    });
+                }
             });
         }
 

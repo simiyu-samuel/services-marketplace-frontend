@@ -90,7 +90,7 @@ const AppContent = () => {
             <Routes location={location}>
             {/* Public Routes */}
             <Route element={<PremiumLayout />}>
-              <Route path="/resend-verification" element={<AuthGuardComponent><p>Resend Verification Page (TODO)</p></AuthGuardComponent>} /> {/* Wrap with AuthGuardComponent */}
+              <Route path="/resend-verification" element={<AuthGuardComponent requireAuth={true}><p>Resend Verification Page (TODO)</p></AuthGuardComponent>} />
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:id" element={<ServiceDetails />} />
@@ -162,7 +162,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppContent />
       </BrowserRouter>
     </TooltipProvider>

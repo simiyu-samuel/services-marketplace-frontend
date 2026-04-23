@@ -13,22 +13,52 @@ class AdminAppointmentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Appointment::query()->with(['customer', 'seller', 'service']); // Eager load related data
+        $query = Appointment::query()->with(['customer', 'seller', 'service.user']); // Eager load related data
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
-        if ($request->has('customer_id')) {
+        if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->input('customer_id'));
         }
-        if ($request->has('seller_id')) {
+        if ($request->filled('seller_id')) {
             $query->where('seller_id', $request->input('seller_id'));
         }
-        if ($request->has('service_id')) {
+        if ($request->filled('service_id')) {
             $query->where('service_id', $request->input('service_id'));
         }
-        if ($request->has('date')) { // Filter by specific date
+        if ($request->filled('date')) { // Filter by specific date
             $query->whereDate('appointment_date', $request->input('date'));
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('appointment_date', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('appointment_date', '<=', $request->input('date_to'));
+        }
+        if ($request->filled('category')) {
+            $query->whereHas('service', function ($serviceQuery) use ($request) {
+                $serviceQuery->where('category', $request->input('category'));
+            });
+        }
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function ($appointmentQuery) use ($searchTerm) {
+                $appointmentQuery->whereHas('customer', function ($customerQuery) use ($searchTerm) {
+                    $customerQuery->where('name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('phone_number', 'like', '%' . $searchTerm . '%');
+                })->orWhereHas('seller', function ($sellerQuery) use ($searchTerm) {
+                    $sellerQuery->where('name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('phone_number', 'like', '%' . $searchTerm . '%');
+                })->orWhereHas('service', function ($serviceQuery) use ($searchTerm) {
+                    $serviceQuery->where('title', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('category', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('subcategory', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('location', 'like', '%' . $searchTerm . '%');
+                })->orWhere('notes', 'like', '%' . $searchTerm . '%');
+            });
         }
 
         $appointments = $query->latest('appointment_date')->paginate(15);

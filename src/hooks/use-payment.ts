@@ -21,21 +21,23 @@ export const usePayment = () => {
   const [status, setStatus] = useState<PaymentStatus>('idle');
   const [error, setError] = useState<string | null>(null);
 
-  const pollPaymentStatus = (checkoutRequestId: string, toastId: string) => {
+  const pollPaymentStatus = (checkoutRequestId: string, toastId: string | number) => {
     setStatus('polling');
+    let active = true;
     const interval = setInterval(async () => {
       try {
         const { data } = await api.get(`/payments/status/${checkoutRequestId}`);
         const payment: Payment = data.payment;
 
         if (payment.status === 'completed') {
+          active = false;
           clearInterval(interval);
           setStatus('completed');
           dismissToast(toastId);
           showSuccess('Payment completed successfully!');
-          queryClient.invalidateQueries({ queryKey: ['user'] }); // Refetch user to update package info
           queryClient.invalidateQueries({ queryKey: ['payments'] });
         } else if (payment.status === 'failed' || payment.status === 'cancelled') {
+          active = false;
           clearInterval(interval);
           setStatus(payment.status);
           dismissToast(toastId);
@@ -44,6 +46,7 @@ export const usePayment = () => {
         // If status is 'pending', log the response and let it poll again.
         console.log('Payment status:', payment.status, 'Message:', data.message);
       } catch (err: unknown) {
+        active = false;
         clearInterval(interval);
         dismissToast(toastId);
         if (isAxiosError(err)) {
@@ -71,13 +74,19 @@ export const usePayment = () => {
 
     // Timeout after 1 minute
     setTimeout(() => {
-      if (status === 'polling') {
+      if (active) {
+        active = false;
         clearInterval(interval);
         setStatus('timed_out');
         dismissToast(toastId);
         showError('Payment is taking longer than expected. Please check your M-Pesa for a confirmation message. You can also check your payment history for updates.');
       }
     }, 60000); // 60000 milliseconds = 1 minute
+  };
+
+  const resetPayment = () => {
+    setStatus('idle');
+    setError(null);
   };
 
   const initiatePayment = async (payload: InitiatePaymentPayload) => {
@@ -87,12 +96,12 @@ export const usePayment = () => {
 
     try {
       const { data } = await api.post('/payments/initiate', payload);
-      dismissToast(toastId.toString());
+      dismissToast(toastId);
       showSuccess('Payment initiated. Please check your phone to complete the transaction.');
       const pollingToastId = showLoading('Waiting for payment confirmation...');
-      pollPaymentStatus(data.checkout_request_id, pollingToastId.toString());
+      pollPaymentStatus(data.checkout_request_id, pollingToastId);
     } catch (err: unknown) {
-      dismissToast(toastId.toString());
+      dismissToast(toastId);
       if (isAxiosError(err)) {
         const errorMessage = err.response?.data?.message || 'Failed to initiate payment.';
         setError(errorMessage);
@@ -106,5 +115,5 @@ export const usePayment = () => {
     }
   };
 
-  return { status, error, initiatePayment };
+  return { status, error, initiatePayment, resetPayment };
 };

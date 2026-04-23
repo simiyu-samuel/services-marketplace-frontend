@@ -117,6 +117,9 @@ const MyBookings = () => {
       <div className="grid gap-4 mt-6">
         {bookings.map((booking, index) => {
           const otherUser = user?.user_type === 'seller' ? booking.customer : booking.seller;
+          const safeOtherUserName = otherUser?.name || (user?.user_type === 'seller' ? 'Unknown Customer' : 'Unknown Provider');
+          const safeOtherUserInitial = safeOtherUserName.charAt(0).toUpperCase();
+          const safeServiceTitle = booking.service?.title || 'Service no longer available';
           return (
             <motion.div
               key={booking.id}
@@ -127,21 +130,21 @@ const MyBookings = () => {
               <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/20 hover:border-l-primary">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
+                  <div className="flex items-start space-x-4 flex-1">
                       <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-                        <AvatarImage src={otherUser.profile_image || undefined} />
+                        <AvatarImage src={otherUser?.profile_image || undefined} />
                         <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {otherUser.name.charAt(0)}
+                          {safeOtherUserInitial}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-semibold text-lg text-foreground">{booking.service.title}</h3>
+                            <h3 className="font-semibold text-lg text-foreground">{safeServiceTitle}</h3>
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                               <User className="h-4 w-4" />
-                              <span>{user?.user_type === 'seller' ? 'Customer' : 'Provider'}: {otherUser.name}</span>
+                              <span>{user?.user_type === 'seller' ? 'Customer' : 'Provider'}: {safeOtherUserName}</span>
                             </div>
                           </div>
                           

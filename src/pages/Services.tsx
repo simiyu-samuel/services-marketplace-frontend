@@ -114,15 +114,20 @@ const Services = () => {
   }, [services, filters.sortBy]);
 
   useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
     const locationFromUrl = searchParams.get('location');
     const categoryFromUrl = searchParams.get('category');
     const subcategoryFromUrl = searchParams.get('subcategory'); // Get subcategory from URL
 
     setFilters(prevFilters => {
       const newFilters = { ...prevFilters };
+
+      newFilters.search = searchFromUrl || '';
       
       if (locationFromUrl && newFilters.location !== locationFromUrl) {
         newFilters.location = locationFromUrl;
+      } else if (!locationFromUrl) {
+        newFilters.location = '';
       }
       
       // Reset categories and subcategories if a new category/subcategory is selected from the header

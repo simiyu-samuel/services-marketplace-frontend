@@ -113,12 +113,15 @@ export interface Booking {
   customer_id: number;
   seller_id: number;
   appointment_date: string;
+  appointment_time?: string | null;
   status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
   total_amount: string;
   notes?: string | null;
-  service: Service;
-  customer: User;
-  seller: User;
+  created_at?: string;
+  updated_at?: string;
+  service: Service | null;
+  customer: User | null;
+  seller: User | null;
 }
 
 export interface Review {

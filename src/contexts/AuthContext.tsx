@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (data: LoginPayload) => Promise<AuthResponse>;
   register: (data: RegisterPayload) => Promise<AuthResponse>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<User>;
   changePassword: (data: ChangePasswordPayload) => Promise<void>;
 }
@@ -19,6 +20,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshUser = async () => {
+    try {
+      const response = await api.get('/user');
+      setUser(response.data.user);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Failed to refresh user profile.", error.message);
+      } else {
+        console.error("Failed to refresh user profile.", error);
+      }
+      localStorage.removeItem('authToken');
+      setUser(null);
+    }
+  };
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -106,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const changePassword = async (data: ChangePasswordPayload): Promise<void> => {
     try {
-      await api.put('/user/password', data);
+      await api.post('/user/password', data);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error("Change password failed:", error.message);
@@ -118,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUserProfile, changePassword }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser, updateUserProfile, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

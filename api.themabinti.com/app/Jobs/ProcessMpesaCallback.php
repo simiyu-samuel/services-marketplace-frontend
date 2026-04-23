@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Appointment;
+use App\Models\Service;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -62,15 +63,50 @@ class ProcessMpesaCallback implements ShouldQueue
             } else {
                 switch ($this->payment->payment_type) {
                     case 'seller_registration':
-                    case 'package_upgrade':
-                        // <<< IMPORTANT CHANGES HERE >>>
                         $user->user_type = 'seller'; // Change user to seller type
                         $user->seller_package = $this->payment->package_type;
                         $user->package_expiry_date = Carbon::now()->addMonths(config('themabinti.package_duration_months'));
                         $user->pending_seller_package = null; // Clear pending flag
                         $user->save();
+
+                        // If the seller onboarding flow included an inactive onboarding service,
+                        // activate it now that registration payment is complete.
+                        $pendingServiceId = $this->payment->response_data['service_id'] ?? null;
+                        if ($pendingServiceId) {
+                            $service = Service::where('id', $pendingServiceId)
+                                ->where('user_id', $user->id)
+                                ->where('is_active', false)
+                                ->first();
+
+                            if ($service) {
+                                $service->is_active = true;
+                                $service->save();
+                                Log::info("Activated onboarding service {$service->id} for user {$user->id} after seller registration payment.");
+                            }
+                        } else {
+                            $inactiveOnboardingServices = Service::where('user_id', $user->id)
+                                ->where('is_active', false)
+                                ->get();
+
+                            if ($inactiveOnboardingServices->isNotEmpty()) {
+                                foreach ($inactiveOnboardingServices as $service) {
+                                    $service->is_active = true;
+                                    $service->save();
+                                }
+                                Log::info("Activated " . $inactiveOnboardingServices->count() . " onboarding service(s) for user {$user->id} after seller registration payment.");
+                            }
+                        }
+
                         $user->notify(new PackageActivatedNotification($user, $this->payment->package_type));
                         Log::info("User {$user->id} package updated to {$this->payment->package_type} and user_type changed to seller.");
+                        break;
+
+                    case 'package_upgrade':
+                        $user->seller_package = $this->payment->package_type;
+                        $user->package_expiry_date = Carbon::now()->addMonths(config('themabinti.package_duration_months'));
+                        $user->save();
+
+                        Log::info("User {$user->id} package renewed/updated to {$this->payment->package_type}.");
                         break;
 
                     case 'service_payment':

@@ -35,7 +35,10 @@ import ModernPageHeader from '@/components/dashboard/ModernPageHeader';
 
 const fetchMyServices = async (sellerId: number) => {
   const { data } = await api.get('/services', {
-    params: { 'filter[user_id]': sellerId }
+    params: {
+      'filter[user_id]': sellerId,
+      include_inactive: true,
+    },
   });
   return (data as PaginatedResponse<Service>).data;
 };

@@ -4,23 +4,213 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Themabinti Services Hub</title>
+    <style>
+      .whatsapp-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        text-decoration: none;
+        font-family: inherit;
+      }
+
+      .whatsapp-fab__label {
+        max-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateX(10px);
+        transition: max-width 220ms ease, opacity 220ms ease, transform 220ms ease;
+        background: rgba(15, 23, 42, 0.92);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        padding: 10px 14px;
+        box-shadow: 0 16px 40px rgba(2, 6, 23, 0.22);
+        backdrop-filter: blur(12px);
+      }
+
+      .whatsapp-fab__label-title {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      .whatsapp-fab__label-subtitle {
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.1;
+      }
+
+      .whatsapp-fab__button {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background:
+          radial-gradient(circle at 30% 30%, #49f58c 0%, #25d366 55%, #128c4a 100%);
+        box-shadow:
+          0 18px 38px rgba(18, 140, 74, 0.34),
+          inset 0 1px 0 rgba(255, 255, 255, 0.28);
+        transform: translateY(0) scale(1);
+        transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+        overflow: visible;
+      }
+
+      .whatsapp-fab__button::before,
+      .whatsapp-fab__button::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+      }
+
+      .whatsapp-fab__button::before {
+        background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0));
+        inset: 1px;
+      }
+
+      .whatsapp-fab__button::after {
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .whatsapp-fab__pulse,
+      .whatsapp-fab__pulse::before {
+        position: absolute;
+        inset: -8px;
+        border-radius: 999px;
+        border: 1px solid rgba(37, 211, 102, 0.24);
+        animation: whatsapp-pulse 2.8s ease-out infinite;
+      }
+
+      .whatsapp-fab__pulse::before {
+        content: "";
+        animation-delay: 1.2s;
+      }
+
+      .whatsapp-fab__icon {
+        position: relative;
+        z-index: 1;
+        width: 30px;
+        height: 30px;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.16));
+      }
+
+      .whatsapp-fab:hover .whatsapp-fab__label,
+      .whatsapp-fab:focus-visible .whatsapp-fab__label {
+        max-width: 180px;
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .whatsapp-fab:hover .whatsapp-fab__button,
+      .whatsapp-fab:focus-visible .whatsapp-fab__button {
+        transform: translateY(-4px) scale(1.04);
+        box-shadow:
+          0 24px 48px rgba(18, 140, 74, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        filter: saturate(1.05);
+      }
+
+      .whatsapp-fab:focus-visible {
+        outline: none;
+      }
+
+      .whatsapp-fab:focus-visible .whatsapp-fab__button {
+        box-shadow:
+          0 24px 48px rgba(18, 140, 74, 0.4),
+          0 0 0 4px rgba(37, 211, 102, 0.22),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+
+      @keyframes whatsapp-pulse {
+        0% {
+          opacity: 0.7;
+          transform: scale(0.9);
+        }
+        70% {
+          opacity: 0;
+          transform: scale(1.28);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.28);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .whatsapp-fab {
+          right: 14px;
+          bottom: 14px;
+        }
+
+        .whatsapp-fab__button {
+          width: 58px;
+          height: 58px;
+        }
+
+        .whatsapp-fab__icon {
+          width: 28px;
+          height: 28px;
+        }
+
+        .whatsapp-fab__label {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .whatsapp-fab__label,
+        .whatsapp-fab__button {
+          transition: none;
+        }
+
+        .whatsapp-fab__pulse,
+        .whatsapp-fab__pulse::before {
+          animation: none;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-     <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-      var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-      (function(){
-      var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-      s1.async=true;
-      s1.src='https://embed.tawk.to/67462ba64304e3196ae91894/1idl1l0uf';
-      s1.charset='UTF-8';
-      s1.setAttribute('crossorigin','*');
-      s0.parentNode.insertBefore(s1,s0);
-      })();
-      </script>
-      <!--End of Tawk.to Script-->
+    <a
+      class="whatsapp-fab"
+      href="https://wa.me/254712161506"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Chat on WhatsApp"
+    >
+      <span class="whatsapp-fab__label" aria-hidden="true">
+        <span class="whatsapp-fab__label-title">Chat on WhatsApp</span>
+        <span class="whatsapp-fab__label-subtitle">Fast replies from Themabinti</span>
+      </span>
+      <span class="whatsapp-fab__button">
+        <span class="whatsapp-fab__pulse"></span>
+      <svg
+        class="whatsapp-fab__icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M19.05 4.91A9.82 9.82 0 0 0 12.03 2C6.55 2 2.1 6.45 2.1 11.93c0 1.75.46 3.46 1.33 4.97L2 22l5.24-1.37a9.9 9.9 0 0 0 4.79 1.22h.01c5.48 0 9.93-4.45 9.93-9.93 0-2.65-1.03-5.14-2.92-7.01Zm-7.02 15.26h-.01a8.22 8.22 0 0 1-4.19-1.15l-.3-.18-3.11.81.83-3.03-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.53 3.69-8.22 8.24-8.22 2.19 0 4.25.85 5.8 2.41a8.14 8.14 0 0 1 2.41 5.81c0 4.54-3.69 8.24-8.21 8.24Zm4.51-6.16c-.25-.12-1.47-.72-1.7-.8-.23-.08-.39-.12-.56.12-.16.24-.64.8-.78.96-.14.16-.28.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.22-1.46-1.36-1.7-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.56-1.34-.77-1.84-.2-.48-.41-.41-.56-.42l-.48-.01c-.16 0-.43.06-.65.31s-.86.84-.86 2.04.88 2.35 1.01 2.51c.12.16 1.73 2.64 4.18 3.7.58.25 1.03.4 1.38.51.58.18 1.1.15 1.51.09.46-.07 1.47-.6 1.68-1.17.21-.58.21-1.08.15-1.17-.06-.1-.22-.16-.47-.28Z" />
+      </svg>
+      </span>
+    </a>
   </body>
 </html>

@@ -15,9 +15,10 @@ const packageDetails = {
 };
 
 const SellerOnboardingPayment = () => {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { data: packagePrices, isLoading: pricesLoading, isError: pricesError } = usePackagePrices(); // Fetch prices
+  const [pendingServiceId, setPendingServiceId] = useState<number | null>(null);
   const [paymentInfo, setPaymentInfo] = useState<{
     open: boolean;
     amount: number;
@@ -25,7 +26,15 @@ const SellerOnboardingPayment = () => {
     email: string;
     userId: number;
     phoneNumber: string;
+    serviceId?: number;
   } | null>(null);
+
+  useEffect(() => {
+    const storedServiceId = localStorage.getItem('pendingOnboardingServiceId');
+    if (storedServiceId) {
+      setPendingServiceId(Number(storedServiceId));
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthLoading && !pricesLoading) { // Wait for both auth and prices to load
@@ -53,6 +62,7 @@ const SellerOnboardingPayment = () => {
           email: user.email,
           userId: user.id,
           phoneNumber: user.phone_number,
+          serviceId: pendingServiceId ?? undefined,
         });
       } else {
         showError("Selected package price not found. Please try again.");
@@ -63,16 +73,21 @@ const SellerOnboardingPayment = () => {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    // After successful payment, the AuthContext's user state will be updated
-    // by the usePayment hook's query invalidation.
-    // The useEffect above will then handle the redirect to dashboard.
-    console.log("Payment successful, attempting to update user and redirect.");
-    // A small delay to ensure query invalidation and user refetch has time to complete
-    setTimeout(() => {
+  const handlePaymentSuccess = async () => {
+    console.log("Payment successful, refreshing user state and redirecting.");
+    try {
+      await refreshUser();
+      localStorage.removeItem('pendingOnboardingServiceId');
+      setPendingServiceId(null);
       setPaymentInfo(null);
-      // The useEffect will handle the navigation once the user context is updated
-    }, 1000); // 1 second delay
+      navigate('/dashboard');
+    } catch (error) {
+      console.error("Failed to refresh user after payment:", error);
+      localStorage.removeItem('pendingOnboardingServiceId');
+      setPendingServiceId(null);
+      setPaymentInfo(null);
+      navigate('/dashboard');
+    }
   };
 
   if (isAuthLoading || pricesLoading) {
@@ -149,6 +164,7 @@ const SellerOnboardingPayment = () => {
           amount={paymentInfo.amount}
           paymentType="seller_registration"
           packageType={paymentInfo.packageType}
+          serviceId={paymentInfo.serviceId}
           onPaymentSuccess={handlePaymentSuccess}
           initialPhoneNumber={paymentInfo.phoneNumber}
         />

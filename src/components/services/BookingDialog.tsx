@@ -48,7 +48,7 @@ export const BookingDialog = ({ serviceId, isOpen, onOpenChange }: BookingDialog
       showSuccess("Appointment requested successfully!");
       onOpenChange(false);
       form.reset();
-      navigate('/dashboard/bookings');
+      navigate(user.user_type === 'admin' ? '/admin/bookings' : '/dashboard/bookings');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Failed to book appointment. Please try again.";
       showError(errorMessage);

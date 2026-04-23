@@ -45,7 +45,7 @@ const BookAppointmentCTA = () => {
               <Link to="/register/seller">
                 <UserPlus className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5" />
                 <span className="hidden sm:inline">List as Provider</span>
-                <span className="sm:hidden">Join</span>
+                <span className="sm:hidden">List</span>
                 <ArrowRight className="ml-1 sm:ml-2 h-4 sm:h-5 w-4 sm:w-5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </Button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
 import { Button } from '@/components/ui/button';
 import { Search, Menu, X, MapPin, ChevronDown } from 'lucide-react';
@@ -97,10 +97,27 @@ const PremiumHeader: React.FC = () => {
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategorySelectorOpen, setIsCategorySelectorOpen] = useState(false); // New state for category selector
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate(); // Initialize useNavigate for PremiumHeader
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
+
+  const serviceSearchSuggestions = useMemo(() => {
+    const countySuggestions = kenyanCounties.map((county) => ({
+      label: county,
+      query: county,
+      description: 'Search by location',
+    }));
+
+    const categorySuggestions = categories.map((category) => ({
+      label: category,
+      query: category,
+      description: 'Search by category',
+    }));
+
+    return [...countySuggestions, ...categorySuggestions];
+  }, []);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -117,6 +134,12 @@ const PremiumHeader: React.FC = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  useEffect(() => {
+    if (!isCommandOpen) {
+      setSearchQuery('');
+    }
+  }, [isCommandOpen]);
+
   const navLinks = [
     { to: "/", text: "Home" },
     // { to: "/services", text: "Services" },
@@ -124,8 +147,16 @@ const PremiumHeader: React.FC = () => {
     { to: "/contact", text: "Contact" },
   ];
 
-  const handleCommandSelect = (callback: () => void) => {
-    callback();
+  const handleServiceSearch = (rawValue: string) => {
+    const query = rawValue.trim();
+
+    if (!query) {
+      navigate('/services');
+      setIsCommandOpen(false);
+      return;
+    }
+
+    navigate(`/services?search=${encodeURIComponent(query)}`);
     setIsCommandOpen(false);
   };
 
@@ -343,13 +374,43 @@ const PremiumHeader: React.FC = () => {
 
       {/* Command dialog */}
       <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput
+          placeholder="Search services by name, category, or location..."
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              handleServiceSearch(searchQuery);
+            }
+          }}
+        />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            {navLinks.map(link => (
-              <CommandItem key={link.to} onSelect={() => handleCommandSelect(() => window.location.href = link.to)}>
-                {link.text}
+          <CommandEmpty>No quick suggestions. Press Enter to search.</CommandEmpty>
+          {searchQuery.trim() && (
+            <CommandGroup heading="Search">
+              <CommandItem
+                value={searchQuery}
+                onSelect={() => handleServiceSearch(searchQuery)}
+              >
+                <div className="flex flex-col">
+                  <span>Search for "{searchQuery.trim()}"</span>
+                  <span className="text-xs text-muted-foreground">Find services and providers</span>
+                </div>
+              </CommandItem>
+            </CommandGroup>
+          )}
+          <CommandGroup heading="Popular Searches">
+            {serviceSearchSuggestions.map((item) => (
+              <CommandItem
+                key={item.label}
+                value={`${item.label} ${item.description}`}
+                onSelect={() => handleServiceSearch(item.query)}
+              >
+                <div className="flex flex-col">
+                  <span>{item.label}</span>
+                  <span className="text-xs text-muted-foreground">{item.description}</span>
+                </div>
               </CommandItem>
             ))}
           </CommandGroup>
