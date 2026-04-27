@@ -32,23 +32,26 @@ api.interceptors.request.use(async config => {
   return config;
 });
 
-// Interceptor to handle 401 Unauthorized and 403 Forbidden responses globally
+// Interceptor to handle auth failures globally.
+// We only force a logout on 401 so a 403 (for example, email verification
+// required) can be handled by the page that made the request.
 api.interceptors.response.use(
   response => response,
   error => {
-if (error.response) {
+    if (error.response) {
       const { status, config } = error.response;
-      if (status === 401 || status === 403) {
+      if (status === 401) {
         // Don't logout for service operations (both regular and admin routes)
-        const isServiceOperation = config.url?.startsWith('/services') || 
-                                  config.url?.includes('/services/') ||
-                                  config.url?.startsWith('/admin/services') ||
-                                  config.url?.includes('/admin/services/');
-        
+        const isServiceOperation =
+          config.url?.startsWith('/services') ||
+          config.url?.includes('/services/') ||
+          config.url?.startsWith('/admin/services') ||
+          config.url?.includes('/admin/services/');
+
         if (!isServiceOperation) {
           localStorage.removeItem('authToken'); // Clear token
-          showError('Session expired. Please log in again.'); // Display toast
-          window.location.href = '/login'; // Navigate to login page
+          showError('Session expired. Please log in again.');
+          window.location.href = '/login';
         }
       }
     }

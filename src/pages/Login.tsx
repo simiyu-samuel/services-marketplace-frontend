@@ -35,6 +35,8 @@ const Login = () => {
       showSuccess("Login successful!");
       if (user.user_type === 'admin') {
         navigate("/admin/dashboard");
+      } else if (user.user_type === 'seller' && !user.email_verified_at) {
+        navigate("/verify-email", { state: { email: user.email } });
       } else {
         navigate("/dashboard");
       }

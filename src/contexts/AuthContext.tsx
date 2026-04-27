@@ -66,13 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const response = await api.post('/login', data);
     const { access_token, user: rawUser } = response.data;
     localStorage.setItem('authToken', access_token);
-    // Frontend workaround: If a seller has a package but email is not verified, assume verified
-    const user = { ...rawUser };
-    if (user.user_type === 'seller' && user.seller_package && !user.email_verified_at) {
-      user.email_verified_at = new Date().toISOString();
-      console.log("Frontend: Bypassing email verification for paid seller.");
-    }
-    setUser(user);
+    setUser({ ...rawUser });
     return response.data;
   };
 
@@ -82,13 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { access_token, user: rawUser, needs_seller_payment } = response.data;
     // Always set token upon successful registration, as it's needed for payment initiation
     localStorage.setItem('authToken', access_token);
-    // Frontend workaround: If a seller has a package but email is not verified, assume verified
-    const user = { ...rawUser };
-    if (user.user_type === 'seller' && user.seller_package && !user.email_verified_at) {
-      user.email_verified_at = new Date().toISOString();
-      console.log("Frontend: Bypassing email verification for paid seller during registration.");
-    }
-    setUser(user); // Set user to reflect initial state (customer with pending package)
+    setUser({ ...rawUser }); // Reflect the backend's actual account state
     return response.data;
   };
 

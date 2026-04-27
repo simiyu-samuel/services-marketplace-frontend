@@ -38,10 +38,14 @@ const SellerOnboardingPayment = () => {
 
   useEffect(() => {
     if (!isAuthLoading && !pricesLoading) { // Wait for both auth and prices to load
-      // If user is already a seller, redirect to dashboard
+      // If the seller account is already active, redirect to dashboard.
       if (user?.user_type === 'seller' && user?.seller_package) {
         showSuccess("Your seller account is active!");
-        navigate('/dashboard');
+        if (user.email_verified_at) {
+          navigate('/dashboard');
+        } else {
+          navigate('/verify-email', { state: { email: user.email } });
+        }
       } else if (!user) {
         // If not logged in, redirect to login
         showError("Please log in to access this page.");
@@ -80,13 +84,13 @@ const SellerOnboardingPayment = () => {
       localStorage.removeItem('pendingOnboardingServiceId');
       setPendingServiceId(null);
       setPaymentInfo(null);
-      navigate('/dashboard');
+      navigate('/verify-email', { state: { email: user?.email } });
     } catch (error) {
       console.error("Failed to refresh user after payment:", error);
       localStorage.removeItem('pendingOnboardingServiceId');
       setPendingServiceId(null);
       setPaymentInfo(null);
-      navigate('/dashboard');
+      navigate('/verify-email', { state: { email: user?.email } });
     }
   };
 
